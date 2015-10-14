@@ -31,20 +31,6 @@
 
 
 
-#if defined(__APPLE__) || defined(__MACH__) || defined(__APPLE_CC__)
-
-#define fopeno fopen
-
-#else
-
-#define fseeko fseeko64
-#define ftello ftello64
-#define fopeno fopen64
-
-#endif
-
-
-
 
 UI_WAV2EDFwindow::UI_WAV2EDFwindow(char *recent_dir, char *save_dir)
 {

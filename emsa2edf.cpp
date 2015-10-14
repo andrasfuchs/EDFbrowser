@@ -31,19 +31,6 @@
 #include "emsa2edf.h"
 
 
-#if defined(__APPLE__) || defined(__MACH__) || defined(__APPLE_CC__)
-
-#define fopeno fopen
-
-#else
-
-#define fseeko fseeko64
-#define ftello ftello64
-#define fopeno fopen64
-
-#endif
-
-
 
 UI_EMSA2EDFwindow::UI_EMSA2EDFwindow(char *recent_dir, char *save_dir)
 {
@@ -519,7 +506,7 @@ void UI_EMSA2EDFwindow::SelectFileButton()
 
     if(annot_cnt)
     {
-      logbuf = (struct event_struct *)calloc(1, sizeof(struct event_struct[annot_cnt]));
+		logbuf = (struct event_struct *)calloc(1, sizeof(struct event_struct)*annot_cnt);
       if(logbuf==NULL)
       {
         textEdit1->append("Malloc error. (logbuf)\n");

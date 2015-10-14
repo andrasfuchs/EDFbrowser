@@ -290,8 +290,8 @@ void UI_Flywheel::mousePressEvent(QMouseEvent *press_event)
 
     gettimeofday(&tv, NULL);
 
-    time_old = tv.tv_usec;
-    time_new = tv.tv_usec;
+	time_old = tv.tv_usec;
+	time_new = tv.tv_usec;
 
     use_move_events = 1;
 
@@ -366,7 +366,7 @@ void UI_Flywheel::mouseMoveEvent(QMouseEvent *move_event)
         gettimeofday(&tv, NULL);
 
         time_old = time_new;
-        time_new = tv.tv_usec;
+		time_new = tv.tv_usec;
 
         if(time_new > time_old)
         {

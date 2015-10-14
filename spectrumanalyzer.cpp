@@ -416,7 +416,6 @@ void UI_FreqSpectrumWindow::print_to_txt()
   fclose (outputfile);
 }
 
-
 void UI_FreqSpectrumWindow::sliderMoved(int)
 {
   int startstep,

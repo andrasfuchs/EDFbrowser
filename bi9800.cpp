@@ -30,23 +30,6 @@
 #include "bi9800.h"
 
 
-
-#if defined(__APPLE__) || defined(__MACH__) || defined(__APPLE_CC__)
-
-#define fopeno fopen
-
-#else
-
-#define fseeko fseeko64
-#define ftello ftello64
-#define fopeno fopen64
-
-#endif
-
-
-
-
-
 UI_BI98002EDFwindow::UI_BI98002EDFwindow(char *recent_dir, char *save_dir)
 {
   recent_opendir = recent_dir;

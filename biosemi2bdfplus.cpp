@@ -792,13 +792,8 @@ void UI_BIOSEMI2BDFPLUSwindow::SelectFileButton()
 
   progress.reset();
 
-#ifdef Q_OS_WIN32
-  __mingw_snprintf(str, 2048, "Done. Converted %lli input trigger events to BDF+ annotations.\n"
-                      "\nBDF+ file is located at %s", trigger_cnt, outputpath);
-#else
   snprintf(str, 2048, "Done. Converted %lli input trigger events to BDF+ annotations.\n"
                       "\nBDF+ file is located at %s", trigger_cnt, outputpath);
-#endif
 
   QMessageBox messagewindow(QMessageBox::Information, "Ready", str);
   messagewindow.setIconPixmap(QPixmap(":/images/ok.png"));

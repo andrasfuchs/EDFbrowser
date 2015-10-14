@@ -66,6 +66,7 @@
 
 #include <stdio.h>
 
+#include "multitargetsupport.h"
 #include "filter.h"
 #include "third_party/fidlib/fidlib.h"
 #include "ravg_filter.h"

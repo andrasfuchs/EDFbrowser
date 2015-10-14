@@ -31,20 +31,6 @@
 
 
 
-#if defined(__APPLE__) || defined(__MACH__) || defined(__APPLE_CC__)
-
-#define fopeno fopen
-
-#else
-
-#define fseeko fseeko64
-#define ftello ftello64
-#define fopeno fopen64
-
-#endif
-
-
-
 
 struct edfhdrblock * EDFfileCheck::check_edf_file(FILE *inputfile, char *txt_string, int live_stream)
 {
@@ -535,15 +521,9 @@ struct edfhdrblock * EDFfileCheck::check_edf_file(FILE *inputfile, char *txt_str
   {
     if(edfhdr->datarecords<1)
     {
-#ifdef Q_OS_WIN32
-      __mingw_sprintf(txt_string, "Error, number of datarecords is %lli, expected >0.\n"
-                          "You can fix this problem with the header editor, check the manual for details.",
-            edfhdr->datarecords);
-#else
       sprintf(txt_string, "Error, number of datarecords is %lli, expected >0.\n"
                           "You can fix this problem with the header editor, check the manual for details.",
             edfhdr->datarecords);
-#endif
       free(edf_hdr);
       free(edfhdr);
       return(NULL);
@@ -609,7 +589,7 @@ struct edfhdrblock * EDFfileCheck::check_edf_file(FILE *inputfile, char *txt_str
     return(NULL);
   }
 
-  edfhdr->edfparam = (struct edfparamblock *)calloc(1, sizeof(struct edfparamblock[edfhdr->edfsignals]));
+  edfhdr->edfparam = (struct edfparamblock *)calloc(1, sizeof(struct edfparamblock)*edfhdr->edfsignals);
   if(edfhdr->edfparam==NULL)
   {
     sprintf(txt_string, "Memory allocation error! (edfparam)");
@@ -1628,17 +1608,10 @@ struct edfhdrblock * EDFfileCheck::check_edf_file(FILE *inputfile, char *txt_str
 
     if(l_tmp != l_tmp2)
     {
-#ifdef Q_OS_WIN32
-      __mingw_sprintf(txt_string, "Error, filesize does not match with the calculated filesize based on the parameters\n"
-                          "in the header. Filesize is %lli and filesize according to header is %lli.\n"
-                          "You can fix this problem with the header editor, check the manual for details.",
-                          l_tmp2, l_tmp);
-#else
       sprintf(txt_string, "Error, filesize does not match with the calculated filesize based on the parameters\n"
                           "in the header. Filesize is %lli and filesize according to header is %lli.\n"
                           "You can fix this problem with the header editor, check the manual for details.",
                           l_tmp2, l_tmp);
-#endif
       free(edf_hdr);
       free(edfhdr->edfparam);
       free(edfhdr);

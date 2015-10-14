@@ -53,6 +53,8 @@
 
 #include <string.h>
 
+#include "global.h"
+
 
 #define MAXSPECTRUMMARKERS 16
 #define SC_MAX_PATH_LEN 1024

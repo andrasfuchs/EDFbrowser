@@ -359,12 +359,7 @@ void UI_EDFhdrwindow::show_params(int row)
 
   if(mainwindow->edfheaderlist[row]->starttime_offset != 0LL)
   {
-#ifdef Q_OS_WIN32
-    __mingw_snprintf(str + strlen(str), 100, ".%07lli", mainwindow->edfheaderlist[row]->starttime_offset);
-#else
     snprintf(str + strlen(str), 100, ".%07lli", mainwindow->edfheaderlist[row]->starttime_offset);
-#endif
-
     remove_trailing_zeros(str);
   }
 

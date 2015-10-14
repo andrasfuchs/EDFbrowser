@@ -31,18 +31,6 @@
 
 
 
-#if defined(__APPLE__) || defined(__MACH__) || defined(__APPLE_CC__)
-
-#define fopeno fopen
-
-#else
-
-#define fseeko fseeko64
-#define ftello ftello64
-#define fopeno fopen64
-
-#endif
-
 #define US_DATATYPE_FLOAT_LI     0
 #define US_DATATYPE_FLOAT_BI     1
 #define US_DATATYPE_DOUBLE_LI    2

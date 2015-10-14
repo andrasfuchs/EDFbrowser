@@ -31,18 +31,6 @@
 
 
 
-#if defined(__APPLE__) || defined(__MACH__) || defined(__APPLE_CC__)
-
-#define fopeno fopen
-
-#else
-
-#define fseeko fseeko64
-#define ftello ftello64
-#define fopeno fopen64
-
-#endif
-
 
 
 UI_NEXFIN2EDFwindow::UI_NEXFIN2EDFwindow(char *recent_dir, char *save_dir)
@@ -913,12 +901,7 @@ void UI_NEXFIN2EDFwindow::SelectFileButton()
   QApplication::restoreOverrideCursor();
 
   fseeko(outputfile, 236LL, SEEK_SET);
-
-#ifdef Q_OS_WIN32
-  __mingw_fprintf(outputfile, "%-8lli", datarecords);
-#else
   fprintf(outputfile, "%-8lli", datarecords);
-#endif
 
   if(fclose(outputfile))
   {

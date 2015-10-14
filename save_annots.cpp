@@ -31,20 +31,6 @@
 
 
 
-#if defined(__APPLE__) || defined(__MACH__) || defined(__APPLE_CC__)
-
-#define fopeno fopen
-
-#else
-
-#define fseeko fseeko64
-#define ftello ftello64
-#define fopeno fopen64
-
-#endif
-
-
-
 
 int save_annotations(UI_Mainwindow *mainwindow, FILE *outputfile, struct edfhdrblock *hdr, struct annotationblock *annotlist)
 {
@@ -480,27 +466,6 @@ int save_annotations(UI_Mainwindow *mainwindow, FILE *outputfile, struct edfhdrb
       }
     }
 
-#ifdef Q_OS_WIN32
-    switch(timestamp_decimals)
-    {
-      case 0 : p = __mingw_snprintf(annot_buf, 16, "+%lli", time / TIME_DIMENSION);
-                break;
-      case 1 : p = __mingw_snprintf(annot_buf, 16, "+%lli.%01lli", time / TIME_DIMENSION, (time % TIME_DIMENSION) / 1000000LL);
-                break;
-      case 2 : p = __mingw_snprintf(annot_buf, 16, "+%lli.%02lli", time / TIME_DIMENSION, (time % TIME_DIMENSION) / 100000LL);
-                break;
-      case 3 : p = __mingw_snprintf(annot_buf, 16, "+%lli.%03lli", time / TIME_DIMENSION, (time % TIME_DIMENSION) / 10000LL);
-                break;
-      case 4 : p = __mingw_snprintf(annot_buf, 16, "+%lli.%04lli", time / TIME_DIMENSION, (time % TIME_DIMENSION) / 1000LL);
-                break;
-      case 5 : p = __mingw_snprintf(annot_buf, 16, "+%lli.%05lli", time / TIME_DIMENSION, (time % TIME_DIMENSION) / 100LL);
-                break;
-      case 6 : p = __mingw_snprintf(annot_buf, 16, "+%lli.%06lli", time / TIME_DIMENSION, (time % TIME_DIMENSION) / 10LL);
-                break;
-      case 7 : p = __mingw_snprintf(annot_buf, 16, "+%lli.%07lli", time / TIME_DIMENSION, time % TIME_DIMENSION);
-                break;
-    }
-#else
     switch(timestamp_decimals)
     {
       case 0 : p = snprintf(annot_buf, 16, "+%lli", time / TIME_DIMENSION);
@@ -520,7 +485,7 @@ int save_annotations(UI_Mainwindow *mainwindow, FILE *outputfile, struct edfhdrb
       case 7 : p = snprintf(annot_buf, 16, "+%lli.%07lli", time / TIME_DIMENSION, time % TIME_DIMENSION);
                 break;
     }
-#endif
+
     annot_buf[p++] = 20;
     annot_buf[p++] = 20;
     annot_buf[p++] = 0;
@@ -533,19 +498,11 @@ int save_annotations(UI_Mainwindow *mainwindow, FILE *outputfile, struct edfhdrb
         {
           if(annot->onset<0)
           {
-#ifdef Q_OS_WIN32
-            p += __mingw_snprintf(annot_buf + p, 20, "-%lli.%07lli", -(annot->onset / TIME_DIMENSION), -(annot->onset % TIME_DIMENSION));
-#else
             p += snprintf(annot_buf + p, 20, "-%lli.%07lli", -(annot->onset / TIME_DIMENSION), -(annot->onset % TIME_DIMENSION));
-#endif
           }
           else
           {
-#ifdef Q_OS_WIN32
-            p += __mingw_snprintf(annot_buf + p, 20, "+%lli.%07lli", annot->onset / TIME_DIMENSION, annot->onset % TIME_DIMENSION);
-#else
             p += snprintf(annot_buf + p, 20, "+%lli.%07lli", annot->onset / TIME_DIMENSION, annot->onset % TIME_DIMENSION);
-#endif
           }
 
           for(j=0; j<7; j++)

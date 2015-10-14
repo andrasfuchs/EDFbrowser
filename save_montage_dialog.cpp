@@ -30,18 +30,6 @@
 #include "save_montage_dialog.h"
 
 
-#if defined(__APPLE__) || defined(__MACH__) || defined(__APPLE_CC__)
-
-#define fopeno fopen
-
-#else
-
-#define fseeko fseeko64
-#define ftello ftello64
-#define fopeno fopen64
-
-#endif
-
 
 
 UI_SaveMontagewindow::UI_SaveMontagewindow(QWidget *w_parent)
@@ -277,11 +265,7 @@ void UI_SaveMontagewindow::SaveButtonClicked()
     }
   }
 
-#ifdef Q_OS_WIN32
-  __mingw_fprintf(mtgfile, "  <pagetime>%lli</pagetime>\n", mainwindow->pagetime);
-#else
   fprintf(mtgfile, "  <pagetime>%lli</pagetime>\n", mainwindow->pagetime);
-#endif
 
   struct spectrumdocksettings settings;
 

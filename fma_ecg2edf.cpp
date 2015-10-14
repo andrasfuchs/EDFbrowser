@@ -46,21 +46,6 @@
 
 
 
-#if defined(__APPLE__) || defined(__MACH__) || defined(__APPLE_CC__)
-
-#define fopeno fopen
-
-#else
-
-#define fseeko fseeko64
-#define ftello ftello64
-#define fopeno fopen64
-
-#endif
-
-
-
-
 UI_FMaudio2EDFwindow::UI_FMaudio2EDFwindow(char *recent_dir, char *save_dir)
 {
   recent_opendir = recent_dir;

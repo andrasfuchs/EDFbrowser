@@ -31,17 +31,6 @@
 #include "manscan2edf.h"
 
 
-#if defined(__APPLE__) || defined(__MACH__) || defined(__APPLE_CC__)
-
-#define fopeno fopen
-
-#else
-
-#define fseeko fseeko64
-#define ftello ftello64
-#define fopeno fopen64
-
-#endif
 
 #define MBILINEBUFSZ 4096
 #define MBIMAXEVENTS 10000

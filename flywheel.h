@@ -40,6 +40,8 @@
 #include <QBrush>
 
 #include <sys/time.h>
+
+#define _USE_MATH_DEFINES
 #include <math.h>
 
 

@@ -31,20 +31,6 @@
 
 
 
-#if defined(__APPLE__) || defined(__MACH__) || defined(__APPLE_CC__)
-
-#define fopeno fopen
-
-#else
-
-#define fseeko fseeko64
-#define ftello ftello64
-#define fopeno fopen64
-
-#endif
-
-
-
 
 int EDF_annotations::get_annotations(int file_num, struct edfhdrblock *edf_hdr, struct annotationblock **annotslist, int read_nk_trigger_signal)
 {

@@ -31,21 +31,6 @@
 #include "biox2edf.h"
 
 
-#if defined(__APPLE__) || defined(__MACH__) || defined(__APPLE_CC__)
-
-#define fopeno fopen
-
-#else
-
-#define fseeko fseeko64
-#define ftello ftello64
-#define fopeno fopen64
-
-#endif
-
-
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -389,11 +374,11 @@ void UI_BIOX2EDFwindow::SelectFileButton()
 
       wr_buf[sf * 2 + j] <<= 2;
 
-      wr_buf[j] += (tmp_bits >> 6) & 0b00000011;
+      wr_buf[j] += (tmp_bits >> 6) & 0x0b00000011;
 
-      wr_buf[sf + j] += (tmp_bits >> 4) & 0b00000011;
+      wr_buf[sf + j] += (tmp_bits >> 4) & 0x0b00000011;
 
-      wr_buf[sf * 2 + j] += (tmp_bits >> 2) & 0b00000011;
+      wr_buf[sf * 2 + j] += (tmp_bits >> 2) & 0x0b00000011;
 
       if(++j == sf)
       {

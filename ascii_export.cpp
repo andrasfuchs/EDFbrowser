@@ -31,21 +31,6 @@
 
 
 
-#if defined(__APPLE__) || defined(__MACH__) || defined(__APPLE_CC__)
-
-#define fopeno fopen
-
-#else
-
-#define fseeko fseeko64
-#define ftello ftello64
-#define fopeno fopen64
-
-#endif
-
-
-
-
 UI_AsciiExportwindow::UI_AsciiExportwindow(QWidget *w_parent)
 {
   int i;
@@ -307,7 +292,7 @@ void UI_AsciiExportwindow::ExportButtonClicked()
     }
   }
 
-  edfparamascii = (struct asciiedfparamblock *)calloc(1, sizeof(struct asciiedfparamblock[edfsignals]));
+  edfparamascii = (struct asciiedfparamblock *)calloc(1, sizeof(struct asciiedfparamblock)*edfsignals);
   if(edfparamascii==NULL)
   {
     QMessageBox messagewindow(QMessageBox::Critical, "Error", "Malloc error! (edfparam)");

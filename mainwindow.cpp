@@ -30,18 +30,6 @@
 #include "mainwindow.h"
 
 
-#if defined(__APPLE__) || defined(__MACH__) || defined(__APPLE_CC__)
-
-#define fopeno fopen
-
-#else
-
-#define fseeko fseeko64
-#define ftello ftello64
-#define fopeno fopen64
-
-#endif
-
 
 
 // #define DEBUG_VIDEOPLAYER
@@ -6659,13 +6647,8 @@ void UI_Mainwindow::write_settings()
     fprintf(cfgfile, "      <use_threads>%i</use_threads>\n",
                     use_threads);
 
-#ifdef Q_OS_WIN32
-    __mingw_fprintf(cfgfile, "      <maxfilesize_to_readin_annotations>%lli</maxfilesize_to_readin_annotations>\n",
-                    maxfilesize_to_readin_annotations);
-#else
     fprintf(cfgfile, "      <maxfilesize_to_readin_annotations>%lli</maxfilesize_to_readin_annotations>\n",
                     maxfilesize_to_readin_annotations);
-#endif
 
     len = strlen(path);
     for(i=len-1; i>=0; i--)
