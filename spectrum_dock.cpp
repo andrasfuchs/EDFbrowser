@@ -3,28 +3,24 @@
 *
 * Author: Teunis van Beelen
 *
-* Copyright (C) 2010, 2011, 2012, 2013, 2014 Teunis van Beelen
+* Copyright (C) 2010, 2011, 2012, 2013, 2014, 2015 Teunis van Beelen
 *
-* teuniz@gmail.com
+* Email: teuniz@gmail.com
 *
 ***************************************************************************
 *
-* This program is free software; you can redistribute it and/or modify
+* This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation version 2 of the License.
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
 * but WITHOUT ANY WARRANTY; without even the implied warranty of
 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 * GNU General Public License for more details.
 *
-* You should have received a copy of the GNU General Public License along
-* with this program; if not, write to the Free Software Foundation, Inc.,
-* 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-*
-***************************************************************************
-*
-* This version of GPL is at http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
 ***************************************************************************
 */
@@ -889,9 +885,14 @@ void UI_SpectrumDockWindow::update_curve()
       dig_value += f_tmp;
     }
 
-    for(k=0; k<signalcomp->spike_filter_cnt; k++)
+    if(signalcomp->spike_filter)
     {
-      dig_value = run_spike_filter(dig_value, signalcomp->spike_filter[k]);
+      if(s==signalcomp->sample_start)
+      {
+        spike_filter_restore_buf(signalcomp->spike_filter);
+      }
+
+      dig_value = run_spike_filter(dig_value, signalcomp->spike_filter);
     }
 
     for(k=0; k<signalcomp->filter_cnt; k++)

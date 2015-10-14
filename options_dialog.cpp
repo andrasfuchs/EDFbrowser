@@ -3,28 +3,24 @@
 *
 * Author: Teunis van Beelen
 *
-* Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 Teunis van Beelen
+* Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015 Teunis van Beelen
 *
-* teuniz@gmail.com
+* Email: teuniz@gmail.com
 *
 ***************************************************************************
 *
-* This program is free software; you can redistribute it and/or modify
+* This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation version 2 of the License.
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
 * but WITHOUT ANY WARRANTY; without even the implied warranty of
 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 * GNU General Public License for more details.
 *
-* You should have received a copy of the GNU General Public License along
-* with this program; if not, write to the Free Software Foundation, Inc.,
-* 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-*
-***************************************************************************
-*
-* This version of GPL is at http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
 ***************************************************************************
 */
@@ -426,21 +422,48 @@ UI_OptionsDialog::UI_OptionsDialog(QWidget *w_parent)
   spinbox3_1->setSingleStep(2);
   spinbox3_1->setValue(mainwindow->maxdftblocksize);
 
+  label3_5 = new QLabel(tab3);
+  label3_5->setGeometry(QRect(20, 590, 120, 25));
+  label3_5->setText("Colorbar sensitivity:");
+
+  dspinbox3_2 = new QDoubleSpinBox(tab3);
+  dspinbox3_2->setGeometry(QRect(140, 592, 140, 20));
+  dspinbox3_2->setMinimum(0.0001);
+  dspinbox3_2->setMaximum(100000.0);
+  dspinbox3_2->setValue(mainwindow->spectrum_colorbar->max_colorbar_value);
+
+  checkbox3_1 = new QCheckBox("Auto", tab3);
+  checkbox3_1->setGeometry(QRect(300, 592, 100, 20));
+  checkbox3_1->setTristate(false);
+  if(mainwindow->spectrum_colorbar->auto_adjust)
+  {
+    checkbox3_1->setCheckState(Qt::Checked);
+
+    dspinbox3_2->setEnabled(false);
+  }
+  else
+  {
+    checkbox3_1->setCheckState(Qt::Unchecked);
+  }
+
   DefaultButton2 = new QPushButton(tab3);
-  DefaultButton2->setGeometry(QRect(245, 605, 100, 25));
+  DefaultButton2->setGeometry(QRect(245, 650, 100, 25));
   DefaultButton2->setText("Restore default");
 
   ApplyButton2 = new QPushButton(tab3);
-  ApplyButton2->setGeometry(QRect(20, 605, 100, 25));
+  ApplyButton2->setGeometry(QRect(20, 650, 100, 25));
   ApplyButton2->setText("Apply");
   ApplyButton2->setEnabled(false);
 
-  QObject::connect(radiobutton1,   SIGNAL(toggled(bool)),     this, SLOT(radioButtonToggled(bool)));
-  QObject::connect(radiobutton2,   SIGNAL(toggled(bool)),     this, SLOT(radioButtonToggled(bool)));
-  QObject::connect(radiobutton3,   SIGNAL(toggled(bool)),     this, SLOT(radioButtonToggled(bool)));
-  QObject::connect(spinbox3_1,     SIGNAL(valueChanged(int)), this, SLOT(spinBox3_3ValueChanged(int)));
-  QObject::connect(ApplyButton2,   SIGNAL(clicked()),         this, SLOT(ApplyButton2Clicked()));
-  QObject::connect(DefaultButton2, SIGNAL(clicked()),         this, SLOT(DefaultButton2Clicked()));
+  QObject::connect(radiobutton1,   SIGNAL(toggled(bool)),        this, SLOT(radioButtonToggled(bool)));
+  QObject::connect(radiobutton2,   SIGNAL(toggled(bool)),        this, SLOT(radioButtonToggled(bool)));
+  QObject::connect(radiobutton3,   SIGNAL(toggled(bool)),        this, SLOT(radioButtonToggled(bool)));
+  QObject::connect(spinbox3_1,     SIGNAL(valueChanged(int)),    this, SLOT(spinBox3_1ValueChanged(int)));
+  QObject::connect(dspinbox3_2,    SIGNAL(valueChanged(double)), this, SLOT(dspinBox3_2ValueChanged(double)));
+  QObject::connect(ApplyButton2,   SIGNAL(clicked()),            this, SLOT(ApplyButton2Clicked()));
+  QObject::connect(DefaultButton2, SIGNAL(clicked()),            this, SLOT(DefaultButton2Clicked()));
+  QObject::connect(checkbox3_1,    SIGNAL(stateChanged(int)),    this, SLOT(checkbox3_1Clicked(int)));
+
 
   tabholder->addTab(tab3, "Power Spectrum");
 
@@ -628,6 +651,19 @@ UI_OptionsDialog::UI_OptionsDialog(QWidget *w_parent)
 
   QObject::connect(combobox4_3, SIGNAL(currentIndexChanged(int)), this, SLOT(combobox4_3IndexChanged(int)));
 
+  label4_11 = new QLabel(tab4);
+  label4_11->setGeometry(20, 495, 310, 25);
+  label4_11->setText("Default amplitude");
+
+  dspinbox4_4 = new QDoubleSpinBox(tab4);
+  dspinbox4_4->setGeometry(200, 495, 140, 20);
+  dspinbox4_4->setMinimum(0.001);
+  dspinbox4_4->setMaximum(10000000);
+  dspinbox4_4->setSuffix(" /cm");
+  dspinbox4_4->setValue(mainwindow->default_amplitude);
+
+  QObject::connect(dspinbox4_4, SIGNAL(valueChanged(double)), this, SLOT(dspinbox4_4ValueChanged(double)));
+
   tabholder->addTab(tab4, "Other");
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -763,7 +799,13 @@ void UI_OptionsDialog::labelEdited(const QString  &)
 }
 
 
-void UI_OptionsDialog::spinBox3_3ValueChanged(int)
+void UI_OptionsDialog::spinBox3_1ValueChanged(int)
+{
+  ApplyButton2->setEnabled(true);
+}
+
+
+void UI_OptionsDialog::dspinBox3_2ValueChanged(double)
 {
   ApplyButton2->setEnabled(true);
 }
@@ -849,6 +891,17 @@ void UI_OptionsDialog::ApplyButton2Clicked()
   if(mainwindow->maxdftblocksize & 1)
   {
     mainwindow->maxdftblocksize--;
+  }
+
+  mainwindow->spectrum_colorbar->max_colorbar_value = dspinbox3_2->value();
+
+  if(checkbox3_1->checkState() == Qt::Checked)
+  {
+    mainwindow->spectrum_colorbar->auto_adjust = 1;
+  }
+  else
+  {
+    mainwindow->spectrum_colorbar->auto_adjust = 0;
   }
 
   ApplyButton2->setEnabled(false);
@@ -1033,6 +1086,26 @@ void UI_OptionsDialog::checkbox4Clicked(int state)
   }
 
   mainwindow->maincurve->update();
+}
+
+
+void UI_OptionsDialog::checkbox3_1Clicked(int state)
+{
+  if(state==Qt::Checked)
+  {
+    dspinbox3_2->setEnabled(false);
+
+    mainwindow->spectrum_colorbar->auto_adjust = 1;
+  }
+
+  if(state==Qt::Unchecked)
+  {
+    dspinbox3_2->setEnabled(true);
+
+    mainwindow->spectrum_colorbar->auto_adjust = 0;
+  }
+
+  ApplyButton2->setEnabled(true);
 }
 
 
@@ -1402,6 +1475,12 @@ void UI_OptionsDialog::AnnotMkrButtonClicked(SpecialButton *)
 }
 
 
+void UI_OptionsDialog::dspinbox4_4ValueChanged(double val)
+{
+  mainwindow->default_amplitude = val;
+}
+
+
 void UI_OptionsDialog::saveColorSchemaButtonClicked()
 {
   char path[MAX_PATH_LENGTH];
@@ -1539,7 +1618,7 @@ void UI_OptionsDialog::loadColorSchemaButtonClicked()
 {
   char path[MAX_PATH_LENGTH],
        scratchpad[2048],
-       *result;
+       result[XML_STRBUFLEN];
 
   struct xml_handle *xml_hdl;
 
@@ -1562,7 +1641,7 @@ void UI_OptionsDialog::loadColorSchemaButtonClicked()
     return;
   }
 
-  if(strcmp(xml_hdl->elementname, PROGRAM_NAME "_colorschema"))
+  if(strcmp(xml_hdl->elementname[xml_hdl->level], PROGRAM_NAME "_colorschema"))
   {
     QMessageBox messagewindow(QMessageBox::Critical, "Error", "There seems to be an error in this colorschema.");
     messagewindow.exec();
@@ -1589,14 +1668,12 @@ void UI_OptionsDialog::loadColorSchemaButtonClicked()
     xml_close(xml_hdl);
     return;
   }
-  result = xml_get_content_of_element(xml_hdl);
-  if(result==NULL)
+  if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
   {
     xml_close(xml_hdl);
     return;
   }
   mainwindow->maincurve->signal_color = atoi(result);
-  free(result);
 
   xml_go_up(xml_hdl);
 
@@ -1605,14 +1682,12 @@ void UI_OptionsDialog::loadColorSchemaButtonClicked()
     xml_close(xml_hdl);
     return;
   }
-  result = xml_get_content_of_element(xml_hdl);
-  if(result==NULL)
+  if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
   {
     xml_close(xml_hdl);
     return;
   }
   mainwindow->maincurve->floating_ruler_color = atoi(result);
-  free(result);
 
   xml_go_up(xml_hdl);
 
@@ -1621,14 +1696,12 @@ void UI_OptionsDialog::loadColorSchemaButtonClicked()
     xml_close(xml_hdl);
     return;
   }
-  result = xml_get_content_of_element(xml_hdl);
-  if(result==NULL)
+  if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
   {
     xml_close(xml_hdl);
     return;
   }
   mainwindow->maincurve->blackwhite_printing = atoi(result);
-  free(result);
 
   xml_go_up(xml_hdl);
 
@@ -1637,14 +1710,12 @@ void UI_OptionsDialog::loadColorSchemaButtonClicked()
     xml_close(xml_hdl);
     return;
   }
-  result = xml_get_content_of_element(xml_hdl);
-  if(result==NULL)
+  if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
   {
     xml_close(xml_hdl);
     return;
   }
   mainwindow->show_annot_markers = atoi(result);
-  free(result);
 
   xml_go_up(xml_hdl);
 
@@ -1653,14 +1724,12 @@ void UI_OptionsDialog::loadColorSchemaButtonClicked()
     xml_close(xml_hdl);
     return;
   }
-  result = xml_get_content_of_element(xml_hdl);
-  if(result==NULL)
+  if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
   {
     xml_close(xml_hdl);
     return;
   }
   mainwindow->show_baselines = atoi(result);
-  free(result);
 
   xml_go_up(xml_hdl);
 
@@ -1669,14 +1738,12 @@ void UI_OptionsDialog::loadColorSchemaButtonClicked()
     xml_close(xml_hdl);
     return;
   }
-  result = xml_get_content_of_element(xml_hdl);
-  if(result==NULL)
+  if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
   {
     xml_close(xml_hdl);
     return;
   }
   mainwindow->clip_to_pane = atoi(result);
-  free(result);
 
   xml_go_up(xml_hdl);
 
@@ -1685,14 +1752,12 @@ void UI_OptionsDialog::loadColorSchemaButtonClicked()
     xml_close(xml_hdl);
     return;
   }
-  result = xml_get_content_of_element(xml_hdl);
-  if(result==NULL)
+  if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
   {
     xml_close(xml_hdl);
     return;
   }
   mainwindow->maincurve->crosshair_1.color = atoi(result);
-  free(result);
 
   xml_go_up(xml_hdl);
 
@@ -1701,14 +1766,12 @@ void UI_OptionsDialog::loadColorSchemaButtonClicked()
     xml_close(xml_hdl);
     return;
   }
-  result = xml_get_content_of_element(xml_hdl);
-  if(result==NULL)
+  if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
   {
     xml_close(xml_hdl);
     return;
   }
   mainwindow->maincurve->crosshair_2.color = atoi(result);
-  free(result);
 
   xml_close(xml_hdl);
 

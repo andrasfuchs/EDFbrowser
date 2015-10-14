@@ -3,28 +3,24 @@
 *
 * Author: Teunis van Beelen
 *
-* Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 Teunis van Beelen
+* Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015 Teunis van Beelen
 *
-* teuniz@gmail.com
+* Email: teuniz@gmail.com
 *
 ***************************************************************************
 *
-* This program is free software; you can redistribute it and/or modify
+* This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation version 2 of the License.
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
 * but WITHOUT ANY WARRANTY; without even the implied warranty of
 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 * GNU General Public License for more details.
 *
-* You should have received a copy of the GNU General Public License along
-* with this program; if not, write to the Free Software Foundation, Inc.,
-* 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-*
-***************************************************************************
-*
-* This version of GPL is at http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
 ***************************************************************************
 */
@@ -146,6 +142,7 @@
 #include "import_annotations.h"
 #include "ravg_filter.h"
 #include "wav2edf.h"
+#include "fma_ecg2edf.h"
 #include "averager_curve_wnd.h"
 #include "ecg_filter.h"
 #include "ecg_export.h"
@@ -159,6 +156,8 @@
 #include "date_time_stamp_parser.h"
 #include "spike_filter.h"
 #include "spike_filter_dialog.h"
+#include "mit2edf.h"
+#include "biox2edf.h"
 
 #include "third_party/fidlib/fidlib.h"
 
@@ -193,6 +192,7 @@ public:
       show_annot_markers,
       show_baselines,
       annotations_edited,
+      annotations_onset_relative,
       exit_in_progress,
       maxdftblocksize,
       dpix,
@@ -238,7 +238,8 @@ public:
 
   double pixelsizefactor,
          x_pixelsizefactor,
-         average_period;
+         average_period,
+         default_amplitude;
 
   struct{
           double crossoverfreq;
@@ -324,6 +325,7 @@ private:
                *timemenu,
                *windowmenu,
                *recent_filesmenu,
+               *close_filemenu,
                *montagemenu,
                *patternmenu,
                *print_img_menu;
@@ -341,6 +343,15 @@ private:
            *shift_page_down_Act,
            *page_div2,
            *page_mult2,
+           *page_10u,
+           *page_20u,
+           *page_50u,
+           *page_100u,
+           *page_200u,
+           *page_500u,
+           *page_1m,
+           *page_2m,
+           *page_5m,
            *page_10m,
            *page_20m,
            *page_50m,
@@ -442,6 +453,7 @@ public slots:
 private slots:
   void open_new_file();
   void show_file_info();
+  void close_file_action_func(QAction *);
   void close_all_files();
   void exit_program();
   void signalproperties_dialog();
@@ -503,6 +515,7 @@ private slots:
   void convert_ascii_to_edf();
   void convert_fino_to_edf();
   void convert_wave_to_edf();
+  void convert_fm_audio_to_edf();
   void convert_nexfin_to_edf();
   void edfd_converter();
   void slider_moved(int);
@@ -533,6 +546,8 @@ private slots:
   void convert_binary_to_edf();
   void convert_manscan_to_edf();
   void convert_scpecg_to_edf();
+  void convert_mit_to_edf();
+  void convert_biox_to_edf();
   void video_process_error(QProcess::ProcessError);
 //  void search_pattern();
 

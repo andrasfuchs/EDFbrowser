@@ -3,28 +3,24 @@
 *
 * Author: Teunis van Beelen
 *
-* Copyright (C) 2009, 2010, 2011, 2012, 2013, 2014 Teunis van Beelen
+* Copyright (C) 2009, 2010, 2011, 2012, 2013, 2014, 2015 Teunis van Beelen
 *
-* teuniz@gmail.com
+* Email: teuniz@gmail.com
 *
 ***************************************************************************
 *
-* This program is free software; you can redistribute it and/or modify
+* This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation version 2 of the License.
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
 * but WITHOUT ANY WARRANTY; without even the implied warranty of
 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 * GNU General Public License for more details.
 *
-* You should have received a copy of the GNU General Public License along
-* with this program; if not, write to the Free Software Foundation, Inc.,
-* 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-*
-***************************************************************************
-*
-* This version of GPL is at http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
 ***************************************************************************
 */
@@ -58,66 +54,76 @@ UI_ReduceSignalsWindow::UI_ReduceSignalsWindow(QWidget *w_parent)
 
   myobjectDialog = new QDialog;
 
-  myobjectDialog->setMinimumSize(665, 526);
-  myobjectDialog->setMaximumSize(665, 526);
+  myobjectDialog->setMinimumSize(715, 578);
+  myobjectDialog->setMaximumSize(715, 578);
   myobjectDialog->setWindowTitle("Reduce signals and/or duration");
   myobjectDialog->setModal(true);
   myobjectDialog->setAttribute(Qt::WA_DeleteOnClose, true);
 
   label1 = new QLabel(myobjectDialog);
-  label1->setGeometry(20, 20, 635, 25);
+  label1->setGeometry(20, 20, 685, 25);
 
   label2 = new QLabel(myobjectDialog);
-  label2->setGeometry(435, 307, 100, 25);
+  label2->setGeometry(485, 359, 100, 25);
   label2->setText("from datarecord");
   label2->setEnabled(false);
 
   label3 = new QLabel(myobjectDialog);
-  label3->setGeometry(435, 372, 100, 25);
+  label3->setGeometry(485, 424, 100, 25);
   label3->setText("to datarecord");
   label3->setEnabled(false);
 
   label4 = new QLabel(myobjectDialog);
-  label4->setGeometry(555, 332, 100, 25);
+  label4->setGeometry(605, 332, 100, 25);
   label4->setEnabled(false);
 
   label5 = new QLabel(myobjectDialog);
-  label5->setGeometry(555, 397, 100, 25);
+  label5->setGeometry(605, 397, 100, 25);
   label5->setEnabled(false);
 
+  label6 = new QLabel(myobjectDialog);
+  label6->setGeometry(445, 232, 140, 25);
+  label6->setText("Anti-aliasing filter order");
+
   radioButton1 = new QRadioButton("whole duration", myobjectDialog);
-  radioButton1->setGeometry(435, 247, 100, 25);
+  radioButton1->setGeometry(485, 299, 100, 25);
   radioButton1->setChecked(true);
   radioButton1->setEnabled(false);
 
   radioButton2 = new QRadioButton("selection", myobjectDialog);
-  radioButton2->setGeometry(435, 272, 100, 25);
+  radioButton2->setGeometry(485, 324, 100, 25);
   radioButton2->setEnabled(false);
 
   spinBox1 = new QSpinBox(myobjectDialog);
-  spinBox1->setGeometry(435, 332, 100, 25);
+  spinBox1->setGeometry(485, 384, 100, 25);
   spinBox1->setRange(1, 2147483647);
   spinBox1->setValue(1);
   spinBox1->setEnabled(false);
 
   spinBox2 = new QSpinBox(myobjectDialog);
-  spinBox2->setGeometry(435, 397, 100, 25);
+  spinBox2->setGeometry(485, 449, 100, 25);
   spinBox2->setRange(1, 2147483647);
   spinBox2->setValue(2147483647);
   spinBox2->setEnabled(false);
 
   spinBox3 = new QSpinBox(myobjectDialog);
-  spinBox3->setGeometry(545, 170, 100, 25);
+  spinBox3->setGeometry(595, 170, 100, 25);
   spinBox3->setRange(1, 100000);
   spinBox3->setValue(1);
   spinBox3->setEnabled(false);
 
+  spinBox4 = new QSpinBox(myobjectDialog);
+  spinBox4->setGeometry(595, 232, 100, 25);
+  spinBox4->setRange(1, REDUCER_MAX_AA_FILTERS + 1);
+  spinBox4->setValue(REDUCER_MAX_AA_FILTERS + 1);
+  spinBox4->setEnabled(false);
+
   SignalsTablewidget = new QTableWidget(myobjectDialog);
-  SignalsTablewidget->setGeometry(20, 66, 355, 380);
+  SignalsTablewidget->setGeometry(20, 66, 405, 432);
   SignalsTablewidget->setSelectionMode(QAbstractItemView::NoSelection);
   SignalsTablewidget->setColumnCount(2);
   SignalsTablewidget->setColumnWidth(0, 180);
-  SignalsTablewidget->setColumnWidth(1, 130);
+  SignalsTablewidget->setColumnWidth(1, 180);
 
   QStringList horizontallabels;
   horizontallabels += "Label";
@@ -125,30 +131,30 @@ UI_ReduceSignalsWindow::UI_ReduceSignalsWindow(QWidget *w_parent)
   SignalsTablewidget->setHorizontalHeaderLabels(horizontallabels);
 
   pushButton1 = new QPushButton(myobjectDialog);
-  pushButton1->setGeometry(QRect(20, 476, 100, 25));
+  pushButton1->setGeometry(QRect(20, 528, 100, 25));
   pushButton1->setText("Select File");
 
   pushButton2 = new QPushButton(myobjectDialog);
-  pushButton2->setGeometry(545, 476, 100, 25);
+  pushButton2->setGeometry(575, 528, 100, 25);
   pushButton2->setText("Close");
 
   pushButton3 = new QPushButton(myobjectDialog);
-  pushButton3->setGeometry(200, 476, 100, 25);
+  pushButton3->setGeometry(200, 528, 100, 25);
   pushButton3->setText("Reduce");
   pushButton3->setEnabled(false);
 
   pushButton4 = new QPushButton(myobjectDialog);
-  pushButton4->setGeometry(395, 66, 140, 25);
+  pushButton4->setGeometry(445, 66, 140, 25);
   pushButton4->setText("Select all signals");
   pushButton4->setEnabled(false);
 
   pushButton5 = new QPushButton(myobjectDialog);
-  pushButton5->setGeometry(395, 118, 140, 25);
+  pushButton5->setGeometry(445, 118, 140, 25);
   pushButton5->setText("Deselect all signals");
   pushButton5->setEnabled(false);
 
   pushButton6 = new QPushButton(myobjectDialog);
-  pushButton6->setGeometry(395, 170, 140, 25);
+  pushButton6->setGeometry(445, 170, 140, 25);
   pushButton6->setText("Set samplerate divider:");
   pushButton6->setEnabled(false);
 
@@ -421,6 +427,7 @@ void UI_ReduceSignalsWindow::SelectFileButton()
   spinBox1->setEnabled(false);
   spinBox2->setEnabled(false);
   spinBox3->setEnabled(false);
+  spinBox4->setEnabled(false);
   radioButton1->setChecked(true);
   radioButton1->setEnabled(false);
   radioButton2->setEnabled(false);
@@ -520,6 +527,7 @@ void UI_ReduceSignalsWindow::SelectFileButton()
   spinBox2->setValue(edfhdr->datarecords);
   spinBox1->setMaximum(edfhdr->datarecords);
   spinBox3->setEnabled(true);
+  spinBox4->setEnabled(true);
 
   radioButton1->setEnabled(true);
   radioButton2->setEnabled(true);
@@ -545,7 +553,7 @@ void UI_ReduceSignalsWindow::SelectFileButton()
 
 void UI_ReduceSignalsWindow::StartConversion()
 {
-  int i, j, k,
+  int i, j, k, n,
       new_edfsignals,
       datarecords=0,
       annot_smp_per_record,
@@ -559,6 +567,7 @@ void UI_ReduceSignalsWindow::StartConversion()
       annots_per_datrec=0,
       smplrt,
       tmp,
+      val,
       progress_steps,
       datrecs_processed;
 
@@ -599,6 +608,7 @@ void UI_ReduceSignalsWindow::StartConversion()
   spinBox1->setEnabled(false);
   spinBox2->setEnabled(false);
   spinBox3->setEnabled(false);
+  spinBox4->setEnabled(false);
   radioButton1->setEnabled(false);
   radioButton2->setEnabled(false);
   label2->setEnabled(false);
@@ -619,6 +629,8 @@ void UI_ReduceSignalsWindow::StartConversion()
   annot_smp_per_record = 0;
 
   annot_cnt = 0;
+
+  aa_filter_order = spinBox4->value() - 1;
 
   time_diff = (long long)(spinBox1->value() - 1) * edfhdr->long_data_record_duration;
 
@@ -749,7 +761,25 @@ void UI_ReduceSignalsWindow::StartConversion()
     showpopupmessage("Error", "Malloc error, (readbuf).");
     goto END_2;
   }
+///////////////////////////////////////////////////////////////////
 
+  for(i=0; i<new_edfsignals; i++)
+  {
+    if(dividerlist[i] > 1)
+    {
+      for(j=0; j<aa_filter_order; j++)
+      {
+        filterlist[i][j] = create_ravg_filter(1, dividerlist[i]);
+
+        if(filterlist[i][j] == NULL)
+        {
+          showpopupmessage("Error", "Malloc error, (create_ravg_filter()).");
+
+          goto END_3;
+        }
+      }
+    }
+  }
 ///////////////////////////////////////////////////////////////////
 
   outputpath[0] = 0;
@@ -776,7 +806,7 @@ void UI_ReduceSignalsWindow::StartConversion()
 
   if(!strcmp(outputpath, ""))
   {
-    goto END_2;
+    goto END_3;
   }
 
   get_directory_from_path(recent_savedir, outputpath, MAX_PATH_LENGTH);
@@ -784,14 +814,14 @@ void UI_ReduceSignalsWindow::StartConversion()
   if(mainwindow->file_is_opened(outputpath))
   {
     showpopupmessage("Reduce signals", "Error, selected file is in use.");
-    goto END_2;
+    goto END_3;
   }
 
   outputfile = fopeno(outputpath, "wb");
   if(outputfile==NULL)
   {
     showpopupmessage("Error", "Can not open outputfile for writing.");
-    goto END_2;
+    goto END_3;
   }
 
   new_starttime = edfhdr->utc_starttime + ((time_diff + edfhdr->starttime_offset) / TIME_DIMENSION);
@@ -802,7 +832,7 @@ void UI_ReduceSignalsWindow::StartConversion()
   if(fread(scratchpad, 168, 1, inputfile)!=1)
   {
     showpopupmessage("Error", "Read error (1).");
-    goto END_3;
+    goto END_4;
   }
 
   if(edfhdr->edfplus || edfhdr->bdfplus)
@@ -818,7 +848,7 @@ void UI_ReduceSignalsWindow::StartConversion()
   if(fwrite(scratchpad, 168, 1, outputfile)!=1)
   {
     showpopupmessage("Error", "Write error (1).");
-    goto END_3;
+    goto END_4;
   }
 
   fprintf(outputfile, "%02i.%02i.%02i%02i.%02i.%02i",
@@ -1020,7 +1050,7 @@ void UI_ReduceSignalsWindow::StartConversion()
 
       if(progress.wasCanceled() == true)
       {
-        goto END_3;
+        goto END_4;
       }
     }
 
@@ -1028,7 +1058,7 @@ void UI_ReduceSignalsWindow::StartConversion()
     {
       progress.reset();
       showpopupmessage("Error", "Read error (2).");
-      goto END_3;
+      goto END_4;
     }
 
     if(edfhdr->edf)
@@ -1046,7 +1076,7 @@ void UI_ReduceSignalsWindow::StartConversion()
             {
               progress.reset();
               showpopupmessage("Error", "Write error (4).");
-              goto END_3;
+              goto END_4;
             }
           }
         }
@@ -1060,7 +1090,14 @@ void UI_ReduceSignalsWindow::StartConversion()
 
             for(k=0; k<dividerlist[i]; k++)
             {
-              tmp += *(((signed short *)(readbuf + edfhdr->edfparam[signalslist[i]].buf_offset)) + (dividerlist[i] * j) + k);
+              val = *(((signed short *)(readbuf + edfhdr->edfparam[signalslist[i]].buf_offset)) + (dividerlist[i] * j) + k);
+
+              for(n=0; n<aa_filter_order; n++)
+              {
+                val = run_ravg_filter(val, filterlist[i][n]);
+              }
+
+              tmp += val;
             }
 
             tmp /= dividerlist[i];
@@ -1070,7 +1107,7 @@ void UI_ReduceSignalsWindow::StartConversion()
             {
               progress.reset();
               showpopupmessage("Error", "Write error (4).");
-              goto END_3;
+              goto END_4;
             }
           }
         }
@@ -1092,7 +1129,7 @@ void UI_ReduceSignalsWindow::StartConversion()
             {
               progress.reset();
               showpopupmessage("Error", "Write error (4).");
-              goto END_3;
+              goto END_4;
             }
           }
         }
@@ -1118,6 +1155,11 @@ void UI_ReduceSignalsWindow::StartConversion()
                 var.four[3] = 0x00;
               }
 
+              for(n=0; n<aa_filter_order; n++)
+              {
+                var.one_signed = run_ravg_filter(var.one_signed, filterlist[i][n]);
+              }
+
               l_tmp += var.one_signed;
             }
 
@@ -1129,7 +1171,7 @@ void UI_ReduceSignalsWindow::StartConversion()
             {
               progress.reset();
               showpopupmessage("Error", "Write error (4).");
-              goto END_3;
+              goto END_4;
             }
           }
         }
@@ -1196,7 +1238,7 @@ void UI_ReduceSignalsWindow::StartConversion()
             {
               progress.reset();
               showpopupmessage("Error", "Write error (5).");
-              goto END_3;
+              goto END_4;
             }
 
             tallen += len;
@@ -1235,10 +1277,23 @@ void UI_ReduceSignalsWindow::StartConversion()
   progress.reset();
   showpopupmessage("Ready", "Done.");
 
-END_3:
+END_4:
 
   fclose(outputfile);
   outputfile = NULL;
+
+END_3:
+
+  for(i=0; i<new_edfsignals; i++)
+  {
+    if(dividerlist[i] > 1)
+    {
+      for(j=0; j<aa_filter_order; j++)
+      {
+        free_ravg_filter(filterlist[i][j]);
+      }
+    }
+  }
 
 END_2:
 

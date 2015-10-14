@@ -1,16 +1,67 @@
 
- version 1.55      to be released
+ version 1.57
+ --------------
+
+ - Update annotation markers when switching between real and relative time.
+
+ - Added an EDF converter for the Biox CB-1305-C 3-channel ambulatory ECG recorder/holter.
+
+
+
+ version 1.56      June 25, 2015
+ --------------
+
+ - Fixed a bug that caused the Unisens converter to fail.
+
+ - Added a tool that converts an audiorecording containing an FM modulated ECG waveform to EDF.
+
+ - Added an anti-aliasing filter to the samplerate divider/decimator
+   in the file reducer tool. The order of this filter can be choosen.
+
+ - Make it possible to remove just one filter.
+   (Before, you could only remove all filters.)
+
+ - Make it possible to close just one file.
+   (Before, you could only close all files.)
+
+ - Make the Nihon Kohden converter work with "EEG-1100A V02.00" files.
+
+ - Changed licence to GPLv3.
+
+ - Added a new setting in the settings menu. Now you can set the default amplitude
+   that will be applied when you add new signals. Before the default was always 100.
+
+ - Qt has been updated to 4.8.7.
+
+
+
+ version 1.55      February 7, 2015
  ------------
+
+ - Added a MIT to EDF+ converter (to convert files from PhysioBank at physionet.org).
+   At this moment it supports the "Format 212" and "Format 16".
+   Most of the signal files in PhysioBank are written in format 212.
+   Other formats will be probably added in future.
+   Annotations (in the *.atr or *.ari file) will be read and converted to EDF+ as well.
+
+ - docked Power Spectrum: show percentage when using colorbars,
+   in the settingsmenu, it's now possible to select between auto-gain or manual
+   sensitivity for the colorbars.
 
  - Allow to open multiple docked Power Spectrum windows.
 
  - Correct the screen-offset when inverting a signal that contains a dc-offset.
 
- - Removed a bug that caused a crash when selecting a bessel bandstop/pass filter with an order > 10.
+ - Removed a bug in the "Organize signals" dialog that caused a crash when selecting
+   signals in reverse order.
+
+ - Removed a bug that caused a crash when selecting a bessel bandstop/pass filter with
+   an order > 10.
 
  - Increased the maximum number of filters from 8 to 16.
 
- - Added a Spike filter which can be used to filter out spikes, fast transients or pacemaker impulses.
+ - Added a Spike filter which can be used to filter out spikes, glitches, fast transients or
+   pacemaker impulses.
 
 
 

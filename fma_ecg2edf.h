@@ -3,7 +3,7 @@
 *
 * Author: Teunis van Beelen
 *
-* Copyright (C) 2009, 2010, 2011, 2012, 2013, 2014, 2015 Teunis van Beelen
+* Copyright (C) 2015 Teunis van Beelen
 *
 * Email: teuniz@gmail.com
 *
@@ -26,61 +26,82 @@
 */
 
 
-#ifndef UI_EDFD2EDFCFORM_H
-#define UI_EDFD2EDFCFORM_H
+#ifndef UI_FMA2EDFFORM_H
+#define UI_FMA2EDFFORM_H
 
 
 #include <QtGlobal>
 #include <QApplication>
 #include <QDialog>
+#include <QLabel>
+#include <QLineEdit>
+#include <QDateTimeEdit>
 #include <QPushButton>
 #include <QObject>
-#include <QTextEdit>
 #include <QFileDialog>
+#include <QCheckBox>
+#include <QCursor>
+#include <QDoubleSpinBox>
 #include <QProgressDialog>
-#include <QStyle>
-#if QT_VERSION < 0x050000
-#include <QPlastiqueStyle>
-#include <QWindowsStyle>
-#endif
+#include <QMessageBox>
 #include <QString>
-#include <QByteArray>
+#include <QPixmap>
 
-#include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "global.h"
-#include "check_edf_file.h"
-#include "edf_annotations.h"
+#include "popup_messagewindow.h"
 #include "utils.h"
+#include "edflib.h"
+#include "ravg_filter.h"
 
 
 
 
-class UI_EDFDwindow : public QObject
+class UI_FMaudio2EDFwindow : public QObject
 {
   Q_OBJECT
 
 public:
-
-  UI_EDFDwindow(char *, char *);
+  UI_FMaudio2EDFwindow(char *recent_dir=NULL, char *save_dir=NULL);
 
 private:
 
-QPushButton  *pushButton1,
-             *pushButton2;
+QDialog       *myobjectDialog;
 
-QTextEdit    *textEdit1;
+QPushButton   *pushButton1,
+              *pushButton2;
 
-QDialog      *myobjectDialog;
+QLabel        *PatientnameLabel,
+              *RecordingLabel,
+              *DatetimeLabel;
+
+QLineEdit     *PatientnameLineEdit,
+              *RecordingLineEdit;
+
+QDateTimeEdit *StartDatetimeedit;
 
 char *recent_opendir,
      *recent_savedir;
 
-long long get_datarecord_timestamp(char *);
-void write_values_to_hdr(FILE *, long long, int, struct edfhdrblock *);
-void free_annotations(struct annotationblock *);
+struct ravg_filter_settings *hpf44,
+                            *lpf9a,
+                            *lpf9b,
+                            *lpf9c,
+                            *lpf9d,
+                            *lpf9e,
+                            *lpf200a,
+                            *lpf200b,
+                            *lpf200c,
+                            *lpf200d,
+                            *lpf200e;
+
+void enable_widgets(bool);
+
+bool allocateFilters(int, int, int);
+void deleteFilters(void);
 
 private slots:
 

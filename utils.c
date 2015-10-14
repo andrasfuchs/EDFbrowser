@@ -3,28 +3,24 @@
 *
 * Author: Teunis van Beelen
 *
-* Copyright (C) 2009, 2010, 2011, 2012, 2013, 2014 Teunis van Beelen
+* Copyright (C) 2009, 2010, 2011, 2012, 2013, 2014, 2015 Teunis van Beelen
 *
-* teuniz@gmail.com
+* Email: teuniz@gmail.com
 *
 ***************************************************************************
 *
-* This program is free software; you can redistribute it and/or modify
+* This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation version 2 of the License.
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
 * but WITHOUT ANY WARRANTY; without even the implied warranty of
 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 * GNU General Public License for more details.
 *
-* You should have received a copy of the GNU General Public License along
-* with this program; if not, write to the Free Software Foundation, Inc.,
-* 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-*
-***************************************************************************
-*
-* This version of GPL is at http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
 ***************************************************************************
 */
@@ -34,6 +30,9 @@
 
 
 #include "utils.h"
+
+
+#define FLT_ROUNDS 1
 
 
 
@@ -1598,6 +1597,191 @@ void hextobin(char *dest, const char *str)
 
   dest[i * 8] = 0;
 }
+
+
+int convert_to_metric_suffix(char *buf, double value)
+{
+  double ltmp;
+
+  char suffix=' ';
+
+  if(value < 0)
+  {
+      ltmp = value * -1;
+  }
+  else
+  {
+      ltmp = value;
+  }
+
+  if(ltmp >= 1e12 && ltmp < 1e15)
+  {
+      ltmp = ltmp / 1e12;
+
+      suffix = 'T';
+  }
+  else if(ltmp >= 1e9 && ltmp < 1e12)
+    {
+        ltmp = ltmp / 1e9;
+
+        suffix = 'G';
+    }
+    else if(ltmp >= 1e6 && ltmp < 1e9)
+      {
+          ltmp = ltmp / 1e6;
+
+          suffix = 'M';
+      }
+      else if(ltmp >= 1e3 && ltmp < 1e6)
+        {
+          ltmp /= 1e3;
+
+          suffix = 'K';
+        }
+        else if(ltmp >= 1e-3 && ltmp < 1)
+          {
+            ltmp *= 1e3;
+
+            suffix = 'm';
+          }
+          else if( ltmp >= 1e-6 && ltmp < 1e-3)
+            {
+              ltmp *= 1e6;
+
+              suffix = 'u';
+            }
+            else if(ltmp >= 1e-9 && ltmp < 1e-6)
+              {
+                ltmp *= 1e9;
+
+                suffix = 'n';
+              }
+              else if(ltmp >= 1e-12 && ltmp < 1e-9)
+                {
+                  ltmp *= 1e12;
+
+                  suffix = 'p';
+                }
+
+  if(value >= 0)
+  {
+    return sprintf(buf, "%.3f%c", ltmp, suffix);
+  }
+
+  if(value < 0)
+  {
+    return sprintf(buf, "%.3f%c", ltmp * -1, suffix);
+  }
+
+  strcpy(buf, "0");
+
+  return 1;
+}
+
+
+double round_up_step125(double val)
+{
+  int i, exp=0;
+
+  double ltmp;
+
+   while(val < 1)
+  {
+    val *= 10;
+
+    exp--;
+  }
+
+  while(val >= 10)
+  {
+    val /= 10;
+
+    exp++;
+  }
+
+  val = nearbyint(val);
+
+  if(val >= 5)
+  {
+    ltmp = 10;
+  }
+  else if(val >= 2)
+    {
+      ltmp = 5;
+    }
+    else
+    {
+      ltmp = 2;
+    }
+
+  for(i=0; i<exp; i++)
+  {
+    ltmp *= 10;
+  }
+
+  for(i=0; i>exp; i--)
+  {
+    ltmp /= 10;
+  }
+
+  return ltmp;
+}
+
+
+double round_down_step125(double val)
+{
+  int i, exp=0;
+
+  double ltmp;
+
+  while(val < 1)
+  {
+    val *= 10;
+
+    exp--;
+  }
+
+  while(val >= 10)
+  {
+    val /= 10;
+
+    exp++;
+  }
+
+  val = nearbyint(val);
+
+  if(val <= 1)
+  {
+    ltmp = 0.5;
+  }
+  else if(val <= 2)
+    {
+      ltmp = 1;
+    }
+    else if(val <= 5)
+      {
+        ltmp = 2;
+      }
+      else
+      {
+        ltmp = 5;
+      }
+
+  for(i=0; i<exp; i++)
+  {
+    ltmp *= 10;
+  }
+
+  for(i=0; i>exp; i--)
+  {
+    ltmp /= 10;
+  }
+
+  return ltmp;
+}
+
+
+
 
 
 

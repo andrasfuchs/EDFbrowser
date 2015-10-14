@@ -3,28 +3,24 @@
 *
 * Author: Teunis van Beelen
 *
-* Copyright (C) 2008, 2009, 2010, 2011, 2012, 2013, 2014 Teunis van Beelen
+* Copyright (C) 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015 Teunis van Beelen
 *
-* teuniz@gmail.com
+* Email: teuniz@gmail.com
 *
 ***************************************************************************
 *
-* This program is free software; you can redistribute it and/or modify
+* This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation version 2 of the License.
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
 * but WITHOUT ANY WARRANTY; without even the implied warranty of
 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 * GNU General Public License for more details.
 *
-* You should have received a copy of the GNU General Public License along
-* with this program; if not, write to the Free Software Foundation, Inc.,
-* 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-*
-***************************************************************************
-*
-* This version of GPL is at http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
 ***************************************************************************
 */
@@ -694,9 +690,9 @@ struct date_time_struct date_time;
     p++;
     if(p) p++;
 
-    for(j=0; j<signalcomp[i]->spike_filter_cnt; j++)
+    if(signalcomp[i]->spike_filter)
     {
-      p += sprintf(scratchpad + p, "Spike:%f", signalcomp[i]->spike_filter[j]->velocity);
+      p += sprintf(scratchpad + p, "Spike:%f", signalcomp[i]->spike_filter->velocity);
 
       for(k=(p-1); k>0; k--)
       {
@@ -941,17 +937,21 @@ struct date_time_struct date_time;
             dig_value += temp;
           }
 
-          for(p=0; p<signalcomp[i]->spike_filter_cnt; p++)
+          if(signalcomp[i]->spike_filter)
           {
             if(smpls_written[i]==signalcomp[i]->sample_start)
             {
-              if(mainwindow->edfheaderlist[signalcomp[i]->filenum]->viewtime==0)
+              if(mainwindow->edfheaderlist[signalcomp[i]->filenum]->viewtime<=0)
               {
-                reset_spike_filter(signalcomp[i]->spike_filter[p]);
+                reset_spike_filter(signalcomp[i]->spike_filter);
+              }
+              else
+              {
+                spike_filter_restore_buf(signalcomp[i]->spike_filter);
               }
             }
 
-            dig_value = run_spike_filter(dig_value, signalcomp[i]->spike_filter[p]);
+            dig_value = run_spike_filter(dig_value, signalcomp[i]->spike_filter);
           }
 
           for(p=0; p<signalcomp[i]->filter_cnt; p++)

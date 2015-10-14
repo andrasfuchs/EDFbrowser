@@ -94,6 +94,7 @@ HEADERS += adjustfiltersettings.h
 HEADERS += import_annotations.h
 HEADERS += ravg_filter.h
 HEADERS += wav2edf.h
+HEADERS += fma_ecg2edf.h
 HEADERS += averager_dialog.h
 HEADERS += averager_curve_wnd.h
 HEADERS += ecg_filter.h
@@ -111,6 +112,8 @@ HEADERS += unisens2edf.h
 HEADERS += date_time_stamp_parser.h
 HEADERS += spike_filter.h
 HEADERS += spike_filter_dialog.h
+HEADERS += mit2edf.h
+HEADERS += biox2edf.h
 
 HEADERS += third_party/fidlib/fidlib.h
 HEADERS += third_party/fidlib/fidmkf.h
@@ -178,6 +181,7 @@ SOURCES += adjustfiltersettings.cpp
 SOURCES += import_annotations.cpp
 SOURCES += ravg_filter.cpp
 SOURCES += wav2edf.cpp
+SOURCES += fma_ecg2edf.cpp
 SOURCES += averager_dialog.cpp
 SOURCES += averager_curve_wnd.cpp
 SOURCES += ecg_filter.cpp
@@ -195,6 +199,8 @@ SOURCES += unisens2edf.cpp
 SOURCES += date_time_stamp_parser.c
 SOURCES += spike_filter.cpp
 SOURCES += spike_filter_dialog.cpp
+SOURCES += mit2edf.cpp
+SOURCES += biox2edf.cpp
 
 SOURCES += third_party/fidlib/fidlib.c
 
@@ -207,6 +213,8 @@ RESOURCES = images.qrc
 win32 {
  RC_FILE = edfbrowser.rc
 }
+
+QMAKE_CXXFLAGS += -Wextra -Wshadow -Wformat-nonliteral -Wformat-security -Wtype-limits -Wfatal-errors
 
 unix {
 target.path = /usr/bin

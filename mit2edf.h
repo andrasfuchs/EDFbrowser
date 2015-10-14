@@ -3,7 +3,7 @@
 *
 * Author: Teunis van Beelen
 *
-* Copyright (C) 2009, 2010, 2011, 2012, 2013, 2014, 2015 Teunis van Beelen
+* Copyright (C) 2014, 2015 Teunis van Beelen
 *
 * Email: teuniz@gmail.com
 *
@@ -26,8 +26,8 @@
 */
 
 
-#ifndef UI_EDFD2EDFCFORM_H
-#define UI_EDFD2EDFCFORM_H
+#ifndef UI_MIT2EDFFORM_H
+#define UI_MIT2EDFFORM_H
 
 
 #include <QtGlobal>
@@ -37,12 +37,13 @@
 #include <QObject>
 #include <QTextEdit>
 #include <QFileDialog>
-#include <QProgressDialog>
+#include <QCursor>
 #include <QStyle>
 #if QT_VERSION < 0x050000
 #include <QPlastiqueStyle>
 #include <QWindowsStyle>
 #endif
+#include <QProgressDialog>
 #include <QString>
 #include <QByteArray>
 
@@ -51,22 +52,21 @@
 #include <string.h>
 
 #include "global.h"
-#include "check_edf_file.h"
-#include "edf_annotations.h"
 #include "utils.h"
+#include "edflib.h"
+#include "utc_date_time.h"
 
 
 
-
-class UI_EDFDwindow : public QObject
+class UI_MIT2EDFwindow : public QObject
 {
   Q_OBJECT
 
 public:
-
-  UI_EDFDwindow(char *, char *);
+  UI_MIT2EDFwindow(char *recent_dir=NULL, char *save_dir=NULL);
 
 private:
+
 
 QPushButton  *pushButton1,
              *pushButton2;
@@ -75,12 +75,23 @@ QTextEdit    *textEdit1;
 
 QDialog      *myobjectDialog;
 
-char *recent_opendir,
-     *recent_savedir;
+char  *recent_opendir,
+      *recent_savedir;
 
-long long get_datarecord_timestamp(char *);
-void write_values_to_hdr(FILE *, long long, int, struct edfhdrblock *);
-void free_annotations(struct annotationblock *);
+struct {
+        int chns;
+        int sf;
+        int sf_div;
+        int sf_block;
+        long long smp_period;
+        int format[MAXSIGNALS];
+        double adc_gain[MAXSIGNALS];
+        int adc_resolution[MAXSIGNALS];
+        int adc_zero[MAXSIGNALS];
+        int init_val[MAXSIGNALS];
+        char label[MAXSIGNALS][17];
+      } mit_hdr;
+
 
 private slots:
 

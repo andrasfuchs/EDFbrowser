@@ -3,28 +3,24 @@
 *
 * Author: Teunis van Beelen
 *
-* Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 Teunis van Beelen
+* Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015 Teunis van Beelen
 *
-* teuniz@gmail.com
+* Email: teuniz@gmail.com
 *
 ***************************************************************************
 *
-* This program is free software; you can redistribute it and/or modify
+* This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation version 2 of the License.
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
 * but WITHOUT ANY WARRANTY; without even the implied warranty of
 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 * GNU General Public License for more details.
 *
-* You should have received a copy of the GNU General Public License along
-* with this program; if not, write to the Free Software Foundation, Inc.,
-* 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-*
-***************************************************************************
-*
-* This version of GPL is at http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
 ***************************************************************************
 */
@@ -197,14 +193,10 @@ void UI_SignalChooser::signalUp()
       sigcomp_nr,
       selected_signals[MAXSIGNALS];
 
-  QList<QListWidgetItem *> selectedlist;
-
   struct signalcompblock *signalcomp;
 
 
-  selectedlist = list->selectedItems();
-
-  n = selectedlist.size();
+  n = get_selectionlist(selected_signals);
 
   if(n < 1)
   {
@@ -218,22 +210,20 @@ void UI_SignalChooser::signalUp()
     return;
   }
 
-  if(selectedlist.at(0)->data(Qt::UserRole).toInt() < 1)
+  if(selected_signals[0] < 1)
   {
     return;
   }
 
   for(i=0; i<n; i++)
   {
-    sigcomp_nr = selectedlist.at(i)->data(Qt::UserRole).toInt();
+    sigcomp_nr = selected_signals[i];
 
     signalcomp = mainwindow->signalcomp[sigcomp_nr];
 
     mainwindow->signalcomp[sigcomp_nr] = mainwindow->signalcomp[sigcomp_nr - 1];
 
     mainwindow->signalcomp[sigcomp_nr - 1] = signalcomp;
-
-    selected_signals[i] = sigcomp_nr;
   }
 
   load_signalcomps();
@@ -254,14 +244,10 @@ void UI_SignalChooser::signalDown()
       sigcomp_nr,
       selected_signals[MAXSIGNALS];
 
-  QList<QListWidgetItem *> selectedlist;
-
   struct signalcompblock *signalcomp;
 
 
-  selectedlist = list->selectedItems();
-
-  n = selectedlist.size();
+  n = get_selectionlist(selected_signals);
 
   if(n < 1)
   {
@@ -275,14 +261,14 @@ void UI_SignalChooser::signalDown()
     return;
   }
 
-  if(selectedlist.at(n - 1)->data(Qt::UserRole).toInt() > (size - 2))
+  if(selected_signals[n-1] > (size - 2))
   {
     return;
   }
 
   for(i=(n-1); i>=0; i--)
   {
-    sigcomp_nr = selectedlist.at(i)->data(Qt::UserRole).toInt();
+    sigcomp_nr = selected_signals[i];
 
     signalcomp = mainwindow->signalcomp[sigcomp_nr];
 
@@ -304,10 +290,9 @@ void UI_SignalChooser::signalDown()
 }
 
 
-void UI_SignalChooser::signalDelete()
+int UI_SignalChooser::get_selectionlist(int *slist)
 {
-  int i, j, k, n, p,
-      sigcomp_nr;
+  int i, j, n, tmp;
 
   QListWidgetItem *item;
 
@@ -320,14 +305,51 @@ void UI_SignalChooser::signalDelete()
 
   if(n < 1)
   {
+    return 0;
+  }
+
+  for(i=0; i<n; i++)
+  {
+    item = selectedlist.at(i);
+
+    slist[i] = item->data(Qt::UserRole).toInt();
+
+    for(j=i; j>0; j--)  // Sort the list!!
+    {
+      if(slist[j] > slist[j-1])
+      {
+        break;
+      }
+
+      tmp = slist[j];
+
+      slist[j] = slist[j-1];
+
+      slist[j-1] = tmp;
+    }
+  }
+
+  return n;
+}
+
+
+void UI_SignalChooser::signalDelete()
+{
+  int i, j, k, n, p,
+      sigcomp_nr,
+      selected_signr[MAXSIGNALS];
+
+
+  n = get_selectionlist(selected_signr);
+
+  if(n < 1)
+  {
     return;
   }
 
   for(k=0; k<n; k++)
   {
-    item = selectedlist.at(k);
-
-    sigcomp_nr = item->data(Qt::UserRole).toInt();
+    sigcomp_nr = selected_signr[k];
 
     sigcomp_nr -= k;
 
@@ -364,6 +386,18 @@ void UI_SignalChooser::signalDelete()
       }
     }
 
+    for(i=0; i<MAXZSCOREDIALOGS; i++)
+    {
+      p = mainwindow->signalcomp[sigcomp_nr]->zscoredialog[i];
+
+      if(p != 0)
+      {
+        delete mainwindow->zscoredialog[p - 1];
+
+        mainwindow->zscoredialog[p - 1] = NULL;
+      }
+    }
+
     if(mainwindow->signalcomp[sigcomp_nr]->hascursor2)
     {
       mainwindow->maincurve->crosshair_2.active = 0;
@@ -395,6 +429,13 @@ void UI_SignalChooser::signalDelete()
     }
 
     mainwindow->signalcomp[sigcomp_nr]->filter_cnt = 0;
+
+    if(mainwindow->signalcomp[sigcomp_nr]->spike_filter != NULL)
+    {
+      free_spike_filter(mainwindow->signalcomp[sigcomp_nr]->spike_filter);
+    }
+
+    mainwindow->signalcomp[sigcomp_nr]->spike_filter = NULL;
 
     for(j=0; j<mainwindow->signalcomp[sigcomp_nr]->ravg_filter_cnt; j++)
     {
@@ -442,30 +483,22 @@ void UI_SignalChooser::signalDelete()
 
 void UI_SignalChooser::signalInvert()
 {
-  int i, j, k, n,
+  int i, n,
       selected_signals[MAXSIGNALS];
 
-  QList<QListWidgetItem *> selectedlist;
 
-
-  selectedlist = list->selectedItems();
-
-  n = selectedlist.size();
+  n = get_selectionlist(selected_signals);
 
   if(n < 1)
   {
     return;
   }
 
-  for(k=0; k<n; k++)
+  for(i=0; i<n; i++)
   {
-    j = selectedlist.at(k)->data(Qt::UserRole).toInt();
+    mainwindow->signalcomp[selected_signals[i]]->polarity *= -1;
 
-    selected_signals[k] = j;
-
-    mainwindow->signalcomp[j]->polarity *= -1;
-
-    mainwindow->signalcomp[j]->screen_offset *= -1;
+    mainwindow->signalcomp[selected_signals[i]]->screen_offset *= -1;
   }
 
   load_signalcomps();

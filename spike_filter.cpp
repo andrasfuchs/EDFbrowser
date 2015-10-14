@@ -3,28 +3,24 @@
 *
 * Author: Teunis van Beelen
 *
-* Copyright (C) 2014 Teunis van Beelen
+* Copyright (C) 2014, 2015 Teunis van Beelen
 *
-* teuniz@gmail.com
+* Email: teuniz@gmail.com
 *
 ***************************************************************************
 *
-* This program is free software; you can redistribute it and/or modify
+* This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation version 2 of the License.
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
 * but WITHOUT ANY WARRANTY; without even the implied warranty of
 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 * GNU General Public License for more details.
 *
-* You should have received a copy of the GNU General Public License along
-* with this program; if not, write to the Free Software Foundation, Inc.,
-* 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-*
-***************************************************************************
-*
-* This version of GPL is at http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
 ***************************************************************************
 */
@@ -37,13 +33,13 @@
 
 
 
-struct spike_filter_settings * create_spike_filter(double sf, double sv, int ho)
+struct spike_filter_settings * create_spike_filter(int sf, double sv, int ho, int *pace_detected)
 {
   struct spike_filter_settings *st;
 
-  if(sf < 1000.0)  return NULL;
+  if((sf < 4000) || (sf > 128000)) return NULL;
 
-  if((sv < 0.0001) || (sv > 10E9))  return NULL;
+  if((sv < 1E-10) || (sv > 1E13))  return NULL;
 
   if((ho < 10) || (ho > 1000))  return NULL;
 
@@ -52,33 +48,219 @@ struct spike_filter_settings * create_spike_filter(double sf, double sv, int ho)
 
   st->sf = sf;    // samplefrequency
 
-  st->cutoff_set = sf / 1000.0;  // set cutoff time to 1 milli-Second (ideally this should be equal to the pace pulsewidth)
+  st->n_max = sf / 2000;  // Velocity is measured between sample n and sample n - n_max (tdiff is 0.5 mSec.)
 
-  st->holdoff_set = sf / (1000.0 / (double)ho);  // 100 milliSec. holdoff time (do not try to detect another pace impulse during this time)
+  st->bufsz = (sf * 6) / 1000;  // buffer length is 6 milli-Seconds
 
-  st->holdoff_ms = ho;
+  st->flank_det_set = (sf * 3) / 1000;  // accept only spikes with a maximum width of 3 milli-Seconds
 
-  st->velocity = sv / sf;         // V per second (if the difference between two consecutive samples is more than
-                                  //               "velocity", a pace impulse is detected)
+  st->holdoff_set = (sf * ho) / 1000;  // 100 milliSec. holdoff time (do not try to detect another spike during this time)
+
+  st->velocity = (sv / (sf / 2000)) * st->n_max;
+
+  st->pd_sig = pace_detected;
+
+  st->spike_pos = -1;
+
   return(st);
 }
 
 
 void reset_spike_filter(struct spike_filter_settings *st)
 {
-  st->cutoff_set = st->sf / 1000.0;
-
-  st->holdoff_set = st->sf / (1000.0 / (double)st->holdoff_ms);
-
   st->cutoff = 0;
+
+  st->cutoff_sav = 0;
 
   st->holdoff = 0;
 
-  st->second_flank_det = 0;
+  st->holdoff_sav = 0;
 
-  st->p_det_1 = 0;
+  st->flank_det = 0;
+
+  st->flank_det_sav = 0;
 
   st->polarity = 0;
+
+  st->polarity_sav = 0;
+
+  for(int i=0; i<st->n_max; i++)  st->array[i] = 0;
+
+  st->idx = 0;
+
+  st->idx_sav = 0;
+
+  st->run_in = 0;
+
+  st->run_in_sav = 0;
+
+  st->spikewidth = 0;
+
+  st->spikewidth_sav = 0;
+
+  st->spike_pos = -1;
+
+  st->spike_pos_sav = -1;
+
+  if(st->pd_sig)  *st->pd_sig = SPIKEFILTER_SPIKE_NO;
+}
+
+
+void spike_filter_save_buf(struct spike_filter_settings *st)
+{
+  st->holdoff_sav = st->holdoff;
+  st->cutoff_sav = st->cutoff;
+  for(int i=0; i<st->n_max; i++) st->array_sav[i] = st->array[i];
+  st->idx_sav = st->idx;
+  st->base_smpl_sav = st->base_smpl;
+  st->polarity_sav = st->polarity;
+  st->flank_det_sav = st->flank_det;
+  st->run_in_sav = st->run_in;
+  st->spikewidth_sav = st->spikewidth;
+  st->spike_pos_sav = st->spike_pos;
+}
+
+
+void spike_filter_restore_buf(struct spike_filter_settings *st)
+{
+  st->holdoff = st->holdoff_sav;
+  st->cutoff = st->cutoff_sav;
+  for(int i=0; i<st->n_max; i++) st->array[i] = st->array_sav[i];
+  st->idx = st->idx_sav;
+  st->base_smpl = st->base_smpl_sav;
+  st->polarity = st->polarity_sav;
+  st->flank_det = st->flank_det_sav;
+  st->run_in = st->run_in_sav;
+  st->spikewidth = st->spikewidth_sav;
+  st->spike_pos = st->spike_pos_sav;
+}
+
+
+double run_spike_filter(double val, struct spike_filter_settings *st)
+{
+  int k,
+      p_det=0,
+      pol=1,
+      tmp;
+
+  if(st->run_in < st->bufsz)
+  {
+    st->run_in++;
+
+    st->array[st->idx] = val;
+
+    st->idx++;
+
+    st->idx %= st->bufsz;
+
+    if(st->pd_sig != NULL)
+    {
+      *st->pd_sig = SPIKEFILTER_SPIKE_NO;
+    }
+
+    return val;
+  }
+
+  if(st->flank_det)  st->flank_det--;
+
+  if(st->holdoff)  st->holdoff--;
+
+  if(st->cutoff)
+  {
+    st->cutoff--;
+
+    st->array[st->idx] = val;
+
+    st->idx++;
+
+    st->idx %= st->bufsz;
+
+    if(st->pd_sig != NULL)
+    {
+      *st->pd_sig = SPIKEFILTER_SPIKE_NO;
+    }
+
+    return st->base_smpl;  // replace the sample with the baseline value because we are in the spike period
+  }
+
+  if(st->spike_pos == st->idx)
+  {
+    st->spike_pos = -1;
+
+    st->cutoff = st->spikewidth;
+
+    st->array[st->idx] = val;
+
+    st->idx++;
+
+    st->idx %= st->bufsz;
+
+    if(st->pd_sig != NULL)
+    {
+      *st->pd_sig = SPIKEFILTER_SPIKE_ONSET;
+    }
+
+    return st->base_smpl;  // replace the sample with the baseline value because we are in the spike period
+  }
+
+  if(!st->holdoff)
+  {
+    k = (st->idx + st->bufsz - st->n_max) % st->bufsz;
+
+    tmp = val - st->array[k];  // check if there is a fast change between two samples
+
+    if(tmp < 0)
+    {
+      tmp *= -1;  // we want an absolute value
+
+      pol = -1;
+    }
+
+    if(tmp > st->velocity)  // change is fast enough to trigger a spike detect?
+    {
+      p_det = pol;
+    }
+
+    if(p_det)
+    {
+      if(st->flank_det)
+      {
+        if(pol != st->polarity)  // we found the second flank of the spike
+        {
+          st->spikewidth = st->flank_det_set - st->flank_det + st->n_max;
+
+          st->spike_pos = (st->idx + st->bufsz - st->spikewidth) % st->bufsz;
+
+          st->spikewidth += (st->n_max * 2);
+
+          st->holdoff = st->holdoff_set;  // set the holdoff timer
+
+          st->base_smpl = st->array[st->spike_pos];
+
+          st->flank_det = 0;
+        }
+      }
+      else  // we found the first flank of a new spike
+      {
+        st->polarity = pol;
+
+        st->flank_det = st->flank_det_set;
+      }
+    }
+  }
+
+  st->array[st->idx] = val;
+
+  st->idx++;
+
+  st->idx %= st->bufsz;
+
+  if(st->pd_sig != NULL)
+  {
+    *st->pd_sig = SPIKEFILTER_SPIKE_NO;
+  }
+
+  return st->array[st->idx];
 }
 
 
@@ -86,7 +268,7 @@ struct spike_filter_settings * create_spike_filter_copy(struct spike_filter_sett
 {
   struct spike_filter_settings *settings;
 
-  settings = (struct spike_filter_settings *) calloc(1, sizeof(struct spike_filter_settings));
+  settings = (struct spike_filter_settings *) malloc(sizeof(struct spike_filter_settings));
   if(settings==NULL)
   {
     return(NULL);
@@ -97,108 +279,12 @@ struct spike_filter_settings * create_spike_filter_copy(struct spike_filter_sett
 }
 
 
-double run_spike_filter(double x, struct spike_filter_settings *st)
-{
-  int p_det=0,
-      pol=1;
-
-  double d_tmp;
-
-  d_tmp = x - st->smpl_1;  // check if there is a fast change between two consecutive samples
-
-  if(d_tmp < 0.0)
-  {
-    d_tmp *= -1.0;  // we want an absolute value
-
-    pol = -1;
-  }
-
-  if(d_tmp > st->velocity)  // change is fast enough to trigger a pace detect?
-  {
-    p_det = pol;
-  }
-
-  if(st->cutoff)  // are we in the pace impulse suppression period?
-  {
-    st->cutoff--;
-
-    st->holdoff--;
-
-    if(p_det && (pol != st->polarity) && (!st->second_flank_det))  // did we detect the second flank of the pace impulse?
-    {
-      if((st->cutoff_set > (st->sf / 500)) && ((st->cutoff_set - st->cutoff) > (st->sf / 1000)))  // adapt the suppression period to the measured pulsewidth
-      {
-        st->cutoff_set -= st->sf / 1000;  // decrease impulse suppression period with 1 milliSecond
-
-        st->second_flank_det = 1;
-      }
-    }
-
-    st->smpl_2 = st->smpl_1;
-
-    st->smpl_1 = x;
-
-    return st->smpl_base;  // replace the sample with the baseline value because we are in the pace impulse period
-  }
-
-  if(st->holdoff)  // are we in the holdoff period?
-  {
-    st->holdoff--;
-
-    if(p_det && (pol != st->polarity) && (!st->second_flank_det))  // did we detect the second flank of the pace impulse?
-    {
-      st->cutoff_set += st->sf / 1000;  // increase impulse suppression period with 1 milliSecond
-
-      if(st->cutoff_set > (st->sf / 20))
-      {
-        st->cutoff_set = st->sf / 20;  // limit the maximum suppression period to 50 milliSeconds
-      }
-
-      st->second_flank_det = 1;
-    }
-
-    st->smpl_2 = st->smpl_1;
-
-    st->smpl_1 = x;
-
-    return st->smpl_2;
-  }
-
-  if((p_det) && (st->p_det_1 == p_det))
-  {
-    st->smpl_base = st->smpl_2;
-
-    st->holdoff = st->holdoff_set;  // set the holdoff timer
-
-    st->cutoff = st->cutoff_set;  // set the suppression period timer
-
-    st->polarity = pol;
-
-    st->second_flank_det = 0;
-
-    st->p_det_1 = 0;
-
-    st->smpl_2 = st->smpl_1;
-
-    st->smpl_1 = x;
-
-    return st->smpl_base;
-  }
-
-  st->p_det_1 = p_det;
-
-  st->smpl_2 = st->smpl_1;
-
-  st->smpl_1 = x;
-
-  return st->smpl_2;
-}
-
-
 void free_spike_filter(struct spike_filter_settings *st)
 {
   free(st);
 }
+
+
 
 
 

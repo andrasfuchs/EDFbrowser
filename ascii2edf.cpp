@@ -3,28 +3,24 @@
 *
 * Author: Teunis van Beelen
 *
-* Copyright (C) 2008, 2009, 2010, 2011, 2012, 2013, 2014 Teunis van Beelen
+* Copyright (C) 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015 Teunis van Beelen
 *
-* teuniz@gmail.com
+* Email: teuniz@gmail.com
 *
 ***************************************************************************
 *
-* This program is free software; you can redistribute it and/or modify
+* This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation version 2 of the License.
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
 * but WITHOUT ANY WARRANTY; without even the implied warranty of
 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 * GNU General Public License for more details.
 *
-* You should have received a copy of the GNU General Public License along
-* with this program; if not, write to the Free Software Foundation, Inc.,
-* 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-*
-***************************************************************************
-*
-* This version of GPL is at http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
 ***************************************************************************
 */
@@ -1326,7 +1322,7 @@ void UI_ASCII2EDFapp::loadbuttonpressed()
       temp;
 
   char path[MAX_PATH_LENGTH],
-       *content;
+       result[XML_STRBUFLEN];
 
   double f_temp;
 
@@ -1349,7 +1345,7 @@ void UI_ASCII2EDFapp::loadbuttonpressed()
     return;
   }
 
-  if(strcmp(xml_hdl->elementname, PROGRAM_NAME "_ascii2edf_template"))
+  if(strcmp(xml_hdl->elementname[xml_hdl->level], PROGRAM_NAME "_ascii2edf_template"))
   {
     QMessageBox messagewindow(QMessageBox::Critical, "Error", "There seems to be an error in this template.");
     messagewindow.exec();
@@ -1364,34 +1360,36 @@ void UI_ASCII2EDFapp::loadbuttonpressed()
     xml_close(xml_hdl);
     return;
   }
-  content = xml_get_content_of_element(xml_hdl);
-  if(!strcmp(content, "tab"))
+  if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
+  {
+    QMessageBox messagewindow(QMessageBox::Critical, "Error", "There seems to be an error in this template.");
+    messagewindow.exec();
+    xml_close(xml_hdl);
+    return;
+  }
+  if(!strcmp(result, "tab"))
   {
     SeparatorLineEdit->setText("tab");
-    free(content);
   }
   else
   {
-    if(strlen(content)!=1)
+    if(strlen(result)!=1)
     {
       QMessageBox messagewindow(QMessageBox::Critical, "Error", "There seems to be an error in this template.");
       messagewindow.exec();
-      free(content);
       xml_close(xml_hdl);
       return;
     }
     else
     {
-      if((content[0]<32)||(content[0]>126))
+      if((result[0]<32)||(result[0]>126))
       {
         QMessageBox messagewindow(QMessageBox::Critical, "Error", "There seems to be an error in this template.");
         messagewindow.exec();
-        free(content);
         xml_close(xml_hdl);
         return;
       }
-      SeparatorLineEdit->setText(content);
-      free(content);
+      SeparatorLineEdit->setText(result);
     }
   }
 
@@ -1404,9 +1402,14 @@ void UI_ASCII2EDFapp::loadbuttonpressed()
     xml_close(xml_hdl);
     return;
   }
-  content = xml_get_content_of_element(xml_hdl);
-  temp = atoi(content);
-  free(content);
+  if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
+  {
+    QMessageBox messagewindow(QMessageBox::Critical, "Error", "There seems to be an error in this template.");
+    messagewindow.exec();
+    xml_close(xml_hdl);
+    return;
+  }
+  temp = atoi(result);
   if((temp<1)||(temp>256))
   {
     QMessageBox messagewindow(QMessageBox::Critical, "Error", "There seems to be an error in this template.");
@@ -1427,9 +1430,14 @@ void UI_ASCII2EDFapp::loadbuttonpressed()
     xml_close(xml_hdl);
     return;
   }
-  content = xml_get_content_of_element(xml_hdl);
-  temp = atoi(content);
-  free(content);
+  if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
+  {
+    QMessageBox messagewindow(QMessageBox::Critical, "Error", "There seems to be an error in this template.");
+    messagewindow.exec();
+    xml_close(xml_hdl);
+    return;
+  }
+  temp = atoi(result);
   if((temp<1)||(temp>100))
   {
     QMessageBox messagewindow(QMessageBox::Critical, "Error", "There seems to be an error in this template.");
@@ -1448,9 +1456,14 @@ void UI_ASCII2EDFapp::loadbuttonpressed()
     xml_close(xml_hdl);
     return;
   }
-  content = xml_get_content_of_element(xml_hdl);
-  f_temp = atof(content);
-  free(content);
+  if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
+  {
+    QMessageBox messagewindow(QMessageBox::Critical, "Error", "There seems to be an error in this template.");
+    messagewindow.exec();
+    xml_close(xml_hdl);
+    return;
+  }
+  f_temp = atof(result);
   if((f_temp<0.0000001)||(f_temp>1000000.0))
   {
     QMessageBox messagewindow(QMessageBox::Critical, "Error", "There seems to be an error in this template.");
@@ -1464,9 +1477,14 @@ void UI_ASCII2EDFapp::loadbuttonpressed()
 
   if(!(xml_goto_nth_element_inside(xml_hdl, "autophysicalmaximum", 0)))
   {
-    content = xml_get_content_of_element(xml_hdl);
-    autoPhysicalMaximum = atoi(content);
-    free(content);
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
+    {
+      QMessageBox messagewindow(QMessageBox::Critical, "Error", "There seems to be an error in this template.");
+      messagewindow.exec();
+      xml_close(xml_hdl);
+      return;
+    }
+    autoPhysicalMaximum = atoi(result);
     if((autoPhysicalMaximum<0)||(autoPhysicalMaximum>1))
     {
       autoPhysicalMaximum = 1;
@@ -1484,9 +1502,14 @@ void UI_ASCII2EDFapp::loadbuttonpressed()
 
   if(!(xml_goto_nth_element_inside(xml_hdl, "edf_format", 0)))
   {
-    content = xml_get_content_of_element(xml_hdl);
-    edf_format = atoi(content);
-    free(content);
+  if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
+  {
+    QMessageBox messagewindow(QMessageBox::Critical, "Error", "There seems to be an error in this template.");
+    messagewindow.exec();
+    xml_close(xml_hdl);
+    return;
+  }
+    edf_format = atoi(result);
     if((edf_format<0)||(edf_format>1))
     {
       edf_format = 0;
@@ -1519,12 +1542,17 @@ void UI_ASCII2EDFapp::loadbuttonpressed()
       xml_close(xml_hdl);
       return;
     }
-    content = xml_get_content_of_element(xml_hdl);
-    if(!strcmp(content, "0"))
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
+    {
+      QMessageBox messagewindow(QMessageBox::Critical, "Error", "There seems to be an error in this template.");
+      messagewindow.exec();
+      xml_close(xml_hdl);
+      return;
+    }
+    if(!strcmp(result, "0"))
     {
       ((QCheckBox *)SignalsTablewidget->cellWidget(i, 0))->setCheckState(Qt::Unchecked);
     }
-    free(content);
 
     xml_go_up(xml_hdl);
 
@@ -1535,9 +1563,14 @@ void UI_ASCII2EDFapp::loadbuttonpressed()
       xml_close(xml_hdl);
       return;
     }
-    content = xml_get_content_of_element(xml_hdl);
-    ((QLineEdit *)SignalsTablewidget->cellWidget(i, 1))->setText(content);
-    free(content);
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
+    {
+      QMessageBox messagewindow(QMessageBox::Critical, "Error", "There seems to be an error in this template.");
+      messagewindow.exec();
+      xml_close(xml_hdl);
+      return;
+    }
+    ((QLineEdit *)SignalsTablewidget->cellWidget(i, 1))->setText(result);
 
     xml_go_up(xml_hdl);
 
@@ -1548,9 +1581,14 @@ void UI_ASCII2EDFapp::loadbuttonpressed()
       xml_close(xml_hdl);
       return;
     }
-    content = xml_get_content_of_element(xml_hdl);
-    ((QLineEdit *)SignalsTablewidget->cellWidget(i, 2))->setText(content);
-    free(content);
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
+    {
+      QMessageBox messagewindow(QMessageBox::Critical, "Error", "There seems to be an error in this template.");
+      messagewindow.exec();
+      xml_close(xml_hdl);
+      return;
+    }
+    ((QLineEdit *)SignalsTablewidget->cellWidget(i, 2))->setText(result);
 
     xml_go_up(xml_hdl);
 
@@ -1561,9 +1599,14 @@ void UI_ASCII2EDFapp::loadbuttonpressed()
       xml_close(xml_hdl);
       return;
     }
-    content = xml_get_content_of_element(xml_hdl);
-    ((QLineEdit *)SignalsTablewidget->cellWidget(i, 3))->setText(content);
-    free(content);
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
+    {
+      QMessageBox messagewindow(QMessageBox::Critical, "Error", "There seems to be an error in this template.");
+      messagewindow.exec();
+      xml_close(xml_hdl);
+      return;
+    }
+    ((QLineEdit *)SignalsTablewidget->cellWidget(i, 3))->setText(result);
 
     xml_go_up(xml_hdl);
 
@@ -1574,9 +1617,14 @@ void UI_ASCII2EDFapp::loadbuttonpressed()
       xml_close(xml_hdl);
       return;
     }
-    content = xml_get_content_of_element(xml_hdl);
-    ((QDoubleSpinBox *)SignalsTablewidget->cellWidget(i, 4))->setValue(atof(content));
-    free(content);
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
+    {
+      QMessageBox messagewindow(QMessageBox::Critical, "Error", "There seems to be an error in this template.");
+      messagewindow.exec();
+      xml_close(xml_hdl);
+      return;
+    }
+    ((QDoubleSpinBox *)SignalsTablewidget->cellWidget(i, 4))->setValue(atof(result));
 
     xml_go_up(xml_hdl);
     xml_go_up(xml_hdl);

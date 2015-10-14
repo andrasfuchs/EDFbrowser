@@ -3,28 +3,24 @@
 *
 * Author: Teunis van Beelen
 *
-* Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 Teunis van Beelen
+* Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015 Teunis van Beelen
 *
-* teuniz@gmail.com
+* Email: teuniz@gmail.com
 *
 ***************************************************************************
 *
-* This program is free software; you can redistribute it and/or modify
+* This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation version 2 of the License.
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
 * but WITHOUT ANY WARRANTY; without even the implied warranty of
 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 * GNU General Public License for more details.
 *
-* You should have received a copy of the GNU General Public License along
-* with this program; if not, write to the Free Software Foundation, Inc.,
-* 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-*
-***************************************************************************
-*
-* This version of GPL is at http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
 ***************************************************************************
 */
@@ -198,7 +194,7 @@ void UI_Signalswindow::DisplayCompButtonClicked()
   newsignalcomp->filenum = filelist->currentRow();
   newsignalcomp->edfhdr = mainwindow->edfheaderlist[newsignalcomp->filenum];
   newsignalcomp->file_duration = newsignalcomp->edfhdr->long_data_record_duration * newsignalcomp->edfhdr->datarecords;
-  newsignalcomp->voltpercm = 100.0;
+  newsignalcomp->voltpercm = mainwindow->default_amplitude;
   newsignalcomp->color = curve_color;
   newsignalcomp->hasruler = 0;
   newsignalcomp->polarity = 1;
@@ -235,7 +231,7 @@ void UI_Signalswindow::DisplayCompButtonClicked()
 
         if(newsignalcomp->edfhdr->edfparam[j].bitvalue < 0.0)
         {
-          newsignalcomp->voltpercm = -100.0;
+          newsignalcomp->voltpercm = mainwindow->default_amplitude * -1;
         }
         newsignalcomp->sensitivity[i] = newsignalcomp->edfhdr->edfparam[j].bitvalue / ((double)newsignalcomp->voltpercm * mainwindow->pixelsizefactor);
       }
@@ -265,7 +261,7 @@ void UI_Signalswindow::DisplayCompButtonClicked()
 
 void UI_Signalswindow::DisplayButtonClicked()
 {
-  int i, n, s;
+  int i, n, s, old_scomps;
 
   struct signalcompblock *newsignalcomp;
 
@@ -283,6 +279,8 @@ void UI_Signalswindow::DisplayButtonClicked()
     return;
   }
 
+  old_scomps = mainwindow->signalcomps;
+
   for(i=0; i<n; i++)
   {
     newsignalcomp = (struct signalcompblock *)calloc(1, sizeof(struct signalcompblock));
@@ -298,7 +296,7 @@ void UI_Signalswindow::DisplayButtonClicked()
     newsignalcomp->filenum = filelist->currentRow();
     newsignalcomp->edfhdr = mainwindow->edfheaderlist[newsignalcomp->filenum];
     newsignalcomp->file_duration = newsignalcomp->edfhdr->long_data_record_duration * newsignalcomp->edfhdr->datarecords;
-    newsignalcomp->voltpercm = 100.0;
+    newsignalcomp->voltpercm = mainwindow->default_amplitude;
     newsignalcomp->color = curve_color;
     newsignalcomp->hasruler = 0;
     newsignalcomp->polarity = 1;
@@ -309,7 +307,7 @@ void UI_Signalswindow::DisplayButtonClicked()
     newsignalcomp->factor[0] = 1;
     if(newsignalcomp->edfhdr->edfparam[s].bitvalue < 0.0)
     {
-      newsignalcomp->voltpercm = -100.0;
+      newsignalcomp->voltpercm = mainwindow->default_amplitude * -1;
     }
     newsignalcomp->sensitivity[0] = newsignalcomp->edfhdr->edfparam[s].bitvalue / ((double)newsignalcomp->voltpercm * mainwindow->pixelsizefactor);
 
@@ -326,6 +324,14 @@ void UI_Signalswindow::DisplayButtonClicked()
 
     mainwindow->signalcomp[mainwindow->signalcomps] = newsignalcomp;
     mainwindow->signalcomps++;
+  }
+
+  if((i) && (mainwindow->files_open == 1) && (old_scomps == 0))
+  {
+    if((mainwindow->signalcomp[0]->file_duration / TIME_DIMENSION) < 5)
+    {
+      mainwindow->pagetime = mainwindow->signalcomp[0]->file_duration;
+    }
   }
 
   SignalsDialog->close();
@@ -692,11 +698,23 @@ void UI_Signalswindow::show_signals(int row)
 
   strcpy(str, "Duration   ");
   file_duration = mainwindow->edfheaderlist[row]->long_data_record_duration * mainwindow->edfheaderlist[row]->datarecords;
-  snprintf(str + 11, 240,
-          "%2i:%02i:%02i",
-          (int)((file_duration / TIME_DIMENSION)/ 3600LL),
-          (int)(((file_duration / TIME_DIMENSION) % 3600LL) / 60LL),
-          (int)((file_duration / TIME_DIMENSION) % 60LL));
+  if((file_duration / TIME_DIMENSION) / 10)
+  {
+    snprintf(str + 11, 240,
+            "%2i:%02i:%02i",
+            (int)((file_duration / TIME_DIMENSION)/ 3600LL),
+            (int)(((file_duration / TIME_DIMENSION) % 3600LL) / 60LL),
+            (int)((file_duration / TIME_DIMENSION) % 60LL));
+  }
+  else
+  {
+    snprintf(str + 11, 240,
+            "%2i:%02i:%02i.%06i",
+            (int)((file_duration / TIME_DIMENSION)/ 3600LL),
+            (int)(((file_duration / TIME_DIMENSION) % 3600LL) / 60LL),
+            (int)((file_duration / TIME_DIMENSION) % 60LL),
+            (int)((file_duration % TIME_DIMENSION) / 10LL));
+  }
   label4->setText(str);
 
   skip = 0;

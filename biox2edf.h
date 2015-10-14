@@ -3,7 +3,7 @@
 *
 * Author: Teunis van Beelen
 *
-* Copyright (C) 2009, 2010, 2011, 2012, 2013, 2014, 2015 Teunis van Beelen
+* Copyright (C) 2015 Teunis van Beelen
 *
 * Email: teuniz@gmail.com
 *
@@ -26,32 +26,64 @@
 */
 
 
+#ifndef UI_BIOX2EDFFORM_H
+#define UI_BIOX2EDFFORM_H
 
 
-#ifndef SAVE_ANNOTATIONS_H
-#define SAVE_ANNOTATIONS_H
-
-
-
+#include <QtGlobal>
+#include <QApplication>
+#include <QDialog>
+#include <QPushButton>
+#include <QObject>
+#include <QTextEdit>
+#include <QFileDialog>
+#include <QCursor>
+#include <QStyle>
+#if QT_VERSION < 0x050000
+#include <QPlastiqueStyle>
+#include <QWindowsStyle>
+#endif
+#include <QProgressDialog>
+#include <QString>
+#include <QByteArray>
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include <QtGlobal>
-#include <QApplication>
-#include <QProgressDialog>
-
 #include "global.h"
-#include "mainwindow.h"
 #include "utils.h"
-#include "edf_annot_list.h"
+#include "edflib.h"
+#include "utc_date_time.h"
 
 
 
+class UI_BIOX2EDFwindow : public QObject
+{
+  Q_OBJECT
+
+public:
+  UI_BIOX2EDFwindow(char *recent_dir=NULL, char *save_dir=NULL);
+
+private:
 
 
-int save_annotations(UI_Mainwindow *, FILE *, struct edfhdrblock *, struct annotationblock *);
+QPushButton  *pushButton1,
+             *pushButton2;
+
+QTextEdit    *textEdit1;
+
+QDialog      *myobjectDialog;
+
+char  *recent_opendir,
+      *recent_savedir;
+
+
+private slots:
+
+void SelectFileButton();
+
+};
 
 
 

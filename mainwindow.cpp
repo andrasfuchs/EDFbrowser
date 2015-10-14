@@ -3,28 +3,24 @@
 *
 * Author: Teunis van Beelen
 *
-* Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 Teunis van Beelen
+* Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015 Teunis van Beelen
 *
-* teuniz@gmail.com
+* Email: teuniz@gmail.com
 *
 ***************************************************************************
 *
-* This program is free software; you can redistribute it and/or modify
+* This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation version 2 of the License.
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
 * but WITHOUT ANY WARRANTY; without even the implied warranty of
 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 * GNU General Public License for more details.
 *
-* You should have received a copy of the GNU General Public License along
-* with this program; if not, write to the Free Software Foundation, Inc.,
-* 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-*
-***************************************************************************
-*
-* This version of GPL is at http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
 ***************************************************************************
 */
@@ -106,6 +102,8 @@ UI_Mainwindow::UI_Mainwindow()
 
   clip_to_pane = 0;
 
+  annotations_onset_relative = 1;
+
   auto_reload_mtg = 1;
 
   read_biosemi_status_signal = 1;
@@ -129,6 +127,8 @@ UI_Mainwindow::UI_Mainwindow()
   amplitude_doubler = 10;
 
   timescale_doubler = 10;
+
+  default_amplitude = 100;
 
   recent_montagedir[0] = 0;
   recent_savedir[0] = 0;
@@ -168,7 +168,9 @@ UI_Mainwindow::UI_Mainwindow()
   spectrum_colorbar->color[2] = Qt::darkBlue;
   spectrum_colorbar->color[3] = Qt::darkCyan;
   spectrum_colorbar->color[4] = Qt::darkMagenta;
-  spectrum_colorbar->method = 1;
+  spectrum_colorbar->method = 0;
+  spectrum_colorbar->auto_adjust = 1;
+  spectrum_colorbar->max_colorbar_value = 10.0;
 
   maxdftblocksize = 1000;
 
@@ -263,6 +265,10 @@ UI_Mainwindow::UI_Mainwindow()
   recent_filesmenu->setTitle("Recent files");
   connect(recent_filesmenu, SIGNAL(triggered(QAction *)), this, SLOT(recent_file_action_func(QAction *)));
 
+  close_filemenu = new QMenu(this);
+  close_filemenu->setTitle("Close");
+  connect(close_filemenu, SIGNAL(triggered(QAction *)), this, SLOT(close_file_action_func(QAction *)));
+
   print_img_menu = new QMenu(this);
   print_img_menu->setTitle("to Image");
   print_img_menu->addAction("640 x 480",   this, SLOT(print_to_img_640x480()));
@@ -294,7 +300,7 @@ UI_Mainwindow::UI_Mainwindow()
   filemenu->setTitle("&File");
   filemenu->addAction("Open",         this, SLOT(open_new_file()), QKeySequence::Open);
   filemenu->addSeparator();
-  filemenu->addAction("Open stream",  this, SLOT(open_stream()));
+  filemenu->addAction("Open stream",  this, SLOT(open_stream()), QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_O));
   filemenu->addSeparator();
 #ifdef Q_OS_LINUX
   filemenu->addAction(video_act);
@@ -304,6 +310,7 @@ UI_Mainwindow::UI_Mainwindow()
   filemenu->addMenu(recent_filesmenu);
   filemenu->addMenu(printmenu);
   filemenu->addAction("Info",         this, SLOT(show_file_info()));
+  filemenu->addMenu(close_filemenu);
   filemenu->addAction("Close all",    this, SLOT(close_all_files()), QKeySequence::Close);
   filemenu->addAction("Exit",         this, SLOT(exit_program()), QKeySequence::Quit);
   menubar->addMenu(filemenu);
@@ -322,6 +329,33 @@ UI_Mainwindow::UI_Mainwindow()
   displaymenu->addAction("3 cm/sec", this, SLOT(page_3cmsec()));
 
   displaymenu->addSeparator();
+
+  page_10u = new QAction("10 uSec/page", this);
+  displaymenu->addAction(page_10u);
+
+  page_20u = new QAction("20 uSec/page", this);
+  displaymenu->addAction(page_20u);
+
+  page_50u = new QAction("50 uSec/page", this);
+  displaymenu->addAction(page_50u);
+
+  page_100u = new QAction("100 uSec/page", this);
+  displaymenu->addAction(page_100u);
+
+  page_200u = new QAction("200 uSec/page", this);
+  displaymenu->addAction(page_200u);
+
+  page_500u = new QAction("500 uSec/page", this);
+  displaymenu->addAction(page_500u);
+
+  page_1m = new QAction("1 mSec/page", this);
+  displaymenu->addAction(page_1m);
+
+  page_2m = new QAction("2 mSec/page", this);
+  displaymenu->addAction(page_2m);
+
+  page_5m = new QAction("5 mSec/page", this);
+  displaymenu->addAction(page_5m);
 
   page_10m = new QAction("10 mSec/page", this);
   displaymenu->addAction(page_10m);
@@ -402,6 +436,15 @@ UI_Mainwindow::UI_Mainwindow()
   menubar->addMenu(displaymenu);
 
   DisplayGroup = new QActionGroup(this);
+  DisplayGroup->addAction(page_10u);
+  DisplayGroup->addAction(page_20u);
+  DisplayGroup->addAction(page_50u);
+  DisplayGroup->addAction(page_100u);
+  DisplayGroup->addAction(page_200u);
+  DisplayGroup->addAction(page_500u);
+  DisplayGroup->addAction(page_1m);
+  DisplayGroup->addAction(page_2m);
+  DisplayGroup->addAction(page_5m);
   DisplayGroup->addAction(page_10m);
   DisplayGroup->addAction(page_20m);
   DisplayGroup->addAction(page_50m);
@@ -645,6 +688,7 @@ UI_Mainwindow::UI_Mainwindow()
   toolsmenu->addAction("Convert ASCII to EDF/BDF", this, SLOT(convert_ascii_to_edf()));
   toolsmenu->addAction("Convert Manscan to EDF+", this, SLOT(convert_manscan_to_edf()));
   toolsmenu->addAction("Convert SCP ECG to EDF+", this, SLOT(convert_scpecg_to_edf()));
+  toolsmenu->addAction("Convert MIT to EDF+", this, SLOT(convert_mit_to_edf()));
   toolsmenu->addAction("Convert Finometer to EDF", this, SLOT(convert_fino_to_edf()));
   toolsmenu->addAction("Convert Nexfin to EDF", this, SLOT(convert_nexfin_to_edf()));
   toolsmenu->addAction("Convert Emsa to EDF+", this, SLOT(convert_emsa_to_edf()));
@@ -654,6 +698,8 @@ UI_Mainwindow::UI_Mainwindow()
   toolsmenu->addAction("Convert Unisens to EDF+", this, SLOT(unisens2edf_converter()));
   toolsmenu->addAction("Convert BI9800TL+3 to EDF", this, SLOT(BI98002edf_converter()));
   toolsmenu->addAction("Convert Wave to EDF", this, SLOT(convert_wave_to_edf()));
+  toolsmenu->addAction("Convert Biox CB-1305-C to EDF", this, SLOT(convert_biox_to_edf()));
+  toolsmenu->addAction("Convert FM Audio ECG to EDF", this, SLOT(convert_fm_audio_to_edf()));
   toolsmenu->addAction("Convert Binary/raw data to EDF", this, SLOT(convert_binary_to_edf()));
   toolsmenu->addSeparator();
   toolsmenu->addAction("Options", this, SLOT(show_options_dialog()));
@@ -956,6 +1002,7 @@ UI_Mainwindow::~UI_Mainwindow()
     delete spectrumdock[i];
   }
   delete live_stream_timer;
+  delete video_poll_timer;
   if(update_checker != NULL)  delete update_checker;
 }
 
@@ -1533,7 +1580,13 @@ void UI_Mainwindow::convert_fino_to_edf()
 
 void UI_Mainwindow::convert_wave_to_edf()
 {
-  UI_WAV2EDFwindow fino2edf(recent_opendir, recent_savedir);
+  UI_WAV2EDFwindow wav2edf(recent_opendir, recent_savedir);
+}
+
+
+void UI_Mainwindow::convert_fm_audio_to_edf()
+{
+  UI_FMaudio2EDFwindow fma2edf(recent_opendir, recent_savedir);
 }
 
 
@@ -1552,6 +1605,18 @@ void UI_Mainwindow::convert_emsa_to_edf()
 void UI_Mainwindow::convert_manscan_to_edf()
 {
   UI_MANSCAN2EDFwindow manscan2edf(recent_opendir, recent_savedir);
+}
+
+
+void UI_Mainwindow::convert_mit_to_edf()
+{
+  UI_MIT2EDFwindow mit2edf(recent_opendir, recent_savedir);
+}
+
+
+void UI_Mainwindow::convert_biox_to_edf()
+{
+  UI_BIOX2EDFwindow biox2edf(recent_opendir, recent_savedir);
 }
 
 
@@ -2503,6 +2568,8 @@ void UI_Mainwindow::open_new_file()
   }
 
   cmdlineargument = 0;
+
+  close_filemenu->addAction(QString::fromLocal8Bit(path));
 }
 
 
@@ -2700,19 +2767,19 @@ void UI_Mainwindow::remove_all_filters()
 
 void UI_Mainwindow::remove_all_spike_filters()
 {
-  int i, j,
+  int i,
       update_scr=0;
 
   for(i=0; i<signalcomps; i++)
   {
-    for(j=0; j<signalcomp[i]->spike_filter_cnt; j++)
+    if(signalcomp[i]->spike_filter)
     {
-      free_spike_filter(signalcomp[i]->spike_filter[j]);
+      free_spike_filter(signalcomp[i]->spike_filter);
+
+      signalcomp[i]->spike_filter = NULL;
 
       update_scr = 1;
     }
-
-    signalcomp[i]->spike_filter_cnt = 0;
   }
 
   if(update_scr)
@@ -2789,6 +2856,222 @@ void UI_Mainwindow::remove_all_signals()
 
   slidertoolbar->setEnabled(false);
   positionslider->blockSignals(true);
+
+  setup_viewbuf();
+}
+
+
+void UI_Mainwindow::close_file_action_func(QAction *action)
+{
+  int i, j, k, p,
+      file_n;
+
+  char f_path[MAX_PATH_LENGTH];
+
+  if(files_open < 2)
+  {
+    close_all_files();
+
+    return;
+  }
+
+  strcpy(f_path, action->text().toLocal8Bit().data());
+
+  for(file_n=0; file_n<files_open; file_n++)
+  {
+    if(!strcmp(f_path, edfheaderlist[file_n]->filename))
+    {
+      break;
+    }
+  }
+
+  if(file_n == files_open)  return;
+
+  delete action;
+
+  stop_video_generic();
+
+  for(j=0; j<signalcomps; )
+  {
+    if(signalcomp[j]->filenum == file_n)
+    {
+      for(i=0; i<MAXSPECTRUMDOCKS; i++)
+      {
+        if(spectrumdock[i]->signalcomp == signalcomp[j])
+        {
+          spectrumdock[i]->clear();
+          spectrumdock[i]->dock->hide();
+        }
+      }
+
+      for(i=0; i<MAXSPECTRUMDIALOGS; i++)
+      {
+        p = signalcomp[j]->spectr_dialog[i];
+
+        if(p != 0)
+        {
+          delete spectrumdialog[p - 1];
+
+          spectrumdialog[p - 1] = NULL;
+        }
+      }
+
+      for(i=0; i<MAXAVERAGECURVEDIALOGS; i++)
+      {
+        p = signalcomp[j]->avg_dialog[i];
+
+        if(p != 0)
+        {
+          delete averagecurvedialog[p - 1];
+
+          averagecurvedialog[p - 1] = NULL;
+        }
+      }
+
+      for(i=0; i<MAXZSCOREDIALOGS; i++)
+      {
+        p = signalcomp[j]->zscoredialog[i];
+
+        if(p != 0)
+        {
+          delete zscoredialog[p - 1];
+
+          zscoredialog[p - 1] = NULL;
+        }
+      }
+
+      if(signalcomp[j]->hascursor2)
+      {
+        maincurve->crosshair_2.active = 0;
+        maincurve->crosshair_2.moving = 0;
+      }
+
+      if(signalcomp[j]->hascursor1)
+      {
+        maincurve->crosshair_1.active = 0;
+        maincurve->crosshair_2.active = 0;
+        maincurve->crosshair_1.moving = 0;
+        maincurve->crosshair_2.moving = 0;
+
+        for(i=0; i<signalcomps; i++)
+        {
+          signalcomp[i]->hascursor2 = 0;
+        }
+      }
+
+      if(signalcomp[j]->hasruler)
+      {
+        maincurve->ruler_active = 0;
+        maincurve->ruler_moving = 0;
+      }
+
+      for(k=0; k<signalcomp[j]->filter_cnt; k++)
+      {
+        free(signalcomp[j]->filter[k]);
+      }
+
+      signalcomp[j]->filter_cnt = 0;
+
+      if(signalcomp[j]->spike_filter)
+      {
+        free_spike_filter(signalcomp[j]->spike_filter);
+
+        signalcomp[j]->spike_filter = NULL;
+      }
+
+      for(k=0; k<signalcomp[j]->ravg_filter_cnt; k++)
+      {
+        free_ravg_filter(signalcomp[j]->ravg_filter[k]);
+      }
+
+      signalcomp[j]->ravg_filter_cnt = 0;
+
+      if(signalcomp[j]->ecg_filter != NULL)
+      {
+        free_ecg_filter(signalcomp[j]->ecg_filter);
+
+        signalcomp[j]->ecg_filter = NULL;
+
+        strcpy(signalcomp[j]->signallabel, signalcomp[j]->signallabel_bu);
+        signalcomp[j]->signallabellen = signalcomp[j]->signallabellen_bu;
+        strcpy(signalcomp[j]->physdimension, signalcomp[j]->physdimension_bu);
+      }
+
+      for(k=0; k<signalcomp[j]->fidfilter_cnt; k++)
+      {
+        free(signalcomp[j]->fidfilter[k]);
+        fid_run_free(signalcomp[j]->fid_run[k]);
+        fid_run_freebuf(signalcomp[j]->fidbuf[k]);
+        fid_run_freebuf(signalcomp[j]->fidbuf2[k]);
+      }
+
+      signalcomp[j]->fidfilter_cnt = 0;
+
+      free(signalcomp[j]);
+
+      for(i=j; i<signalcomps - 1; i++)
+      {
+        signalcomp[i] = signalcomp[i + 1];
+      }
+
+      signalcomps--;
+    }
+    else
+    {
+      j++;
+    }
+  }
+
+  for(j=0; j<signalcomps; j++)
+  {
+    if(signalcomp[j]->filenum > file_n)
+    {
+      signalcomp[j]->filenum--;
+    }
+  }
+
+  fclose(edfheaderlist[file_n]->file_hdl);
+  free(edfheaderlist[file_n]->edfparam);
+  free(edfheaderlist[file_n]);
+  edfplus_annotation_delete_list(&annotationlist[file_n]);
+
+  if(annotations_dock[file_n] != NULL)
+  {
+    annotations_dock[file_n]->docklist->close();
+    delete annotations_dock[file_n];
+    annotations_dock[file_n] = NULL;
+  }
+
+  if((file_n == sel_viewtime) && (files_open > 1))
+  {
+    if(file_n > 0)
+    {
+      sel_viewtime = 0;
+    }
+    else
+    {
+      sel_viewtime = 1;
+    }
+
+    sel_viewtime_act[sel_viewtime]->setChecked(true);
+
+    setMainwindowTitle(edfheaderlist[sel_viewtime]);
+  }
+
+  delete sel_viewtime_act[file_n];
+
+  for(i=file_n; i<files_open - 1; i++)
+  {
+    edfheaderlist[i] = edfheaderlist[i + 1];
+
+    annotationlist[i] = annotationlist[i + 1];
+
+    annotations_dock[i] = annotations_dock[i + 1];
+
+    sel_viewtime_act[i] = sel_viewtime_act[i + 1];
+  }
+
+  files_open--;
 
   setup_viewbuf();
 }
@@ -2893,9 +3176,11 @@ void UI_Mainwindow::close_all_files()
 
   setWindowTitle(PROGRAM_NAME);
 
+  close_filemenu->clear();
+
   if(!exit_in_progress)
   {
-    maincurve->update();
+    setup_viewbuf();
   }
 }
 
@@ -2944,16 +3229,19 @@ void UI_Mainwindow::set_page_div2()
         edfheaderlist[i]->viewtime += (pagetime / 4);
       }
 
-      l_tmp = edfheaderlist[i]->viewtime % TIME_DIMENSION;
-
-      if(l_tmp < trshld)
+      if(viewtime_sync!=VIEWTIME_USER_DEF_SYNCED)
       {
-        edfheaderlist[i]->viewtime -= l_tmp;
-      }
+        l_tmp = edfheaderlist[i]->viewtime % TIME_DIMENSION;
 
-      if(l_tmp > (TIME_DIMENSION - trshld))
-      {
-        edfheaderlist[i]->viewtime += (TIME_DIMENSION - l_tmp);
+        if(l_tmp < trshld)
+        {
+          edfheaderlist[i]->viewtime -= l_tmp;
+        }
+
+        if(l_tmp > (TIME_DIMENSION - trshld))
+        {
+          edfheaderlist[i]->viewtime += (TIME_DIMENSION - l_tmp);
+        }
       }
     }
   }
@@ -2969,17 +3257,17 @@ void UI_Mainwindow::set_page_div2()
       edfheaderlist[sel_viewtime]->viewtime += (pagetime / 4);
     }
 
-      l_tmp = edfheaderlist[sel_viewtime]->viewtime % TIME_DIMENSION;
+    l_tmp = edfheaderlist[sel_viewtime]->viewtime % TIME_DIMENSION;
 
-      if(l_tmp < trshld)
-      {
-        edfheaderlist[sel_viewtime]->viewtime -= l_tmp;
-      }
+    if(l_tmp < trshld)
+    {
+      edfheaderlist[sel_viewtime]->viewtime -= l_tmp;
+    }
 
-      if(l_tmp > (TIME_DIMENSION - trshld))
-      {
-        edfheaderlist[sel_viewtime]->viewtime += (TIME_DIMENSION - l_tmp);
-      }
+    if(l_tmp > (TIME_DIMENSION - trshld))
+    {
+      edfheaderlist[sel_viewtime]->viewtime += (TIME_DIMENSION - l_tmp);
+    }
   }
 
   if(timescale_doubler == 10)
@@ -3027,16 +3315,19 @@ void UI_Mainwindow::set_page_mult2()
         edfheaderlist[i]->viewtime -= (pagetime / 2);
       }
 
-      l_tmp = edfheaderlist[i]->viewtime % TIME_DIMENSION;
-
-      if(l_tmp < trshld)
+      if(viewtime_sync!=VIEWTIME_USER_DEF_SYNCED)
       {
-        edfheaderlist[i]->viewtime -= l_tmp;
-      }
+        l_tmp = edfheaderlist[i]->viewtime % TIME_DIMENSION;
 
-      if(l_tmp > (TIME_DIMENSION - trshld))
-      {
-        edfheaderlist[i]->viewtime += (TIME_DIMENSION - l_tmp);
+        if(l_tmp < trshld)
+        {
+          edfheaderlist[i]->viewtime -= l_tmp;
+        }
+
+        if(l_tmp > (TIME_DIMENSION - trshld))
+        {
+          edfheaderlist[i]->viewtime += (TIME_DIMENSION - l_tmp);
+        }
       }
     }
   }
@@ -3050,6 +3341,18 @@ void UI_Mainwindow::set_page_mult2()
     else
     {
       edfheaderlist[sel_viewtime]->viewtime -= (pagetime / 2);
+    }
+
+    l_tmp = edfheaderlist[sel_viewtime]->viewtime % TIME_DIMENSION;
+
+    if(l_tmp < trshld)
+    {
+      edfheaderlist[sel_viewtime]->viewtime -= l_tmp;
+    }
+
+    if(l_tmp > (TIME_DIMENSION - trshld))
+    {
+      edfheaderlist[sel_viewtime]->viewtime += (TIME_DIMENSION - l_tmp);
     }
   }
 
@@ -3081,6 +3384,60 @@ void UI_Mainwindow::set_page_mult2()
 
 void UI_Mainwindow::set_display_time(QAction *action)
 {
+  if(action==page_10u)
+  {
+    pagetime = TIME_DIMENSION / 100000;
+
+    timescale_doubler = 10;
+  }
+  if(action==page_20u)
+  {
+    pagetime = TIME_DIMENSION / 50000;
+
+    timescale_doubler = 20;
+  }
+  if(action==page_50u)
+  {
+    pagetime = TIME_DIMENSION / 20000;
+
+    timescale_doubler = 50;
+  }
+  if(action==page_100u)
+  {
+    pagetime = TIME_DIMENSION / 10000;
+
+    timescale_doubler = 10;
+  }
+  if(action==page_200u)
+  {
+    pagetime = TIME_DIMENSION / 5000;
+
+    timescale_doubler = 20;
+  }
+  if(action==page_500u)
+  {
+    pagetime = TIME_DIMENSION / 2000;
+
+    timescale_doubler = 50;
+  }
+  if(action==page_1m)
+  {
+    pagetime = TIME_DIMENSION / 1000;
+
+    timescale_doubler = 10;
+  }
+  if(action==page_2m)
+  {
+    pagetime = TIME_DIMENSION / 500;
+
+    timescale_doubler = 20;
+  }
+  if(action==page_5m)
+  {
+    pagetime = TIME_DIMENSION / 200;
+
+    timescale_doubler = 50;
+  }
   if(action==page_10m)
   {
     pagetime = TIME_DIMENSION / 100;
@@ -3629,7 +3986,7 @@ void UI_Mainwindow::setup_viewbuf()
       }
     }
 
-    if(signalcomp[i]->spike_filter_cnt)
+    if(signalcomp[i]->spike_filter)
     {
       hasprefilter = 1;
 
@@ -3690,7 +4047,7 @@ void UI_Mainwindow::setup_viewbuf()
   {
     for(i=0; i<signalcomps; i++)
     {
-      if((signalcomp[i]->filter_cnt) || (signalcomp[i]->spike_filter_cnt) || (signalcomp[i]->ravg_filter_cnt) || (signalcomp[i]->fidfilter_cnt) || (signalcomp[i]->ecg_filter != NULL) || (signalcomp[i]->zratio_filter != NULL))
+      if((signalcomp[i]->filter_cnt) || (signalcomp[i]->spike_filter) || (signalcomp[i]->ravg_filter_cnt) || (signalcomp[i]->fidfilter_cnt) || (signalcomp[i]->ecg_filter != NULL) || (signalcomp[i]->zratio_filter != NULL))
       {
         signalcomp[i]->edfhdr->prefiltertime = (long long)(pre_time * ((double)TIME_DIMENSION));
         if(signalcomp[i]->edfhdr->prefiltertime>signalcomp[i]->edfhdr->viewtime)
@@ -3877,7 +4234,7 @@ void UI_Mainwindow::setup_viewbuf()
 
     for(i=0; i<signalcomps; i++)
     {
-      if((!signalcomp[i]->filter_cnt) && (!signalcomp[i]->spike_filter_cnt) && (!signalcomp[i]->ravg_filter_cnt) && (!signalcomp[i]->fidfilter_cnt) && (signalcomp[i]->ecg_filter == NULL) && (signalcomp[i]->zratio_filter == NULL)) continue;
+      if((!signalcomp[i]->filter_cnt) && (!signalcomp[i]->spike_filter) && (!signalcomp[i]->ravg_filter_cnt) && (!signalcomp[i]->fidfilter_cnt) && (signalcomp[i]->ecg_filter == NULL) && (signalcomp[i]->zratio_filter == NULL)) continue;
 
       for(s=0; s<signalcomp[i]->samples_in_prefilterbuf; s++)
       {
@@ -3930,9 +4287,9 @@ void UI_Mainwindow::setup_viewbuf()
           dig_value += temp;
         }
 
-        for(j=0; j<signalcomp[i]->spike_filter_cnt; j++)
+        if(signalcomp[i]->spike_filter)
         {
-          dig_value = run_spike_filter(dig_value, signalcomp[i]->spike_filter[j]);
+          dig_value = run_spike_filter(dig_value, signalcomp[i]->spike_filter);
         }
 
         for(j=0; j<signalcomp[i]->filter_cnt; j++)
@@ -3976,6 +4333,11 @@ void UI_Mainwindow::setup_viewbuf()
     {
       if(signalcomp[i]->samples_in_prefilterbuf > 0)
       {
+        if(signalcomp[i]->spike_filter)
+        {
+          spike_filter_save_buf(signalcomp[i]->spike_filter);
+        }
+
         for(j=0; j<signalcomp[i]->filter_cnt; j++)
         {
           signalcomp[i]->filterpreset_a[j] = signalcomp[i]->filter[j]->old_input;
@@ -4304,22 +4666,25 @@ void UI_Mainwindow::setup_viewbuf()
               ((int)(pagetime / TIME_DIMENSION)) % 60,
               (int)((pagetime % TIME_DIMENSION) / 1000LL));
     }
-    else
-    {
-      if(pagetime >= (60LL * TIME_DIMENSION))
+    else if(pagetime >= (60LL * TIME_DIMENSION))
       {
         snprintf(pagetime_string, 32, "%i:%02i.%04i",
                 ((int)(pagetime / TIME_DIMENSION)) / 60,
                 ((int)(pagetime / TIME_DIMENSION)) % 60,
                 (int)((pagetime % TIME_DIMENSION) / 1000LL));
       }
-      else
+      else if(pagetime >= TIME_DIMENSION)
       {
         snprintf(pagetime_string, 32, "%i.%04i sec",
                 (int)(pagetime / TIME_DIMENSION),
                 (int)((pagetime % TIME_DIMENSION) / 1000LL));
       }
-    }
+      else
+      {
+        convert_to_metric_suffix(pagetime_string, (double)pagetime / TIME_DIMENSION);
+
+        strcat(pagetime_string, "S");
+      }
 
     remove_trailing_zeros(viewtime_string);
     remove_trailing_zeros(pagetime_string);
@@ -4530,7 +4895,7 @@ long long UI_Mainwindow::get_long_time(char *str)
 
 void UI_Mainwindow::get_rgbcolor_settings(struct xml_handle *xml_hdl, const char *id, int cnt, QColor *rgb_color)
 {
-  char *result;
+  char result[XML_STRBUFLEN];
 
   QColor tmp_color;
 
@@ -4544,13 +4909,11 @@ void UI_Mainwindow::get_rgbcolor_settings(struct xml_handle *xml_hdl, const char
   {
     return;
   }
-  result = xml_get_content_of_element(xml_hdl);
-  if(result==NULL)
+  if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
   {
     return;
   }
   tmp_color.setRed(atoi(result));
-  free(result);
 
   xml_go_up(xml_hdl);
 
@@ -4558,13 +4921,11 @@ void UI_Mainwindow::get_rgbcolor_settings(struct xml_handle *xml_hdl, const char
   {
     return;
   }
-  result = xml_get_content_of_element(xml_hdl);
-  if(result==NULL)
+  if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
   {
     return;
   }
   tmp_color.setGreen(atoi(result));
-  free(result);
 
   xml_go_up(xml_hdl);
 
@@ -4572,13 +4933,11 @@ void UI_Mainwindow::get_rgbcolor_settings(struct xml_handle *xml_hdl, const char
   {
     return;
   }
-  result = xml_get_content_of_element(xml_hdl);
-  if(result==NULL)
+  if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
   {
     return;
   }
   tmp_color.setBlue(atoi(result));
-  free(result);
 
   *rgb_color = tmp_color;
 
@@ -4590,7 +4949,7 @@ void UI_Mainwindow::get_rgbcolor_settings(struct xml_handle *xml_hdl, const char
 void UI_Mainwindow::read_color_settings()
 {
   char cfg_path[MAX_PATH_LENGTH],
-       *result;
+       result[XML_STRBUFLEN];
 
   struct xml_handle *xml_hdl;
 
@@ -4614,7 +4973,7 @@ void UI_Mainwindow::read_color_settings()
     return;
   }
 
-  if(strcmp(xml_hdl->elementname, "config"))
+  if(strcmp(xml_hdl->elementname[xml_hdl->level], "config"))
   {
     xml_close(xml_hdl);
     return;
@@ -4651,14 +5010,12 @@ void UI_Mainwindow::read_color_settings()
     xml_close(xml_hdl);
     return;
   }
-  result = xml_get_content_of_element(xml_hdl);
-  if(result==NULL)
+  if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
   {
     xml_close(xml_hdl);
     return;
   }
   maincurve->signal_color = atoi(result);
-  free(result);
 
   xml_go_up(xml_hdl);
 
@@ -4667,14 +5024,12 @@ void UI_Mainwindow::read_color_settings()
     xml_close(xml_hdl);
     return;
   }
-  result = xml_get_content_of_element(xml_hdl);
-  if(result==NULL)
+  if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
   {
     xml_close(xml_hdl);
     return;
   }
   maincurve->floating_ruler_color = atoi(result);
-  free(result);
 
   xml_go_up(xml_hdl);
 
@@ -4683,14 +5038,12 @@ void UI_Mainwindow::read_color_settings()
     xml_close(xml_hdl);
     return;
   }
-  result = xml_get_content_of_element(xml_hdl);
-  if(result==NULL)
+  if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
   {
     xml_close(xml_hdl);
     return;
   }
   maincurve->blackwhite_printing = atoi(result);
-  free(result);
 
   xml_go_up(xml_hdl);
 
@@ -4699,14 +5052,12 @@ void UI_Mainwindow::read_color_settings()
     xml_close(xml_hdl);
     return;
   }
-  result = xml_get_content_of_element(xml_hdl);
-  if(result==NULL)
+  if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
   {
     xml_close(xml_hdl);
     return;
   }
   show_annot_markers = atoi(result);
-  free(result);
 
   xml_go_up(xml_hdl);
 
@@ -4715,14 +5066,12 @@ void UI_Mainwindow::read_color_settings()
     xml_close(xml_hdl);
     return;
   }
-  result = xml_get_content_of_element(xml_hdl);
-  if(result==NULL)
+  if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
   {
     xml_close(xml_hdl);
     return;
   }
   show_baselines = atoi(result);
-  free(result);
 
   xml_go_up(xml_hdl);
 
@@ -4731,14 +5080,12 @@ void UI_Mainwindow::read_color_settings()
     xml_close(xml_hdl);
     return;
   }
-  result = xml_get_content_of_element(xml_hdl);
-  if(result==NULL)
+  if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
   {
     xml_close(xml_hdl);
     return;
   }
   maincurve->crosshair_1.color = atoi(result);
-  free(result);
 
   xml_go_up(xml_hdl);
 
@@ -4747,14 +5094,12 @@ void UI_Mainwindow::read_color_settings()
     xml_close(xml_hdl);
     return;
   }
-  result = xml_get_content_of_element(xml_hdl);
-  if(result==NULL)
+  if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
   {
     xml_close(xml_hdl);
     return;
   }
   maincurve->crosshair_2.color = atoi(result);
-  free(result);
 
   xml_close(xml_hdl);
 }
@@ -4766,7 +5111,7 @@ void UI_Mainwindow::read_recent_file_settings()
   int i;
 
   char cfg_path[MAX_PATH_LENGTH],
-       *result;
+       result[XML_STRBUFLEN];
 
   struct xml_handle *xml_hdl;
 
@@ -4790,7 +5135,7 @@ void UI_Mainwindow::read_recent_file_settings()
     return;
   }
 
-  if(strcmp(xml_hdl->elementname, "config"))
+  if(strcmp(xml_hdl->elementname[xml_hdl->level], "config"))
   {
     xml_close(xml_hdl);
     return;
@@ -4804,8 +5149,7 @@ void UI_Mainwindow::read_recent_file_settings()
 
   if(!(xml_goto_nth_element_inside(xml_hdl, "recent_montagedir", 0)))
   {
-    result = xml_get_content_of_element(xml_hdl);
-    if(result==NULL)
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
     {
       xml_close(xml_hdl);
       return;
@@ -4813,15 +5157,13 @@ void UI_Mainwindow::read_recent_file_settings()
 
     strncpy(recent_montagedir, result, MAX_PATH_LENGTH);
     recent_montagedir[MAX_PATH_LENGTH - 1] = 0;
-    free(result);
 
     xml_go_up(xml_hdl);
   }
 
   if(!(xml_goto_nth_element_inside(xml_hdl, "recent_savedir", 0)))
   {
-    result = xml_get_content_of_element(xml_hdl);
-    if(result==NULL)
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
     {
       xml_close(xml_hdl);
       return;
@@ -4829,15 +5171,13 @@ void UI_Mainwindow::read_recent_file_settings()
 
     strncpy(recent_savedir, result, MAX_PATH_LENGTH);
     recent_savedir[MAX_PATH_LENGTH - 1] = 0;
-    free(result);
 
     xml_go_up(xml_hdl);
   }
 
   if(!(xml_goto_nth_element_inside(xml_hdl, "recent_opendir", 0)))
   {
-    result = xml_get_content_of_element(xml_hdl);
-    if(result==NULL)
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
     {
       xml_close(xml_hdl);
       return;
@@ -4845,15 +5185,13 @@ void UI_Mainwindow::read_recent_file_settings()
 
     strncpy(recent_opendir, result, MAX_PATH_LENGTH);
     recent_opendir[MAX_PATH_LENGTH - 1] = 0;
-    free(result);
 
     xml_go_up(xml_hdl);
   }
 
   if(!(xml_goto_nth_element_inside(xml_hdl, "recent_colordir", 0)))
   {
-    result = xml_get_content_of_element(xml_hdl);
-    if(result==NULL)
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
     {
       xml_close(xml_hdl);
       return;
@@ -4861,15 +5199,13 @@ void UI_Mainwindow::read_recent_file_settings()
 
     strncpy(recent_colordir, result, MAX_PATH_LENGTH);
     recent_opendir[MAX_PATH_LENGTH - 1] = 0;
-    free(result);
 
     xml_go_up(xml_hdl);
   }
 
   if(!(xml_goto_nth_element_inside(xml_hdl, "recent_file", 0)))
   {
-    result = xml_get_content_of_element(xml_hdl);
-    if(result==NULL)
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
     {
       xml_close(xml_hdl);
       return;
@@ -4879,7 +5215,6 @@ void UI_Mainwindow::read_recent_file_settings()
       strncpy(&recent_file_path[0][0], result, MAX_PATH_LENGTH);
       recent_file_path[0][MAX_PATH_LENGTH - 1] = 0;
       recent_filesmenu->addAction(QString::fromLocal8Bit(&recent_file_path[0][0]));
-      free(result);
 
       for(i=1; i<MAX_RECENTFILES; i++)
       {
@@ -4887,26 +5222,19 @@ void UI_Mainwindow::read_recent_file_settings()
         {
           break;
         }
-        result = xml_get_content_of_element(xml_hdl);
-        if(result==NULL)
+        if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
         {
           xml_close(xml_hdl);
           return;
         }
         if(result[0] == 0)
         {
-          free(result);
           break;
         }
         strncpy(&recent_file_path[i][0], result, MAX_PATH_LENGTH);
         recent_file_path[i][MAX_PATH_LENGTH - 1] = 0;
         recent_filesmenu->addAction(QString::fromLocal8Bit(&recent_file_path[i][0]));
-        free(result);
       }
-    }
-    else
-    {
-      free(result);
     }
 
     xml_go_up(xml_hdl);
@@ -4914,30 +5242,26 @@ void UI_Mainwindow::read_recent_file_settings()
 
   if(!(xml_goto_nth_element_inside(xml_hdl, "recent_file_mtg", 0)))
   {
-    result = xml_get_content_of_element(xml_hdl);
-    if(result==NULL)
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
     {
       xml_close(xml_hdl);
       return;
     }
     strncpy(&recent_file_mtg_path[0][0], result, MAX_PATH_LENGTH);
     recent_file_mtg_path[0][MAX_PATH_LENGTH - 1] = 0;
-    free(result);
     for(i=1; i<MAX_RECENTFILES; i++)
     {
       if(xml_goto_next_element_with_same_name(xml_hdl))
       {
         break;
       }
-      result = xml_get_content_of_element(xml_hdl);
-      if(result==NULL)
+      if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
       {
         xml_close(xml_hdl);
         return;
       }
       strncpy(&recent_file_mtg_path[i][0], result, MAX_PATH_LENGTH);
       recent_file_mtg_path[i][MAX_PATH_LENGTH - 1] = 0;
-      free(result);
     }
 
     xml_go_up(xml_hdl);
@@ -4945,15 +5269,13 @@ void UI_Mainwindow::read_recent_file_settings()
 
   if(!(xml_goto_nth_element_inside(xml_hdl, "predefined_mtg_path", 0)))
   {
-    result = xml_get_content_of_element(xml_hdl);
-    if(result==NULL)
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
     {
       xml_close(xml_hdl);
       return;
     }
     strncpy(&predefined_mtg_path[0][0], result, MAX_PATH_LENGTH);
     predefined_mtg_path[0][MAX_PATH_LENGTH - 1] = 0;
-    free(result);
 
     for(i=1; i < MAXPREDEFINEDMONTAGES; i++)
     {
@@ -4961,14 +5283,12 @@ void UI_Mainwindow::read_recent_file_settings()
       {
         break;
       }
-      result = xml_get_content_of_element(xml_hdl);
-      if(result==NULL)
+      if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
       {
         break;
       }
       strncpy(&predefined_mtg_path[i][0], result, MAX_PATH_LENGTH);
       predefined_mtg_path[i][MAX_PATH_LENGTH - 1] = 0;
-      free(result);
     }
 
     xml_go_up(xml_hdl);
@@ -4984,7 +5304,7 @@ void UI_Mainwindow::read_general_settings()
   int i;
 
   char cfg_path[MAX_PATH_LENGTH],
-       *result;
+       result[XML_STRBUFLEN];
 
   struct xml_handle *xml_hdl;
 
@@ -5008,7 +5328,7 @@ void UI_Mainwindow::read_general_settings()
     return;
   }
 
-  if(strcmp(xml_hdl->elementname, "config"))
+  if(strcmp(xml_hdl->elementname[xml_hdl->level], "config"))
   {
     xml_close(xml_hdl);
     return;
@@ -5016,8 +5336,7 @@ void UI_Mainwindow::read_general_settings()
 
   if(!xml_goto_nth_element_inside(xml_hdl, "cfg_app_version", 0))
   {
-    result = xml_get_content_of_element(xml_hdl);
-    if(result==NULL)
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
     {
       xml_close(xml_hdl);
       return;
@@ -5025,8 +5344,6 @@ void UI_Mainwindow::read_general_settings()
 
     strncpy(cfg_app_version, result, 16);
     cfg_app_version[16] = 0;
-
-    free(result);
 
     xml_go_up(xml_hdl);
   }
@@ -5043,8 +5360,7 @@ void UI_Mainwindow::read_general_settings()
     return;
   }
 
-  result = xml_get_content_of_element(xml_hdl);
-  if(result==NULL)
+  if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
   {
     xml_close(xml_hdl);
     return;
@@ -5055,14 +5371,12 @@ void UI_Mainwindow::read_general_settings()
   {
     pixelsizefactor = 0.0294382;
   }
-  free(result);
 
   xml_go_up(xml_hdl);
 
   if(!(xml_goto_nth_element_inside(xml_hdl, "auto_dpi", 0)))
   {
-    result = xml_get_content_of_element(xml_hdl);
-    if(result==NULL)
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
     {
       xml_close(xml_hdl);
       return;
@@ -5073,15 +5387,13 @@ void UI_Mainwindow::read_general_settings()
     {
       auto_dpi = 1;
     }
-    free(result);
 
     xml_go_up(xml_hdl);
   }
 
   if(!(xml_goto_nth_element_inside(xml_hdl, "x_pixelsizefactor", 0)))
   {
-    result = xml_get_content_of_element(xml_hdl);
-    if(result==NULL)
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
     {
       xml_close(xml_hdl);
       return;
@@ -5092,15 +5404,13 @@ void UI_Mainwindow::read_general_settings()
     {
       x_pixelsizefactor = 0.0294382;
     }
-    free(result);
 
     xml_go_up(xml_hdl);
   }
 
   if(!(xml_goto_nth_element_inside(xml_hdl, "clip_to_pane", 0)))
   {
-    result = xml_get_content_of_element(xml_hdl);
-    if(result==NULL)
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
     {
       xml_close(xml_hdl);
       return;
@@ -5111,15 +5421,13 @@ void UI_Mainwindow::read_general_settings()
     {
       clip_to_pane = 0;
     }
-    free(result);
 
     xml_go_up(xml_hdl);
   }
 
   if(!(xml_goto_nth_element_inside(xml_hdl, "auto_reload_mtg", 0)))
   {
-    result = xml_get_content_of_element(xml_hdl);
-    if(result==NULL)
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
     {
       xml_close(xml_hdl);
       return;
@@ -5130,15 +5438,13 @@ void UI_Mainwindow::read_general_settings()
     {
       auto_reload_mtg = 1;
     }
-    free(result);
 
     xml_go_up(xml_hdl);
   }
 
   if(!(xml_goto_nth_element_inside(xml_hdl, "read_biosemi_status_signal", 0)))
   {
-    result = xml_get_content_of_element(xml_hdl);
-    if(result==NULL)
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
     {
       xml_close(xml_hdl);
       return;
@@ -5149,15 +5455,13 @@ void UI_Mainwindow::read_general_settings()
     {
       read_biosemi_status_signal = 1;
     }
-    free(result);
 
     xml_go_up(xml_hdl);
   }
 
   if(!(xml_goto_nth_element_inside(xml_hdl, "read_nk_trigger_signal", 0)))
   {
-    result = xml_get_content_of_element(xml_hdl);
-    if(result==NULL)
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
     {
       xml_close(xml_hdl);
       return;
@@ -5168,15 +5472,13 @@ void UI_Mainwindow::read_general_settings()
     {
       read_nk_trigger_signal = 1;
     }
-    free(result);
 
     xml_go_up(xml_hdl);
   }
 
   if(!(xml_goto_nth_element_inside(xml_hdl, "maxfilesize_to_readin_annotations", 0)))
   {
-    result = xml_get_content_of_element(xml_hdl);
-    if(result==NULL)
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
     {
       xml_close(xml_hdl);
       return;
@@ -5187,15 +5489,13 @@ void UI_Mainwindow::read_general_settings()
     {
       maxfilesize_to_readin_annotations = 10485760000LL;
     }
-    free(result);
 
     xml_go_up(xml_hdl);
   }
 
   if(!(xml_goto_nth_element_inside(xml_hdl, "use_threads", 0)))
   {
-    result = xml_get_content_of_element(xml_hdl);
-    if(result==NULL)
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
     {
       xml_close(xml_hdl);
       return;
@@ -5206,7 +5506,6 @@ void UI_Mainwindow::read_general_settings()
     {
       use_threads = 1;
     }
-    free(result);
 
     xml_go_up(xml_hdl);
   }
@@ -5219,8 +5518,7 @@ void UI_Mainwindow::read_general_settings()
       return;
     }
 
-    result = xml_get_content_of_element(xml_hdl);
-    if(result==NULL)
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
     {
       xml_close(xml_hdl);
       return;
@@ -5229,12 +5527,10 @@ void UI_Mainwindow::read_general_settings()
     if((atoi(result) > MAXSPECTRUMMARKERS) || (atoi(result) < 0))
     {
       xml_close(xml_hdl);
-      free(result);
       return;
     }
 
     spectrum_colorbar->items = atoi(result);
-    free(result);
 
     xml_go_up(xml_hdl);
 
@@ -5244,8 +5540,7 @@ void UI_Mainwindow::read_general_settings()
       return;
     }
 
-    result = xml_get_content_of_element(xml_hdl);
-    if(result==NULL)
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
     {
       xml_close(xml_hdl);
       return;
@@ -5254,22 +5549,56 @@ void UI_Mainwindow::read_general_settings()
     if((atoi(result) > 2) || (atoi(result) < 0))
     {
       xml_close(xml_hdl);
-      free(result);
       return;
     }
 
     spectrum_colorbar->method = atoi(result);
-    free(result);
 
     xml_go_up(xml_hdl);
+
+    if(!xml_goto_nth_element_inside(xml_hdl, "auto_adjust", 0))
+    {
+      if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
+      {
+        xml_close(xml_hdl);
+        return;
+      }
+
+      spectrum_colorbar->auto_adjust = atoi(result);
+
+      if((spectrum_colorbar->auto_adjust > 1) || (spectrum_colorbar->auto_adjust < 0))
+      {
+        spectrum_colorbar->auto_adjust = 1;
+      }
+
+      xml_go_up(xml_hdl);
+    }
+
+    if(!xml_goto_nth_element_inside(xml_hdl, "max_colorbar_value", 0))
+    {
+      if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
+      {
+        xml_close(xml_hdl);
+        return;
+      }
+
+      spectrum_colorbar->max_colorbar_value = atof(result);
+
+      if((spectrum_colorbar->max_colorbar_value > 100000.0) || (spectrum_colorbar->max_colorbar_value < 0.0001))
+      {
+        spectrum_colorbar->max_colorbar_value = 1.0;
+      }
+
+      xml_go_up(xml_hdl);
+    }
+
     if(xml_goto_nth_element_inside(xml_hdl, "frequency", 0))
     {
       xml_close(xml_hdl);
       return;
     }
 
-    result = xml_get_content_of_element(xml_hdl);
-    if(result==NULL)
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
     {
       xml_close(xml_hdl);
       return;
@@ -5278,12 +5607,10 @@ void UI_Mainwindow::read_general_settings()
     if((atof(result) > 1000000.0) || (atof(result) < 0.00001))
     {
       xml_close(xml_hdl);
-      free(result);
       return;
     }
 
     spectrum_colorbar->freq[0] = atof(result);
-    free(result);
 
     for(i=1; i < spectrum_colorbar->items; i++)
     {
@@ -5293,8 +5620,7 @@ void UI_Mainwindow::read_general_settings()
         return;
       }
 
-      result = xml_get_content_of_element(xml_hdl);
-      if(result==NULL)
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
       {
         xml_close(xml_hdl);
         return;
@@ -5305,13 +5631,11 @@ void UI_Mainwindow::read_general_settings()
         if((atof(result) > 1000000.0) || (atof(result) <= spectrum_colorbar->freq[i-1]))
         {
           xml_close(xml_hdl);
-          free(result);
           return;
         }
       }
 
       spectrum_colorbar->freq[i] = atof(result);
-      free(result);
     }
 
     xml_go_up(xml_hdl);
@@ -5322,8 +5646,7 @@ void UI_Mainwindow::read_general_settings()
       return;
     }
 
-    result = xml_get_content_of_element(xml_hdl);
-    if(result==NULL)
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
     {
       xml_close(xml_hdl);
       return;
@@ -5332,12 +5655,10 @@ void UI_Mainwindow::read_general_settings()
     if((atoi(result) > 18) || (atoi(result) < 2))
     {
       xml_close(xml_hdl);
-      free(result);
       return;
     }
 
     spectrum_colorbar->color[0] = atoi(result);
-    free(result);
 
     for(i=1; i < spectrum_colorbar->items; i++)
     {
@@ -5347,8 +5668,7 @@ void UI_Mainwindow::read_general_settings()
         return;
       }
 
-      result = xml_get_content_of_element(xml_hdl);
-      if(result==NULL)
+      if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
       {
         xml_close(xml_hdl);
         return;
@@ -5357,20 +5677,17 @@ void UI_Mainwindow::read_general_settings()
       if((atoi(result) > 18) || (atoi(result) < 2))
       {
         xml_close(xml_hdl);
-        free(result);
         return;
       }
 
       spectrum_colorbar->color[i] = atoi(result);
-      free(result);
     }
 
     xml_go_up(xml_hdl);
 
     if(!(xml_goto_nth_element_inside(xml_hdl, "label", 0)))
     {
-      result = xml_get_content_of_element(xml_hdl);
-      if(result==NULL)
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
       {
         xml_close(xml_hdl);
         return;
@@ -5378,7 +5695,6 @@ void UI_Mainwindow::read_general_settings()
 
       strncpy(spectrum_colorbar->label[0], result, 16);
       spectrum_colorbar->label[0][16] = 0;
-      free(result);
 
       for(i=1; i < spectrum_colorbar->items; i++)
       {
@@ -5388,8 +5704,7 @@ void UI_Mainwindow::read_general_settings()
           return;
         }
 
-        result = xml_get_content_of_element(xml_hdl);
-        if(result==NULL)
+        if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
         {
           xml_close(xml_hdl);
           return;
@@ -5397,7 +5712,6 @@ void UI_Mainwindow::read_general_settings()
 
         strncpy(spectrum_colorbar->label[i], result, 16);
         spectrum_colorbar->label[i][16] = 0;
-        free(result);
       }
 
       xml_go_up(xml_hdl);
@@ -5408,8 +5722,7 @@ void UI_Mainwindow::read_general_settings()
 
   if(!(xml_goto_nth_element_inside(xml_hdl, "maxdftblocksize", 0)))
   {
-    result = xml_get_content_of_element(xml_hdl);
-    if(result==NULL)
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
     {
       xml_close(xml_hdl);
       return;
@@ -5418,13 +5731,10 @@ void UI_Mainwindow::read_general_settings()
     if(atoi(result) < 10)
     {
       xml_close(xml_hdl);
-      free(result);
       return;
     }
 
     maxdftblocksize = atoi(result);
-
-    free(result);
   }
 
   xml_go_up(xml_hdl);
@@ -5433,8 +5743,7 @@ void UI_Mainwindow::read_general_settings()
   {
     if(!(xml_goto_nth_element_inside(xml_hdl, "format", 0)))
     {
-      result = xml_get_content_of_element(xml_hdl);
-      if(result==NULL)
+      if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
       {
         xml_close(xml_hdl);
         return;
@@ -5447,15 +5756,12 @@ void UI_Mainwindow::read_general_settings()
         import_annotations_var->format = 1;
       }
 
-      free(result);
-
       xml_go_up(xml_hdl);
     }
 
     if(!(xml_goto_nth_element_inside(xml_hdl, "onsettimeformat", 0)))
     {
-      result = xml_get_content_of_element(xml_hdl);
-      if(result==NULL)
+      if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
       {
         xml_close(xml_hdl);
         return;
@@ -5463,15 +5769,12 @@ void UI_Mainwindow::read_general_settings()
 
       import_annotations_var->onsettimeformat = atoi(result);
 
-      free(result);
-
       xml_go_up(xml_hdl);
     }
 
     if(!(xml_goto_nth_element_inside(xml_hdl, "onsetcolumn", 0)))
     {
-      result = xml_get_content_of_element(xml_hdl);
-      if(result==NULL)
+      if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
       {
         xml_close(xml_hdl);
         return;
@@ -5479,15 +5782,12 @@ void UI_Mainwindow::read_general_settings()
 
       import_annotations_var->onsetcolumn = atoi(result);
 
-      free(result);
-
       xml_go_up(xml_hdl);
     }
 
     if(!(xml_goto_nth_element_inside(xml_hdl, "descriptioncolumn", 0)))
     {
-      result = xml_get_content_of_element(xml_hdl);
-      if(result==NULL)
+      if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
       {
         xml_close(xml_hdl);
         return;
@@ -5495,15 +5795,12 @@ void UI_Mainwindow::read_general_settings()
 
       import_annotations_var->descriptioncolumn = atoi(result);
 
-      free(result);
-
       xml_go_up(xml_hdl);
     }
 
     if(!(xml_goto_nth_element_inside(xml_hdl, "useduration", 0)))
     {
-      result = xml_get_content_of_element(xml_hdl);
-      if(result==NULL)
+      if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
       {
         xml_close(xml_hdl);
         return;
@@ -5516,15 +5813,12 @@ void UI_Mainwindow::read_general_settings()
         import_annotations_var->useduration = 0;
       }
 
-      free(result);
-
       xml_go_up(xml_hdl);
     }
 
     if(!(xml_goto_nth_element_inside(xml_hdl, "durationcolumn", 0)))
     {
-      result = xml_get_content_of_element(xml_hdl);
-      if(result==NULL)
+      if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
       {
         xml_close(xml_hdl);
         return;
@@ -5537,15 +5831,12 @@ void UI_Mainwindow::read_general_settings()
         import_annotations_var->durationcolumn = 0;
       }
 
-      free(result);
-
       xml_go_up(xml_hdl);
     }
 
     if(!(xml_goto_nth_element_inside(xml_hdl, "datastartline", 0)))
     {
-      result = xml_get_content_of_element(xml_hdl);
-      if(result==NULL)
+      if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
       {
         xml_close(xml_hdl);
         return;
@@ -5553,15 +5844,12 @@ void UI_Mainwindow::read_general_settings()
 
       import_annotations_var->datastartline = atoi(result);
 
-      free(result);
-
       xml_go_up(xml_hdl);
     }
 
     if(!(xml_goto_nth_element_inside(xml_hdl, "separator", 0)))
     {
-      result = xml_get_content_of_element(xml_hdl);
-      if(result==NULL)
+      if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
       {
         xml_close(xml_hdl);
         return;
@@ -5571,15 +5859,12 @@ void UI_Mainwindow::read_general_settings()
 
       import_annotations_var->separator[3] = 0;
 
-      free(result);
-
       xml_go_up(xml_hdl);
     }
 
     if(!(xml_goto_nth_element_inside(xml_hdl, "dceventbittime", 0)))
     {
-      result = xml_get_content_of_element(xml_hdl);
-      if(result==NULL)
+      if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
       {
         xml_close(xml_hdl);
         return;
@@ -5587,15 +5872,12 @@ void UI_Mainwindow::read_general_settings()
 
       import_annotations_var->dceventbittime = atoi(result);
 
-      free(result);
-
       xml_go_up(xml_hdl);
     }
 
     if(!(xml_goto_nth_element_inside(xml_hdl, "triggerlevel", 0)))
     {
-      result = xml_get_content_of_element(xml_hdl);
-      if(result==NULL)
+      if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
       {
         xml_close(xml_hdl);
         return;
@@ -5603,15 +5885,12 @@ void UI_Mainwindow::read_general_settings()
 
       import_annotations_var->triggerlevel = atof(result);
 
-      free(result);
-
       xml_go_up(xml_hdl);
     }
 
     if(!(xml_goto_nth_element_inside(xml_hdl, "manualdescription", 0)))
     {
-      result = xml_get_content_of_element(xml_hdl);
-      if(result==NULL)
+      if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
       {
         xml_close(xml_hdl);
         return;
@@ -5624,15 +5903,12 @@ void UI_Mainwindow::read_general_settings()
         import_annotations_var->manualdescription = 0;
       }
 
-      free(result);
-
       xml_go_up(xml_hdl);
     }
 
     if(!(xml_goto_nth_element_inside(xml_hdl, "description", 0)))
     {
-      result = xml_get_content_of_element(xml_hdl);
-      if(result==NULL)
+      if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
       {
         xml_close(xml_hdl);
         return;
@@ -5642,15 +5918,12 @@ void UI_Mainwindow::read_general_settings()
 
       import_annotations_var->description[20] = 0;
 
-      free(result);
-
       xml_go_up(xml_hdl);
     }
 
     if(!(xml_goto_nth_element_inside(xml_hdl, "ignoreconsecutive", 0)))
     {
-      result = xml_get_content_of_element(xml_hdl);
-      if(result==NULL)
+      if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
       {
         xml_close(xml_hdl);
         return;
@@ -5663,8 +5936,6 @@ void UI_Mainwindow::read_general_settings()
         import_annotations_var->ignoreconsecutive = 0;
       }
 
-      free(result);
-
       xml_go_up(xml_hdl);
     }
 
@@ -5675,8 +5946,7 @@ void UI_Mainwindow::read_general_settings()
   {
     if(!(xml_goto_nth_element_inside(xml_hdl, "separator", 0)))
     {
-      result = xml_get_content_of_element(xml_hdl);
-      if(result==NULL)
+      if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
       {
         xml_close(xml_hdl);
         return;
@@ -5684,15 +5954,12 @@ void UI_Mainwindow::read_general_settings()
 
       export_annotations_var->separator = atoi(result);
 
-      free(result);
-
       xml_go_up(xml_hdl);
     }
 
     if(!(xml_goto_nth_element_inside(xml_hdl, "format", 0)))
     {
-      result = xml_get_content_of_element(xml_hdl);
-      if(result==NULL)
+      if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
       {
         xml_close(xml_hdl);
         return;
@@ -5700,23 +5967,18 @@ void UI_Mainwindow::read_general_settings()
 
       export_annotations_var->format = atoi(result);
 
-      free(result);
-
       xml_go_up(xml_hdl);
     }
 
     if(!(xml_goto_nth_element_inside(xml_hdl, "duration", 0)))
     {
-      result = xml_get_content_of_element(xml_hdl);
-      if(result==NULL)
+      if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
       {
         xml_close(xml_hdl);
         return;
       }
 
       export_annotations_var->duration = atoi(result);
-
-      free(result);
 
       xml_go_up(xml_hdl);
     }
@@ -5726,8 +5988,7 @@ void UI_Mainwindow::read_general_settings()
 
   if(!(xml_goto_nth_element_inside(xml_hdl, "live_stream_update_interval", 0)))
   {
-    result = xml_get_content_of_element(xml_hdl);
-    if(result==NULL)
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
     {
       xml_close(xml_hdl);
       return;
@@ -5739,15 +6000,12 @@ void UI_Mainwindow::read_general_settings()
       live_stream_update_interval = 500;
     }
 
-    free(result);
-
     xml_go_up(xml_hdl);
   }
 
   if(!(xml_goto_nth_element_inside(xml_hdl, "powerlinefreq", 0)))
   {
-    result = xml_get_content_of_element(xml_hdl);
-    if(result==NULL)
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
     {
       xml_close(xml_hdl);
       return;
@@ -5759,15 +6017,12 @@ void UI_Mainwindow::read_general_settings()
       powerlinefreq = 50;
     }
 
-    free(result);
-
     xml_go_up(xml_hdl);
   }
 
   if(!(xml_goto_nth_element_inside(xml_hdl, "mousewheelsens", 0)))
   {
-    result = xml_get_content_of_element(xml_hdl);
-    if(result==NULL)
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
     {
       xml_close(xml_hdl);
       return;
@@ -5779,15 +6034,12 @@ void UI_Mainwindow::read_general_settings()
       mousewheelsens = 10;
     }
 
-    free(result);
-
     xml_go_up(xml_hdl);
   }
 
   if(!(xml_goto_nth_element_inside(xml_hdl, "average_period", 0)))
   {
-    result = xml_get_content_of_element(xml_hdl);
-    if(result==NULL)
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
     {
       xml_close(xml_hdl);
       return;
@@ -5795,15 +6047,12 @@ void UI_Mainwindow::read_general_settings()
 
     average_period = atof(result);
 
-    free(result);
-
     xml_go_up(xml_hdl);
   }
 
   if(!(xml_goto_nth_element_inside(xml_hdl, "average_ratio", 0)))
   {
-    result = xml_get_content_of_element(xml_hdl);
-    if(result==NULL)
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
     {
       xml_close(xml_hdl);
       return;
@@ -5815,15 +6064,12 @@ void UI_Mainwindow::read_general_settings()
       average_ratio = 0;
     }
 
-    free(result);
-
     xml_go_up(xml_hdl);
   }
 
   if(!(xml_goto_nth_element_inside(xml_hdl, "average_upsidedown", 0)))
   {
-    result = xml_get_content_of_element(xml_hdl);
-    if(result==NULL)
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
     {
       xml_close(xml_hdl);
       return;
@@ -5838,15 +6084,12 @@ void UI_Mainwindow::read_general_settings()
       average_upsidedown = 0;
     }
 
-    free(result);
-
     xml_go_up(xml_hdl);
   }
 
   if(!(xml_goto_nth_element_inside(xml_hdl, "average_bw", 0)))
   {
-    result = xml_get_content_of_element(xml_hdl);
-    if(result==NULL)
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
     {
       xml_close(xml_hdl);
       return;
@@ -5861,15 +6104,12 @@ void UI_Mainwindow::read_general_settings()
       average_bw = 0;
     }
 
-    free(result);
-
     xml_go_up(xml_hdl);
   }
 
   if(!(xml_goto_nth_element_inside(xml_hdl, "spectrum_bw", 0)))
   {
-    result = xml_get_content_of_element(xml_hdl);
-    if(result==NULL)
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
     {
       xml_close(xml_hdl);
       return;
@@ -5884,15 +6124,12 @@ void UI_Mainwindow::read_general_settings()
       spectrum_bw = 0;
     }
 
-    free(result);
-
     xml_go_up(xml_hdl);
   }
 
   if(!(xml_goto_nth_element_inside(xml_hdl, "spectrum_sqrt", 0)))
   {
-    result = xml_get_content_of_element(xml_hdl);
-    if(result==NULL)
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
     {
       xml_close(xml_hdl);
       return;
@@ -5907,15 +6144,12 @@ void UI_Mainwindow::read_general_settings()
       spectrum_sqrt = 0;
     }
 
-    free(result);
-
     xml_go_up(xml_hdl);
   }
 
   if(!(xml_goto_nth_element_inside(xml_hdl, "spectrum_vlog", 0)))
   {
-    result = xml_get_content_of_element(xml_hdl);
-    if(result==NULL)
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
     {
       xml_close(xml_hdl);
       return;
@@ -5930,15 +6164,12 @@ void UI_Mainwindow::read_general_settings()
       spectrum_vlog = 0;
     }
 
-    free(result);
-
     xml_go_up(xml_hdl);
   }
 
   if(!(xml_goto_nth_element_inside(xml_hdl, "spectrumdock_sqrt", 0)))
   {
-    result = xml_get_content_of_element(xml_hdl);
-    if(result==NULL)
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
     {
       xml_close(xml_hdl);
       return;
@@ -5953,15 +6184,12 @@ void UI_Mainwindow::read_general_settings()
       spectrumdock_sqrt = 0;
     }
 
-    free(result);
-
     xml_go_up(xml_hdl);
   }
 
   if(!(xml_goto_nth_element_inside(xml_hdl, "spectrumdock_vlog", 0)))
   {
-    result = xml_get_content_of_element(xml_hdl);
-    if(result==NULL)
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
     {
       xml_close(xml_hdl);
       return;
@@ -5976,15 +6204,12 @@ void UI_Mainwindow::read_general_settings()
       spectrumdock_vlog = 0;
     }
 
-    free(result);
-
     xml_go_up(xml_hdl);
   }
 
   if(!(xml_goto_nth_element_inside(xml_hdl, "z_score_var.zscore_page_len", 0)))
   {
-    result = xml_get_content_of_element(xml_hdl);
-    if(result==NULL)
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
     {
       xml_close(xml_hdl);
       return;
@@ -5997,15 +6222,12 @@ void UI_Mainwindow::read_general_settings()
       z_score_var.zscore_page_len = 30;
     }
 
-    free(result);
-
     xml_go_up(xml_hdl);
   }
 
   if(!(xml_goto_nth_element_inside(xml_hdl, "z_score_var.z_threshold", 0)))
   {
-    result = xml_get_content_of_element(xml_hdl);
-    if(result==NULL)
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
     {
       xml_close(xml_hdl);
       return;
@@ -6018,15 +6240,12 @@ void UI_Mainwindow::read_general_settings()
       z_score_var.z_threshold = 0.0;
     }
 
-    free(result);
-
     xml_go_up(xml_hdl);
   }
 
   if(!(xml_goto_nth_element_inside(xml_hdl, "z_score_var.crossoverfreq", 0)))
   {
-    result = xml_get_content_of_element(xml_hdl);
-    if(result==NULL)
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
     {
       xml_close(xml_hdl);
       return;
@@ -6039,15 +6258,12 @@ void UI_Mainwindow::read_general_settings()
       z_score_var.crossoverfreq = 7.5;
     }
 
-    free(result);
-
     xml_go_up(xml_hdl);
   }
 
   if(!(xml_goto_nth_element_inside(xml_hdl, "z_score_var.z_hysteresis", 0)))
   {
-    result = xml_get_content_of_element(xml_hdl);
-    if(result==NULL)
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
     {
       xml_close(xml_hdl);
       return;
@@ -6060,15 +6276,12 @@ void UI_Mainwindow::read_general_settings()
       z_score_var.z_hysteresis = 0.0;
     }
 
-    free(result);
-
     xml_go_up(xml_hdl);
   }
 
   if(!(xml_goto_nth_element_inside(xml_hdl, "z_score_var.zscore_error_detection", 0)))
   {
-    result = xml_get_content_of_element(xml_hdl);
-    if(result==NULL)
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
     {
       xml_close(xml_hdl);
       return;
@@ -6081,8 +6294,6 @@ void UI_Mainwindow::read_general_settings()
       z_score_var.zscore_error_detection = 50;
     }
 
-    free(result);
-
     xml_go_up(xml_hdl);
   }
 
@@ -6090,8 +6301,7 @@ void UI_Mainwindow::read_general_settings()
   {
     if(!(xml_goto_nth_element_inside(xml_hdl, "sf", 0)))
     {
-      result = xml_get_content_of_element(xml_hdl);
-      if(result==NULL)
+      if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
       {
         xml_close(xml_hdl);
         return;
@@ -6101,15 +6311,12 @@ void UI_Mainwindow::read_general_settings()
       if(raw2edf_var.sf < 1)  raw2edf_var.sf = 1;
       if(raw2edf_var.sf > 1000000)  raw2edf_var.sf = 1000000;
 
-      free(result);
-
       xml_go_up(xml_hdl);
     }
 
     if(!(xml_goto_nth_element_inside(xml_hdl, "chns", 0)))
     {
-      result = xml_get_content_of_element(xml_hdl);
-      if(result==NULL)
+      if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
       {
         xml_close(xml_hdl);
         return;
@@ -6119,15 +6326,12 @@ void UI_Mainwindow::read_general_settings()
       if(raw2edf_var.chns < 1)  raw2edf_var.chns = 1;
       if(raw2edf_var.chns > 256)  raw2edf_var.chns = 256;
 
-      free(result);
-
       xml_go_up(xml_hdl);
     }
 
     if(!(xml_goto_nth_element_inside(xml_hdl, "phys_max", 0)))
     {
-      result = xml_get_content_of_element(xml_hdl);
-      if(result==NULL)
+      if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
       {
         xml_close(xml_hdl);
         return;
@@ -6137,15 +6341,12 @@ void UI_Mainwindow::read_general_settings()
       if(raw2edf_var.phys_max < 1)  raw2edf_var.phys_max = 1;
       if(raw2edf_var.phys_max > 10000000)  raw2edf_var.phys_max = 10000000;
 
-      free(result);
-
       xml_go_up(xml_hdl);
     }
 
     if(!(xml_goto_nth_element_inside(xml_hdl, "straightbinary", 0)))
     {
-      result = xml_get_content_of_element(xml_hdl);
-      if(result==NULL)
+      if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
       {
         xml_close(xml_hdl);
         return;
@@ -6155,15 +6356,12 @@ void UI_Mainwindow::read_general_settings()
       if(raw2edf_var.straightbinary < 0)  raw2edf_var.straightbinary = 0;
       if(raw2edf_var.straightbinary > 1)  raw2edf_var.straightbinary = 1;
 
-      free(result);
-
       xml_go_up(xml_hdl);
     }
 
     if(!(xml_goto_nth_element_inside(xml_hdl, "endianness", 0)))
     {
-      result = xml_get_content_of_element(xml_hdl);
-      if(result==NULL)
+      if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
       {
         xml_close(xml_hdl);
         return;
@@ -6173,15 +6371,12 @@ void UI_Mainwindow::read_general_settings()
       if(raw2edf_var.endianness < 0)  raw2edf_var.endianness = 0;
       if(raw2edf_var.endianness > 1)  raw2edf_var.endianness = 1;
 
-      free(result);
-
       xml_go_up(xml_hdl);
     }
 
     if(!(xml_goto_nth_element_inside(xml_hdl, "samplesize", 0)))
     {
-      result = xml_get_content_of_element(xml_hdl);
-      if(result==NULL)
+      if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
       {
         xml_close(xml_hdl);
         return;
@@ -6191,15 +6386,12 @@ void UI_Mainwindow::read_general_settings()
       if(raw2edf_var.samplesize < 1)  raw2edf_var.samplesize = 1;
       if(raw2edf_var.samplesize > 2)  raw2edf_var.samplesize = 2;
 
-      free(result);
-
       xml_go_up(xml_hdl);
     }
 
     if(!(xml_goto_nth_element_inside(xml_hdl, "offset", 0)))
     {
-      result = xml_get_content_of_element(xml_hdl);
-      if(result==NULL)
+      if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
       {
         xml_close(xml_hdl);
         return;
@@ -6209,15 +6401,12 @@ void UI_Mainwindow::read_general_settings()
       if(raw2edf_var.offset < 0)  raw2edf_var.offset = 0;
       if(raw2edf_var.offset > 1000000)  raw2edf_var.offset = 1000000;
 
-      free(result);
-
       xml_go_up(xml_hdl);
     }
 
     if(!(xml_goto_nth_element_inside(xml_hdl, "skipblocksize", 0)))
     {
-      result = xml_get_content_of_element(xml_hdl);
-      if(result==NULL)
+      if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
       {
         xml_close(xml_hdl);
         return;
@@ -6227,15 +6416,12 @@ void UI_Mainwindow::read_general_settings()
       if(raw2edf_var.skipblocksize < 0)  raw2edf_var.skipblocksize = 0;
       if(raw2edf_var.skipblocksize > 1000000)  raw2edf_var.skipblocksize = 1000000;
 
-      free(result);
-
       xml_go_up(xml_hdl);
     }
 
     if(!(xml_goto_nth_element_inside(xml_hdl, "skipbytes", 0)))
     {
-      result = xml_get_content_of_element(xml_hdl);
-      if(result==NULL)
+      if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
       {
         xml_close(xml_hdl);
         return;
@@ -6245,15 +6431,12 @@ void UI_Mainwindow::read_general_settings()
       if(raw2edf_var.skipbytes < 1)  raw2edf_var.skipbytes = 1;
       if(raw2edf_var.skipbytes > 1000000)  raw2edf_var.skipbytes = 1000000;
 
-      free(result);
-
       xml_go_up(xml_hdl);
     }
 
     if(!(xml_goto_nth_element_inside(xml_hdl, "phys_dim", 0)))
     {
-      result = xml_get_content_of_element(xml_hdl);
-      if(result==NULL)
+      if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
       {
         xml_close(xml_hdl);
         return;
@@ -6265,8 +6448,6 @@ void UI_Mainwindow::read_general_settings()
       remove_leading_spaces(raw2edf_var.phys_dim);
       remove_trailing_spaces(raw2edf_var.phys_dim);
 
-      free(result);
-
       xml_go_up(xml_hdl);
     }
 
@@ -6275,8 +6456,7 @@ void UI_Mainwindow::read_general_settings()
 
   if(!(xml_goto_nth_element_inside(xml_hdl, "check_for_updates", 0)))
   {
-    result = xml_get_content_of_element(xml_hdl);
-    if(result==NULL)
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
     {
       xml_close(xml_hdl);
       return;
@@ -6285,15 +6465,12 @@ void UI_Mainwindow::read_general_settings()
     check_for_updates = atoi(result);
     if((check_for_updates < 0) || (check_for_updates > 1))  check_for_updates = 1;
 
-    free(result);
-
     xml_go_up(xml_hdl);
   }
 
   if(!(xml_goto_nth_element_inside(xml_hdl, "viewtime_indicator_type", 0)))
   {
-    result = xml_get_content_of_element(xml_hdl);
-    if(result==NULL)
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
     {
       xml_close(xml_hdl);
       return;
@@ -6302,15 +6479,12 @@ void UI_Mainwindow::read_general_settings()
     viewtime_indicator_type = atoi(result);
     if((viewtime_indicator_type < 0) || (viewtime_indicator_type > 2))  viewtime_indicator_type = 1;
 
-    free(result);
-
     xml_go_up(xml_hdl);
   }
 
   if(!(xml_goto_nth_element_inside(xml_hdl, "mainwindow_title_type", 0)))
   {
-    result = xml_get_content_of_element(xml_hdl);
-    if(result==NULL)
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
     {
       xml_close(xml_hdl);
       return;
@@ -6319,7 +6493,19 @@ void UI_Mainwindow::read_general_settings()
     mainwindow_title_type = atoi(result);
     if((mainwindow_title_type < 0) || (mainwindow_title_type > 2))  mainwindow_title_type = 1;
 
-    free(result);
+    xml_go_up(xml_hdl);
+  }
+
+  if(!(xml_goto_nth_element_inside(xml_hdl, "default_amplitude", 0)))
+  {
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
+    {
+      xml_close(xml_hdl);
+      return;
+    }
+
+    default_amplitude = atof(result);
+    if((default_amplitude < 0.001) || (default_amplitude > 10000000))  default_amplitude = 100;
 
     xml_go_up(xml_hdl);
   }
@@ -6574,6 +6760,10 @@ void UI_Mainwindow::write_settings()
 
     fprintf(cfgfile, "      <method>%i</method>\n", spectrum_colorbar->method);
 
+    fprintf(cfgfile, "      <auto_adjust>%i</auto_adjust>\n", spectrum_colorbar->auto_adjust);
+
+    fprintf(cfgfile, "      <max_colorbar_value>%.8f</max_colorbar_value>\n", spectrum_colorbar->max_colorbar_value);
+
     fprintf(cfgfile, "    </spectrummarkerblock>\n");
 
     fprintf(cfgfile, "    <maxdftblocksize>%i</maxdftblocksize>\n", maxdftblocksize);
@@ -6687,6 +6877,8 @@ void UI_Mainwindow::write_settings()
     fprintf(cfgfile, "    <viewtime_indicator_type>%i</viewtime_indicator_type>\n", viewtime_indicator_type);
 
     fprintf(cfgfile, "    <mainwindow_title_type>%i</mainwindow_title_type>\n", mainwindow_title_type);
+
+    fprintf(cfgfile, "    <default_amplitude>%f</default_amplitude>\n", default_amplitude);
 
     fprintf(cfgfile, "  </UI>\n</config>\n");
 
@@ -6802,10 +6994,12 @@ void UI_Mainwindow::show_kb_shortcuts()
    "Insert\tzoom in\n"
 #ifdef Q_OS_WIN32
    "\nCtrl+O\tOpen a file\n"
+   "Ctrl+Shift+O\tOpen a stream\n"
    "Ctrl+F4\tClose all files\n"
    "Alt+F4\tExit program\n"
 #else
    "\nCtrl+O\tOpen a file\n"
+   "Ctrl+Shift+O\tOpen a stream\n"
    "Ctrl+W\tClose all files\n"
    "Ctrl+Q\tExit program\n"
 #endif
@@ -7008,10 +7202,10 @@ struct signalcompblock * UI_Mainwindow::create_signalcomp_copy(struct signalcomp
 
   memcpy(newsignalcomp, original_signalcomp, sizeof(struct signalcompblock));
 
-  for(i=0; i<newsignalcomp->spike_filter_cnt; i++)
+  if(newsignalcomp->spike_filter)
   {
-    newsignalcomp->spike_filter[i] = create_spike_filter_copy(original_signalcomp->spike_filter[i]);
-    if(newsignalcomp->spike_filter[i] == NULL)
+    newsignalcomp->spike_filter = create_spike_filter_copy(original_signalcomp->spike_filter);
+    if(newsignalcomp->spike_filter == NULL)
     {
       QMessageBox messagewindow(QMessageBox::Critical, "Error", "malloc() error");
       messagewindow.exec();

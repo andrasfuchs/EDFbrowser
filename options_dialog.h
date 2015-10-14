@@ -3,28 +3,24 @@
 *
 * Author: Teunis van Beelen
 *
-* Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 Teunis van Beelen
+* Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015 Teunis van Beelen
 *
-* teuniz@gmail.com
+* Email: teuniz@gmail.com
 *
 ***************************************************************************
 *
-* This program is free software; you can redistribute it and/or modify
+* This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation version 2 of the License.
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
 * but WITHOUT ANY WARRANTY; without even the implied warranty of
 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 * GNU General Public License for more details.
 *
-* You should have received a copy of the GNU General Public License along
-* with this program; if not, write to the Free Software Foundation, Inc.,
-* 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-*
-***************************************************************************
-*
-* This version of GPL is at http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
 ***************************************************************************
 */
@@ -156,12 +152,14 @@ QLabel         *label1,
                *label4_8,
                *label4_9,
                *label4_10,
+               *label4_11,
                *label2_2,
                *label2_4,
                *label1_3,
                *label2_3,
                *label3_3,
-               *label3_4;
+               *label3_4,
+               *label3_5;
 
 QSpinBox       *spinbox2_1,
                *spinbox2_2,
@@ -170,6 +168,9 @@ QSpinBox       *spinbox2_1,
                *spinbox4_2,
                *spinbox4_3;
 
+QDoubleSpinBox *dspinbox3_2,
+               *dspinbox4_4;
+
 QComboBox      *combobox4_1,
                *combobox4_2,
                *combobox4_3;
@@ -177,6 +178,7 @@ QComboBox      *combobox4_1,
 QCheckBox      *checkbox1,
                *checkbox2,
                *checkbox3,
+               *checkbox3_1,
                *checkbox4,
                *checkbox4_1,
                *checkbox4_2,
@@ -212,6 +214,7 @@ void checkbox1Clicked(int);
 void checkbox2Clicked(int);
 void checkbox3Clicked(int);
 void checkbox4Clicked(int);
+void checkbox3_1Clicked(int);
 void checkbox4_1Clicked(int);
 void checkbox4_2Clicked(int);
 void checkbox4_3Clicked(int);
@@ -225,7 +228,8 @@ void checkBoxChanged(int);
 void ApplyButton2Clicked();
 void radioButtonToggled(bool);
 void spinBoxValueChanged(double);
-void spinBox3_3ValueChanged(int);
+void spinBox3_1ValueChanged(int);
+void dspinBox3_2ValueChanged(double);
 void labelEdited(const QString  &);
 void calibrate_checkbox_stateChanged(int);
 void spinBox4_1ValueChanged(int);
@@ -238,6 +242,7 @@ void saveColorSchemaButtonClicked();
 void loadColorSchemaButtonClicked();
 void loadColorSchema_NK();
 void loadColorSchema_Dark();
+void dspinbox4_4ValueChanged(double);
 
 };
 

@@ -7,7 +7,7 @@
     <meta name="description" content="EDFbrowser manual">
 </head><body>
 
-<h1>EDFbrowser 1.54 manual</h1>
+<h1>EDFbrowser 1.56 manual</h1>
 
 <p><br></p>
 
@@ -55,10 +55,12 @@
   <li><a href="#Nihon_Kohden_to_EDF_format_converter">Nihon Kohden to EDF(+) format converter</a></li>
   <li><a href="#UNISENS_TO_EDFPLUS">Unisens to EDF+ format converter</a></li>
   <li><a href="#SCP_ECG_to_EDFplus">SCP ECG to EDF+ format converter</a></li>
+  <li><a href="#MIT_to_EDFplus">MIT to EDF+ format converter</a></li>
   <li><a href="#Manscan_to_EDFplus">Manscan to EDF+ format converter</a></li>
   <li><a href="#Biosemi_to_BDFplus">Biosemi to BDF+ format converter</a></li>
   <li><a href="#Fino_to_EDF">Finometer to EDF format converter</a></li>
   <li><a href="#Wave_to_EDF">Wave to EDF format converter</a></li>
+  <li><a href="#FMaudio_to_EDF">FM Audio ECG to EDF format converter</a></li>
   <li><a href="#Nexfin_to_EDF">Nexfin to EDF format converter</a></li>
   <li><a href="#Emsa_to_EDF">Emsa to EDF+ format converter</a></li>
   <li><a href="#edfd_to_edfc">EDF+D to EDF+C converter</a></li>
@@ -159,7 +161,9 @@
   Be aware that a pagetime of more than five minutes slowsdown the program. Specially when there are<br>
   many signals on the screen and/or high samplefrequencies.<br>
   "3cm/Sec" will adjust the pagetime so that one second equals 3 cm horizontally. In case you get a different<br>
-  result, calibrate your screen in Menu -&gt; Settings -&gt; Calibration.
+  result, calibrate your screen in Menu -&gt; Settings -&gt; Calibration.<br>
+  The timescale can also be changed with the keyboard shortcuts Ctl++ and Ctl+-,<br>
+  or by turning the mousewheel while keeping the Ctl-key pressed.
 </p>
 
 <p><br></p>
@@ -367,6 +371,7 @@
 <p>
   You can adjust or finetune the filters. Left-click on a signallabel and select "Adjust filter".<br>
   You can adjust or finetune the frequency, order or Q-factor of a filter and watch the result at the same time.<br>
+  Use this dialog when you want to remove a filter.
 </p>
 
 <p><br></p>
@@ -497,16 +502,24 @@
 <h3><a name="Spike_filter">Spike filter</a></h3>
 
 <p>
-  The Spike filter can be used to filter out spikes, fast transients or pacemaker impulses.<br>
-  Velocity is expressed in units (e.g. uV) per second. If the filter detects two consecutive samples<br>
-  which have higher velocity, it will consider it the flank of an impulse which will be suppressed<br>
-  by the filter. The suppression period starts at a value of 1 milli-Sec. and will increase in steps of<br>
-  1 milli-Sec. if the impulse width period is longer.<br>
-  Setting the value of Velocity too high, will cause the spikes not to be detected.<br>
-  Setting the value of Velocity too low, will cause false triggers.<br>
+  The Spike filter can be used to filter out spikes, fast transients, glitches or pacemaker impulses.<br>
+  Velocity is expressed in units (e.g. uV) per 0.5 milli-Seconds. If the filter detects two fast transients<br>
+  with opposite polarity and within 3 milli-Seconds, it will consider it a spike which will be suppressed.<br>
+<br>
+  The transient is measured for every sample with a delta t of 0.5 milli-Seconds.<br>
+  (The sample will be compared with an older sample 0.5 milli-Seconds before.)<br>
+<br>
+  Setting the value of velocity too high, will cause the spikes not to be detected.<br>
+  Setting the value of velocity too low, will cause false triggers.<br>
+<br>
   Hold-off is used to prevent a re-trigger of the filter within the hold-off period after the last trigger.<br>
-  The maximum impulse width that can be suppressed is limited to 50 milli-Sec and the value of Hold-off.<br>
-  The Spike filter can not be used with samplerates lower than 1000 Hz.
+<br>
+  The Spike filter can not be used with samplerates lower than 4000 Hz.<br>
+  Signals with lower samplerates will not be visible in the Spike filter dialog.<br>
+<br>
+  The Spike filter dialog has no apply button. Activating or de-activating the spike filter is simply done<br>
+  by selecting or de-selecting one or more signals.<br>
+  Changing the value of velocity or holdoff will cause an immediate update of the screen.
 </p>
 
 <p><br></p>
@@ -673,7 +686,7 @@
   each other. This means that when you navigate (by pressing PgUp/Pgdwn)<br>
   this will affect all signals on the screen. When you choose to "unlock" the files,<br>
   only the signals of the "reference" file will be moved on the screen. You can<br>
-  change which file should be the reference in the Time-menu.<br>
+  change which file should be the reference in the Time menu.<br>
 <br>
   There are three kinds of timelock:<br>
 <br>
@@ -686,16 +699,20 @@
   The clock/date-time of the different files will coincide with each other.<br>
   (this is only useful when the period of registration overlap eachother)<br>
 <br>
+  - No timelock<br>
+<br>
+  Only the signals from the file that has the "time reference" will move when you navigate.<br>
+  Use this option when you want to align two or more files manually.<br>
+<br>
   - Userdefined synchronizing<br>
 <br>
-  When this setting is selected, only the signals from the file that has the<br>
-  "time reference" will move when you navigate.<br>
-  Use this option when you want to align two or more files manually.<br>
+  Files are timelocked with a custom offset. Usually after synchronizing the<br>
+  files manually.<br>
 <br>
 <br>
   The time shown in the leftbottom corner represents the time from the<br>
   file that acts as the "reference". You can change which file should be<br>
-  the reference in the Timenu.<br>
+  the reference in the Time menu.<br>
 <br>
   You can adjust the horizontal position (time) of two different files by using<br>
   two <a href="#Crosshairs">crosshairs</a>. Put one crosshair at a signal of the first file and put the second<br>
@@ -802,7 +819,10 @@
   Uncheck all the signals you do not want into the new file. If you want to shorten the file, choose the first<br>
   datarecord (starttime) and the last datarecord (endtime).<br>
   If you don't want to downsample, set the samplerate divider to 1 (default). Otherwise select one of the possible<br>
-  divider values. Those values depend on the actual samplerate and the datarecord duration.
+  divider values. Those values depend on the actual samplerate and the datarecord duration.<br>
+<br>
+  The anti-aliasing filter order can be choosen as well. The default is 5th order. This prevents practically<br>
+  any change of aliasing.
 </p>
 
 <p><br></p>
@@ -1103,6 +1123,24 @@
 
 <p><br><br></p>
 
+<h3><a name="MIT_to_EDFplus">MIT to EDF+ format converter</a></h3>
+
+<p>
+  This tool converts the waveform data and annotations from the MIT-format to EDF+.<br>
+  It's used for files from PhysioBank at physionet.org.<br>
+  At this moment it supports the "Format 212" and "Format 16".<br>
+  Most of the signal files in PhysioBank are written in format 212.<br>
+  Annotations (in the *.atr or *.ari file) will be read and converted to EDF+ as well.<br>
+  In case the file that contains the annotations has a different extension, just rename the<br>
+  extension to .atr. Otherwise the converter will not read the annotations.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
 <h3><a name="Manscan_to_EDFplus">Manscan to EDF+ format converter</a></h3>
 
 <p>
@@ -1193,6 +1231,26 @@
   It accepts 1 to 256 channels and samplerates from 1 Hz to 500000 Hz.<br>
   8 and 16 bit wave files will be converted to EDF. 24 bit wave files will be<br>
   converted to BDF. Compressed files are not supported.
+</p>
+
+<p><br></p>
+
+<p><a href="#Table_of_Contents">Table of Contents</a></p>
+
+<p><br><br></p>
+
+<h3><a name="FMaudio_to_EDF">FM Audio ECG to EDF converter</a></h3>
+
+<p>
+  This tool converts an audiorecording containing an FM modulated ECG waveform to EDF.<br>
+  The carrier centerfrequency of the FM signal is 1900Hz. Frequency deviation is 100Hz<br>
+  per milli-Volt. This technic is used to upload ECG recording via POTS (Plain Old Telephone Service).<br>
+  The converter has been tested with audio recordings from Cardiette Microtel but should work<br>
+  also with devices from Aerotel HeartView.<br>
+<br>
+  The converter accepts recordings stored in WAV format with 16-bit resolution.<br>
+  The recording must contain only one channel (mono) and the samplerate must be<br>
+  one of the following: 8000, 11025, 16000, 22050, 32000, 44100, 48000, 88200 or 96000 Hz.<br>
 </p>
 
 <p><br></p>

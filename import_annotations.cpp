@@ -3,28 +3,24 @@
 *
 * Author: Teunis van Beelen
 *
-* Copyright (C) 2010, 2011, 2012, 2013, 2014 Teunis van Beelen
+* Copyright (C) 2010, 2011, 2012, 2013, 2014, 2015 Teunis van Beelen
 *
-* teuniz@gmail.com
+* Email: teuniz@gmail.com
 *
 ***************************************************************************
 *
-* This program is free software; you can redistribute it and/or modify
+* This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation version 2 of the License.
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
 * but WITHOUT ANY WARRANTY; without even the implied warranty of
 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 * GNU General Public License for more details.
 *
-* You should have received a copy of the GNU General Public License along
-* with this program; if not, write to the Free Software Foundation, Inc.,
-* 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-*
-***************************************************************************
-*
-* This version of GPL is at http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
 ***************************************************************************
 */
@@ -535,7 +531,7 @@ int UI_ImportAnnotationswindow::import_from_xml(void)
 
   char path[MAX_PATH_LENGTH],
        last_description[256],
-       *result,
+       result[XML_STRBUFLEN],
        duration[32];
 
   long long onset=0LL,
@@ -592,7 +588,7 @@ int UI_ImportAnnotationswindow::import_from_xml(void)
     return(1);
   }
 
-  if(strcmp(xml_hdl->elementname, "annotationlist"))
+  if(strcmp(xml_hdl->elementname[xml_hdl->level], "annotationlist"))
   {
     QMessageBox messagewindow(QMessageBox::Critical, "Error", "Can not find root element \"annotationlist\".");
     messagewindow.exec();
@@ -626,7 +622,14 @@ int UI_ImportAnnotationswindow::import_from_xml(void)
       continue;
     }
 
-    result = xml_get_content_of_element(xml_hdl);
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
+    {
+      QApplication::restoreOverrideCursor();
+      QMessageBox messagewindow(QMessageBox::Critical, "Error", "Can not get content of element \"annotation\".");
+      messagewindow.exec();
+      xml_close(xml_hdl);
+      return(1);
+    }
 
     if(strlen(result) > 17)
     {
@@ -682,7 +685,14 @@ int UI_ImportAnnotationswindow::import_from_xml(void)
 
     if(!xml_goto_nth_element_inside(xml_hdl, "duration", 0))
     {
-      result = xml_get_content_of_element(xml_hdl);
+      if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
+      {
+        QApplication::restoreOverrideCursor();
+        QMessageBox messagewindow(QMessageBox::Critical, "Error", "Can not get content of element \"duration\".");
+        messagewindow.exec();
+        xml_close(xml_hdl);
+        return(1);
+      }
 
       strncpy(duration, result, 16);
       duration[15] = 0;
@@ -695,8 +705,6 @@ int UI_ImportAnnotationswindow::import_from_xml(void)
         duration[0] = 0;
       }
 
-      free(result);
-
       xml_go_up(xml_hdl);
     }
 
@@ -706,7 +714,14 @@ int UI_ImportAnnotationswindow::import_from_xml(void)
       continue;
     }
 
-    result = xml_get_content_of_element(xml_hdl);
+    if(xml_get_content_of_element(xml_hdl, result, XML_STRBUFLEN))
+    {
+      QApplication::restoreOverrideCursor();
+      QMessageBox messagewindow(QMessageBox::Critical, "Error", "Can not get content of element \"description\".");
+      messagewindow.exec();
+      xml_close(xml_hdl);
+      return(1);
+    }
 
     if((!ignore_consecutive) || (strcmp(result, last_description)))
     {
@@ -716,7 +731,6 @@ int UI_ImportAnnotationswindow::import_from_xml(void)
         QApplication::restoreOverrideCursor();
         QMessageBox messagewindow(QMessageBox::Critical, "Error", "A memory allocation error occurred (annotation).");
         messagewindow.exec();
-        free(result);
         xml_close(xml_hdl);
         return(1);
       }
@@ -732,8 +746,6 @@ int UI_ImportAnnotationswindow::import_from_xml(void)
 
       strcpy(last_description, result);
     }
-
-    free(result);
 
     xml_go_up(xml_hdl);
 

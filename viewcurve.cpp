@@ -3,28 +3,24 @@
 *
 * Author: Teunis van Beelen
 *
-* Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 Teunis van Beelen
+* Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015 Teunis van Beelen
 *
-* teuniz@gmail.com
+* Email: teuniz@gmail.com
 *
 ***************************************************************************
 *
-* This program is free software; you can redistribute it and/or modify
+* This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation version 2 of the License.
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
 * but WITHOUT ANY WARRANTY; without even the implied warranty of
 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 * GNU General Public License for more details.
 *
-* You should have received a copy of the GNU General Public License along
-* with this program; if not, write to the Free Software Foundation, Inc.,
-* 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-*
-***************************************************************************
-*
-* This version of GPL is at http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
 ***************************************************************************
 */
@@ -1329,8 +1325,9 @@ void ViewCurve::drawCurve_stage_2(QPainter *painter, int w_width, int w_height, 
       marker_x;
 
   char *viewbuf,
-       string[256],
-       str2[32];
+       string[600],
+       str2[32],
+       str3[128];
 
   long long time_ppixel,
             ll_elapsed_time,
@@ -1829,21 +1826,32 @@ void ViewCurve::drawCurve_stage_2(QPainter *painter, int w_width, int w_height, 
 
           l_tmp = annot->onset - mainwindow->edfheaderlist[i]->starttime_offset;
 
-          if(l_tmp < 0LL)
+          if(mainwindow->annotations_onset_relative)
           {
-            snprintf(string, 32, "-%i:%02i:%02i.%04i",
-                    (int)(((-(l_tmp)) / TIME_DIMENSION)/ 3600LL),
-                    (int)((((-(l_tmp)) / TIME_DIMENSION) % 3600LL) / 60LL),
-                    (int)(((-(l_tmp)) / TIME_DIMENSION) % 60LL),
-                    (int)((((-(l_tmp)) % TIME_DIMENSION) / 1000LL)));
+            if(l_tmp < 0LL)
+            {
+              snprintf(string, (MAX_ANNOTATION_LEN + 32) / 2, "-%i:%02i:%02i.%04i",
+                      (int)(((-(l_tmp)) / TIME_DIMENSION)/ 3600LL),
+                      (int)((((-(l_tmp)) / TIME_DIMENSION) % 3600LL) / 60LL),
+                      (int)(((-(l_tmp)) / TIME_DIMENSION) % 60LL),
+                      (int)((((-(l_tmp)) % TIME_DIMENSION) / 1000LL)));
+            }
+            else
+            {
+              snprintf(string, (MAX_ANNOTATION_LEN + 32) / 2, "%i:%02i:%02i.%04i",
+                      (int)((l_tmp / TIME_DIMENSION)/ 3600LL),
+                      (int)(((l_tmp / TIME_DIMENSION) % 3600LL) / 60LL),
+                      (int)((l_tmp / TIME_DIMENSION) % 60LL),
+                      (int)(((l_tmp % TIME_DIMENSION) / 1000LL)));
+            }
           }
           else
           {
-            snprintf(string, 32, "%i:%02i:%02i.%04i",
-                    (int)((l_tmp / TIME_DIMENSION)/ 3600LL),
-                    (int)(((l_tmp / TIME_DIMENSION) % 3600LL) / 60LL),
-                    (int)((l_tmp / TIME_DIMENSION) % 60LL),
-                    (int)(((l_tmp % TIME_DIMENSION) / 1000LL)));
+            snprintf(string, MAX_ANNOTATION_LEN + 32, "%i:%02i:%02i.%04i",
+                    (int)((((annot->onset + mainwindow->edfheaderlist[i]->l_starttime) / TIME_DIMENSION)/ 3600) % 24),
+                    (int)((((annot->onset + mainwindow->edfheaderlist[i]->l_starttime) / TIME_DIMENSION) % 3600) / 60),
+                    (int)(((annot->onset + mainwindow->edfheaderlist[i]->l_starttime) / TIME_DIMENSION) % 60),
+                    (int)(((annot->onset + mainwindow->edfheaderlist[i]->l_starttime) % TIME_DIMENSION) / 1000LL));
           }
 
           remove_trailing_zeros(string);
@@ -1974,11 +1982,20 @@ void ViewCurve::drawCurve_stage_2(QPainter *painter, int w_width, int w_height, 
                         (int)(((crosshair_1.time / TIME_DIMENSION) % 3600LL) / 60LL),
                         (int)((crosshair_1.time / TIME_DIMENSION) % 60LL),
                         (int)((crosshair_1.time % TIME_DIMENSION) / 1000LL));
-        snprintf(string + strlen(string), 32, " (%i:%02i:%02i.%04i)",
-                (int)((crosshair_1.time_relative / TIME_DIMENSION)/ 3600LL),
-                (int)(((crosshair_1.time_relative / TIME_DIMENSION) % 3600LL) / 60LL),
-                (int)((crosshair_1.time_relative / TIME_DIMENSION) % 60LL),
-                (int)((crosshair_1.time_relative % TIME_DIMENSION) / 1000LL));
+        if(crosshair_1.time_relative >= TIME_DIMENSION)
+        {
+          snprintf(string + strlen(string), 32, " (%i:%02i:%02i.%04i)",
+                  (int)((crosshair_1.time_relative / TIME_DIMENSION)/ 3600LL),
+                  (int)(((crosshair_1.time_relative / TIME_DIMENSION) % 3600LL) / 60LL),
+                  (int)((crosshair_1.time_relative / TIME_DIMENSION) % 60LL),
+                  (int)((crosshair_1.time_relative % TIME_DIMENSION) / 1000LL));
+        }
+        else
+        {
+          convert_to_metric_suffix(str3, (double)crosshair_1.time_relative / TIME_DIMENSION);
+
+          snprintf(string + strlen(string), 32, " (%sS)", str3);
+        }
 
         painter->drawText(crosshair_1.x_position + 5, crosshair_1.y_position - 25, string);
         if(signalcomp[i]->alias[0] != 0)
@@ -2048,11 +2065,20 @@ void ViewCurve::drawCurve_stage_2(QPainter *painter, int w_width, int w_height, 
                         (int)(((crosshair_2.time / TIME_DIMENSION) % 3600LL) / 60LL),
                         (int)((crosshair_2.time / TIME_DIMENSION) % 60LL),
                         (int)((crosshair_2.time % TIME_DIMENSION) / 1000LL));
-        snprintf(string + strlen(string), 32, " (%i:%02i:%02i.%04i)",
-                (int)((crosshair_2.time_relative / TIME_DIMENSION)/ 3600LL),
-                (int)(((crosshair_2.time_relative / TIME_DIMENSION) % 3600LL) / 60LL),
-                (int)((crosshair_2.time_relative / TIME_DIMENSION) % 60LL),
-                (int)((crosshair_2.time_relative % TIME_DIMENSION) / 1000LL));
+        if(crosshair_2.time_relative >= TIME_DIMENSION)
+        {
+          snprintf(string + strlen(string), 32, " (%i:%02i:%02i.%04i)",
+                  (int)((crosshair_2.time_relative / TIME_DIMENSION)/ 3600LL),
+                  (int)(((crosshair_2.time_relative / TIME_DIMENSION) % 3600LL) / 60LL),
+                  (int)((crosshair_2.time_relative / TIME_DIMENSION) % 60LL),
+                  (int)((crosshair_2.time_relative % TIME_DIMENSION) / 1000LL));
+        }
+        else
+        {
+          convert_to_metric_suffix(str3, (double)crosshair_2.time_relative / TIME_DIMENSION);
+
+          snprintf(string + strlen(string), 32, " (%sS)", str3);
+        }
 
         painter->drawText(crosshair_2.x_position + 5, crosshair_2.y_position - 55, string);
         snprintf(string, 128, "delta %+f %s",
@@ -2061,11 +2087,20 @@ void ViewCurve::drawCurve_stage_2(QPainter *painter, int w_width, int w_height, 
         painter->drawText(crosshair_2.x_position + 5, crosshair_2.y_position - 40, string);
         l_time = crosshair_2.time - crosshair_1.time;
         if(l_time<0) l_time = -l_time;
-        snprintf(string, 128, "delta %i:%02i:%02i.%04i",
-                        (int)((l_time / TIME_DIMENSION)/ 3600LL),
-                        (int)(((l_time / TIME_DIMENSION) % 3600LL) / 60LL),
-                        (int)((l_time / TIME_DIMENSION) % 60LL),
-                        (int)((l_time % TIME_DIMENSION) / 1000LL));
+        if(l_time >= TIME_DIMENSION)
+        {
+          snprintf(string, 128, "delta %i:%02i:%02i.%04i",
+                          (int)((l_time / TIME_DIMENSION)/ 3600LL),
+                          (int)(((l_time / TIME_DIMENSION) % 3600LL) / 60LL),
+                          (int)((l_time / TIME_DIMENSION) % 60LL),
+                          (int)((l_time % TIME_DIMENSION) / 1000LL));
+        }
+        else
+        {
+          convert_to_metric_suffix(str3, (double)l_time / TIME_DIMENSION);
+
+          snprintf(string, 32, "delta %sS", str3);
+        }
         painter->drawText(crosshair_2.x_position + 5, crosshair_2.y_position - 25, string);
         if(signalcomp[i]->alias[0] != 0)
         {
@@ -2378,17 +2413,21 @@ void ViewCurve::drawCurve_stage_1(QPainter *painter, int w_width, int w_height, 
           dig_value += f_tmp;
         }
 
-        for(k=0; k<signalcomp[i]->spike_filter_cnt; k++)
+        if(signalcomp[i]->spike_filter)
         {
           if(s==signalcomp[i]->sample_start)
           {
-            if(mainwindow->edfheaderlist[signalcomp[i]->filenum]->viewtime==0)
+            if(mainwindow->edfheaderlist[signalcomp[i]->filenum]->viewtime<=0)
             {
-              reset_spike_filter(signalcomp[i]->spike_filter[k]);
+              reset_spike_filter(signalcomp[i]->spike_filter);
+            }
+            else
+            {
+              spike_filter_restore_buf(signalcomp[i]->spike_filter);
             }
           }
 
-          dig_value = run_spike_filter(dig_value, signalcomp[i]->spike_filter[k]);
+          dig_value = run_spike_filter(dig_value, signalcomp[i]->spike_filter);
         }
 
         for(k=0; k<signalcomp[i]->filter_cnt; k++)
@@ -2829,17 +2868,21 @@ void drawCurve_stage_1_thread::run()
         dig_value += f_tmp;
       }
 
-      for(k=0; k<signalcomp->spike_filter_cnt; k++)
+      if(signalcomp->spike_filter)
       {
         if(s==signalcomp->sample_start)
         {
-          if(mainwindow->edfheaderlist[signalcomp->filenum]->viewtime==0)
+          if(mainwindow->edfheaderlist[signalcomp->filenum]->viewtime<=0)
           {
-            reset_spike_filter(signalcomp->spike_filter[k]);
+            reset_spike_filter(signalcomp->spike_filter);
+          }
+          else
+          {
+            spike_filter_restore_buf(signalcomp->spike_filter);
           }
         }
 
-        dig_value = run_spike_filter(dig_value, signalcomp->spike_filter[k]);
+        dig_value = run_spike_filter(dig_value, signalcomp->spike_filter);
       }
 
       for(k=0; k<signalcomp->filter_cnt; k++)
@@ -3824,12 +3867,12 @@ void ViewCurve::RemovesignalButton()
 
   mainwindow->signalcomp[signal_nr]->filter_cnt = 0;
 
-  for(j=0; j<mainwindow->signalcomp[signal_nr]->spike_filter_cnt; j++)
+  if(mainwindow->signalcomp[signal_nr]->spike_filter)
   {
-    free_spike_filter(mainwindow->signalcomp[signal_nr]->spike_filter[j]);
-  }
+    free_spike_filter(mainwindow->signalcomp[signal_nr]->spike_filter);
 
-  mainwindow->signalcomp[signal_nr]->spike_filter_cnt = 0;
+    mainwindow->signalcomp[signal_nr]->spike_filter = NULL;
+  }
 
   for(j=0; j<mainwindow->signalcomp[signal_nr]->ravg_filter_cnt; j++)
   {

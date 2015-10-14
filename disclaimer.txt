@@ -1,5 +1,5 @@
 
-This is free software, it is experimental and available under the GPL License version 2.
+This is free software, it is experimental and available under the GPL License version 3.
 
 Despite this software is intend to be useful, there is no warranty, use this software at your own risk!
 

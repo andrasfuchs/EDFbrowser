@@ -3,28 +3,24 @@
 *
 * Author: Teunis van Beelen
 *
-* Copyright (C) 2009, 2010, 2011, 2012, 2013, 2014 Teunis van Beelen
+* Copyright (C) 2009, 2010, 2011, 2012, 2013, 2014, 2015 Teunis van Beelen
 *
-* teuniz@gmail.com
+* Email: teuniz@gmail.com
 *
 ***************************************************************************
 *
-* This program is free software; you can redistribute it and/or modify
+* This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
-* the Free Software Foundation version 2 of the License.
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
 *
 * This program is distributed in the hope that it will be useful,
 * but WITHOUT ANY WARRANTY; without even the implied warranty of
 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 * GNU General Public License for more details.
 *
-* You should have received a copy of the GNU General Public License along
-* with this program; if not, write to the Free Software Foundation, Inc.,
-* 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-*
-***************************************************************************
-*
-* This version of GPL is at http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
 ***************************************************************************
 */
@@ -64,8 +60,10 @@
 #include "utc_date_time.h"
 #include "active_file_chooser.h"
 #include "edf_annot_list.h"
+#include "ravg_filter.h"
 
 
+#define REDUCER_MAX_AA_FILTERS   4
 
 
 class UI_Mainwindow;
@@ -88,7 +86,8 @@ QLabel       *label1,
              *label2,
              *label3,
              *label4,
-             *label5;
+             *label5,
+             *label6;
 
 QPushButton  *pushButton1,
              *pushButton2,
@@ -99,7 +98,8 @@ QPushButton  *pushButton1,
 
 QSpinBox     *spinBox1,
              *spinBox2,
-             *spinBox3;
+             *spinBox3,
+             *spinBox4;
 
 QRadioButton *radioButton1,
              *radioButton2;
@@ -110,7 +110,8 @@ QDialog      *myobjectDialog;
 
 int  signalslist[MAXSIGNALS],
      dividerlist[MAXSIGNALS],
-     file_num;
+     file_num,
+     aa_filter_order;
 
 char  inputpath[MAX_PATH_LENGTH],
       outputpath[MAX_PATH_LENGTH],
@@ -120,6 +121,8 @@ FILE *inputfile,
      *outputfile;
 
 struct edfhdrblock *edfhdr;
+
+struct ravg_filter_settings *filterlist[MAXSIGNALS][REDUCER_MAX_AA_FILTERS];
 
 void showpopupmessage(const char *, const char *);
 
