@@ -277,6 +277,9 @@
     <ClCompile Include="third_party\kiss_fft\kiss_fftr.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="multitargetsupport.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="third_party\kiss_fft\_kiss_fft_guts.h">

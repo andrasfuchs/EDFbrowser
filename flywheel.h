@@ -39,11 +39,16 @@
 #include <QLinearGradient>
 #include <QBrush>
 
+#include "global.h"
+
+#ifdef _MSC_VER
+#include <Windows.h>
+#else
 #include <sys/time.h>
+#endif
 
 #define _USE_MATH_DEFINES
 #include <math.h>
-
 
 
 class UI_Flywheel: public QWidget
@@ -87,7 +92,6 @@ private:
       cursor_above_object;
 
   double wheel_position;
-
 
   struct timeval tv;
 

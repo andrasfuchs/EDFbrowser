@@ -92,6 +92,16 @@ __inline int c99_snprintf(char *outBuf, size_t size, const char *format, ...)
 #include <direct.h>
 #define mkdir _mkdir
 
+/* -- Qt's <sys/time.h> polifill -- */
+
+#include <Windows.h>
+
+LARGE_INTEGER getFILETIMEoffset();
+
+int gettimeofday(struct timeval *tp, void *tzp);
+
+/* -- Qt's <sys/time.h> polifill -- */
+
 #endif
 
 #endif

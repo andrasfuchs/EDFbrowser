@@ -37,7 +37,8 @@ win32 {
 OBJECTS_DIR = ./objects
 MOC_DIR = ./moc
 
-HEADERS += global.h
+HEADERS += global.h \
+    multitargetsupport.h
 HEADERS += mainwindow.h
 HEADERS += viewcurve.h
 HEADERS += popup_messagewindow.h
@@ -124,7 +125,8 @@ HEADERS += third_party/kiss_fft/_kiss_fft_guts.h
 HEADERS += third_party/kiss_fft/kiss_fftr.h
 
 
-SOURCES += main.cpp
+SOURCES += main.cpp \
+    multitargetsupport.cpp
 SOURCES += mainwindow.cpp
 SOURCES += viewcurve.cpp
 SOURCES += popup_messagewindow.cpp

@@ -768,7 +768,7 @@ void UI_MIT2EDFwindow::SelectFileButton()
 
             if(tmp2 == EOF)
             {
-              goto OUT;
+				goto EOF_LABEL;
             }
 
             buf[j * mit_hdr.sf_block + i] = (tmp1 & 0xf0) << 4;
@@ -840,7 +840,7 @@ void UI_MIT2EDFwindow::SelectFileButton()
           tmp1 = fgetc(data_inputfile);
           if(tmp1 == EOF)
           {
-            goto OUT;
+			  goto EOF_LABEL;
           }
 
           tmp1 += (fgetc(data_inputfile) << 8);
@@ -867,7 +867,7 @@ void UI_MIT2EDFwindow::SelectFileButton()
     }
   }
 
-OUT:
+EOF_LABEL:
 
   progress.reset();
 
