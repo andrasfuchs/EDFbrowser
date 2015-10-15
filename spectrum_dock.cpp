@@ -82,13 +82,11 @@ UI_SpectrumDockWindow::UI_SpectrumDockWindow(QWidget *w_parent)
     dock->setWidget(SpectrumDialog);
   }
 
-  curve1 = new SignalCurve;
-  curve1->setSignalColor(Qt::green);
-  curve1->setBackgroundColor(Qt::black);
-  curve1->setRasterColor(Qt::gray);
-  curve1->setTraceWidth(0);
+  curve1 = new SignalCurve;  
+  curve1->setSignalColor(QColor(255,127,0));
   curve1->setH_label("Hz");
   curve1->setLowerLabel("Frequency");
+
   if(mainwindow->spectrumdock_sqrt)
   {
     if(mainwindow->spectrumdock_vlog)

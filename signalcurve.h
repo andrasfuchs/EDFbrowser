@@ -148,6 +148,7 @@ private slots:
   void print_to_printer();
   void print_to_ascii();
   void send_button_event();
+  void draw_the_curve(QPainter *painter, int curve_w, int curve_h);
 
 private:
   QDialog     *sidemenu;
@@ -161,9 +162,11 @@ private:
               *sidemenuButton5,
               *sidemenuButton6;
 
-  QColor SignalColor,
+  QColor SignalLineColor,
+         SignalFillColor,
          BackgroundColor,
          RasterColor,
+         SecondaryRasterColor,
          BorderColor,
          RulerColor,
          TextColor,
