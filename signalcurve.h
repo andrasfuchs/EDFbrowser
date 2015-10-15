@@ -54,6 +54,7 @@
 #include <string.h>
 
 #include "global.h"
+#include "utils.h"
 
 
 #define MAXSPECTRUMMARKERS 16
@@ -206,7 +207,6 @@ private:
       h_ruler_precision,
       drawHruler,
       drawVruler,
-      drawcurve_before_raster,
       tracewidth,
       extra_button,
       use_move_events,

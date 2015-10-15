@@ -1783,7 +1783,38 @@ double round_down_step125(double val)
 
 
 
+int thousandsep(double in, char* out_str, size_t out_len, unsigned int precision) {
+    char in_str[128], int_str[128], format[32];
+    size_t dlen, mod, i, j;
+    int c;
 
+    snprintf(format, sizeof format, "%%.%df", precision);
+    snprintf(in_str, sizeof in_str, format, in);
+    snprintf(int_str, sizeof int_str, "%d", (int)in);
+
+    dlen = strlen(in_str);
+    mod = strlen(int_str) % 3;
+    c = (mod == 0) ? 3 : mod;
+
+    for (i=0, j=0; i<dlen; i++, j++, c--) {
+        if (j >= out_len - 1) {
+            /* out_str is too small */
+            return -1;
+        }
+
+        if (in_str[i] == '.') {
+            c = -1;
+        } else if (c == 0) {
+            out_str[j++] = ',';
+            c = 3;
+        }
+
+        out_str[j] = in_str[i];
+    }
+    out_str[j] = '\0';
+
+    return 0;
+}
 
 
 

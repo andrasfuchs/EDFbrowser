@@ -63,7 +63,6 @@ SignalCurve::SignalCurve(QWidget *w_parent) : QWidget(w_parent)
   h_ruler_startvalue = 0.0;
   h_ruler_endvalue = 100.0;
   h_ruler_precision = 2;
-  drawcurve_before_raster = 0;
   h_label[0] = 0;
   v_label[0] = 0;
   upperlabel1[0] = 0;
@@ -1690,6 +1689,8 @@ void SignalCurve::drawWidget(QPainter *painter, int curve_w, int curve_h)
     }
 
     pixelsPerUnit = (double)curve_w / (h_ruler_endvalue - h_ruler_startvalue);
+    double barWidth = 0;
+    int barTextYPosIndex = 0;
 
     if((spectrum_color->freq[0] > h_ruler_startvalue) && (spectrum_color->items > 1))
     {
@@ -1701,9 +1702,11 @@ void SignalCurve::drawWidget(QPainter *painter, int curve_w, int curve_h)
         QColor color = (Qt::GlobalColor)spectrum_color->color[0];
         color.setAlpha(127);
 
+        barWidth = (spectrum_color->freq[0] - h_ruler_startvalue) * pixelsPerUnit;
+
         painter->fillRect(0,
                           t,
-                          (spectrum_color->freq[0] - h_ruler_startvalue) * pixelsPerUnit,
+                          barWidth,
                           curve_h - t,
                           color);
       }
@@ -1713,8 +1716,13 @@ void SignalCurve::drawWidget(QPainter *painter, int curve_w, int curve_h)
       {
         sprintf(str + strlen(str), " (%.1f%%)", (spectrum_color->value[i] * 100.0) / sum_colorbar_value);
       }
-      painter->setPen(Qt::lightGray);
+
+      painter->setPen((Qt::GlobalColor)spectrum_color->color[0]);
       painter->drawText(10, 20, str);
+
+      if (barWidth < 80) {
+          barTextYPosIndex++;
+      }
     }
 
     for(i=1; i < spectrum_color->items; i++)
@@ -1726,12 +1734,14 @@ void SignalCurve::drawWidget(QPainter *painter, int curve_w, int curve_h)
 
         if(t <= curve_h)
         {
-            QColor color = (Qt::GlobalColor)spectrum_color->color[i];
-            color.setAlpha(127);
+          QColor color = (Qt::GlobalColor)spectrum_color->color[i];
+          color.setAlpha(127);
+
+          barWidth = (spectrum_color->freq[i] - spectrum_color->freq[i-1]) * pixelsPerUnit;
 
           painter->fillRect((spectrum_color->freq[i-1] - h_ruler_startvalue) * pixelsPerUnit,
                             t,
-                            (spectrum_color->freq[i] - spectrum_color->freq[i-1]) * pixelsPerUnit,
+                            barWidth,
                             curve_h - t,
                             color);
         }
@@ -1741,23 +1751,26 @@ void SignalCurve::drawWidget(QPainter *painter, int curve_w, int curve_h)
         {
           sprintf(str + strlen(str), " (%.1f%%)", (spectrum_color->value[i] * 100.0) / sum_colorbar_value);
         }
-        painter->setPen(Qt::lightGray);
-        painter->drawText((spectrum_color->freq[i-1] - h_ruler_startvalue) * pixelsPerUnit + 10, 20 + ((i%2) * 20), str);
+        painter->setPen((Qt::GlobalColor)spectrum_color->color[i]);
+        painter->drawText((spectrum_color->freq[i-1] - h_ruler_startvalue) * pixelsPerUnit + 10, 20 + (barTextYPosIndex * 20), str);
+
+        if (barWidth < 80) {
+            barTextYPosIndex++;
+        } else {
+            barTextYPosIndex = 0;
+        }
       }
     }
 
     if(spectrum_color->method == 0)
     {
-      sprintf(str, "Total Power: %.1f", sum_colorbar_value);
-      painter->drawText(curve_w - 200, 20 + ((i%2) * 20), str);
+      char sum_colorbar_value_str[64];
+      thousandsep(sum_colorbar_value, sum_colorbar_value_str, sizeof sum_colorbar_value_str, 2);
+
+      sprintf(str, "Total Power: %s", sum_colorbar_value_str);
+      painter->setPen(Qt::white);
+      painter->drawText(curve_w - 200, 20, str);
     }
-  }
-
-/////////////////////////////////// draw the curve ///////////////////////////////////////////
-
-  if(drawcurve_before_raster)
-  {
-    draw_the_curve(painter, curve_w, curve_h);
   }
 
 /////////////////////////////////// draw the rasters ///////////////////////////////////////////
@@ -1816,10 +1829,7 @@ void SignalCurve::drawWidget(QPainter *painter, int curve_w, int curve_h)
 
 /////////////////////////////////// draw the curve ///////////////////////////////////////////
 
-  if(!drawcurve_before_raster)
-  {
-    draw_the_curve(painter, curve_w, curve_h);
-  }
+draw_the_curve(painter, curve_w, curve_h);
 
 /////////////////////////////////// draw the line ///////////////////////////////////////////
 
@@ -1928,7 +1938,6 @@ void SignalCurve::draw_the_curve(QPainter *painter, int curve_w, int curve_h)
 
       for(i = 0; i < bufsize; i++)
       {
-
         double datam1 = 0;
         double data0 = 0;
         double datap1 = 0;
@@ -1953,6 +1962,7 @@ void SignalCurve::draw_the_curve(QPainter *painter, int curve_w, int curve_h)
             data0 = (double)fbuf[i];
             datap1 = (i < (bufsize - 1) ? (double)fbuf[i+1] : 0);
         }
+
 
         curvePolygon.append(QPoint((i * h_step) + (h_step/2), (data0 + offset) * v_sens));
 
