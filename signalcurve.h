@@ -99,9 +99,7 @@ public:
   void setUpperLabel1(const char *);
   void setUpperLabel2(const char *);
   void setLowerLabel(const char *);
-  void drawCurve(double *, int , double , double );
-  void drawCurve(int *, int , double , double );
-  void drawCurve( float *, int , double , double );
+  void drawCurve(double *sample_buffer, int start_index, int buffer_size, double h_max_value, double h_min_value);
   void drawLine(int, double, int, double, QColor);
   void setLineEnabled(bool);
   void create_button(const char *);
@@ -187,7 +185,8 @@ private:
 
   double max_value,
          min_value,
-         *dbuf,
+         bufsize,    // the amount of data we should display from dbuf (it needs to be a double because of the fine scrolling movements, but it is always rounded to int when accessing the actual data)
+         startindex, // the index where we should start displaying data from dbuf (it needs to be a double because of the fine scrolling movements, but it is always rounded to int when accessing the actual data)
          h_ruler_startvalue,
          h_ruler_endvalue,
          printsize_x_factor,
@@ -200,10 +199,10 @@ private:
          marker_1_position,
          marker_2_position;
 
-  float *fbuf;
+  //double dbuf[];
+  double *dbuf;
 
-  int bufsize,
-      bordersize,
+  int bordersize,
       h_ruler_precision,
       drawHruler,
       drawVruler,
@@ -228,8 +227,7 @@ private:
       h,
       old_w,
       updates_enabled,
-      fillsurface,
-      *ibuf;
+      fillsurface;
 
   char h_label[32],
        v_label[21],
@@ -261,8 +259,9 @@ protected:
   void paintEvent(QPaintEvent *);
   void mousePressEvent(QMouseEvent *);
   void mouseReleaseEvent(QMouseEvent *);
-  void mouseMoveEvent(QMouseEvent *);
+  void mouseMoveEvent(QMouseEvent *);  
   void resizeEvent(QResizeEvent *);
+  void wheelEvent(QWheelEvent * event);
 
 };
 

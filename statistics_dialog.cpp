@@ -332,7 +332,7 @@ UI_StatisticWindow::UI_StatisticWindow(struct signalcompblock *signalcomp, long 
 
       curve1->setH_RulerValues(start_ruler + 1, end_ruler + 1);
 
-      curve1->drawCurve(bpm_distribution + start_ruler, end_ruler - start_ruler, (int)(max_val * 1.1) + 1, 0.0);
+      curve1->drawCurve(bpm_distribution, start_ruler, end_ruler - start_ruler, (int)(max_val * 1.1) + 1, 0.0);
 
       QObject::connect(startSlider, SIGNAL(valueChanged(int)), this, SLOT(startSliderMoved(int)));
       QObject::connect(stopSlider,  SIGNAL(valueChanged(int)), this, SLOT(stopSliderMoved(int)));
@@ -362,7 +362,7 @@ void UI_StatisticWindow::startSliderMoved(int)
 
   curve1->setH_RulerValues(start_ruler + 1, end_ruler + 1);
 
-  curve1->drawCurve(bpm_distribution + start_ruler, end_ruler - start_ruler, (int)(max_val * 1.1) + 1, 0.0);
+  curve1->drawCurve(bpm_distribution, start_ruler, end_ruler - start_ruler, (int)(max_val * 1.1) + 1, 0.0);
 
   startSlider->blockSignals(false);
   stopSlider->blockSignals(false);
@@ -386,7 +386,7 @@ void UI_StatisticWindow::stopSliderMoved(int)
 
   curve1->setH_RulerValues(start_ruler + 1, end_ruler + 1);
 
-  curve1->drawCurve(bpm_distribution + start_ruler, end_ruler - start_ruler, (int)(max_val * 1.1) + 1, 0.0);
+  curve1->drawCurve(bpm_distribution, start_ruler, end_ruler - start_ruler, (int)(max_val * 1.1) + 1, 0.0);
 
   startSlider->blockSignals(false);
   stopSlider->blockSignals(false);

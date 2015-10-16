@@ -85,11 +85,11 @@ QPushButton  *pushButton1;
 SignalCurve  *curve1;
 
 int beat_cnt,
-    bpm_distribution[300],
     max_val,
     start_ruler,
     end_ruler;
 
+double bpm_distribution[300];
 
 private slots:
 

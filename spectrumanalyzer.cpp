@@ -516,22 +516,22 @@ void UI_FreqSpectrumWindow::sliderMoved(int)
   {
     if(mainwindow->spectrum_vlog)
     {
-      curve1->drawCurve(buf5 + startstep, stopstep - startstep, (maxvalue_sqrt_vlog * ((double)flywheel_value / 1000.0) * (double)amplitudeSlider->value()) / 1000.0, minvalue_sqrt_vlog * (double)log_minslider->value() / 1000.0);
+      curve1->drawCurve(buf5, startstep, stopstep - startstep, (maxvalue_sqrt_vlog * ((double)flywheel_value / 1000.0) * (double)amplitudeSlider->value()) / 1000.0, minvalue_sqrt_vlog * (double)log_minslider->value() / 1000.0);
     }
     else
     {
-      curve1->drawCurve(buf3 + startstep, stopstep - startstep, (maxvalue_sqrt * ((double)flywheel_value / 1000.0) * (double)amplitudeSlider->value()) / 1000.0, 0.0);
+      curve1->drawCurve(buf3, startstep, stopstep - startstep, (maxvalue_sqrt * ((double)flywheel_value / 1000.0) * (double)amplitudeSlider->value()) / 1000.0, 0.0);
     }
   }
   else
   {
     if(mainwindow->spectrum_vlog)
     {
-      curve1->drawCurve(buf4 + startstep, stopstep - startstep, (maxvalue_vlog * ((double)flywheel_value / 1000.0) * (double)amplitudeSlider->value()) / 1000.0, minvalue_vlog * (double)log_minslider->value() / 1000.0);
+      curve1->drawCurve(buf4, startstep, stopstep - startstep, (maxvalue_vlog * ((double)flywheel_value / 1000.0) * (double)amplitudeSlider->value()) / 1000.0, minvalue_vlog * (double)log_minslider->value() / 1000.0);
     }
     else
     {
-      curve1->drawCurve(buf2 + startstep, stopstep - startstep, (maxvalue * ((double)flywheel_value / 1000.0) * (double)amplitudeSlider->value()) / 1000.0, 0.0);
+      curve1->drawCurve(buf2, startstep, stopstep - startstep, (maxvalue * ((double)flywheel_value / 1000.0) * (double)amplitudeSlider->value()) / 1000.0, 0.0);
     }
   }
 

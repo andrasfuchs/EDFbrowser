@@ -592,7 +592,7 @@ void UI_ZScoreWindow::startButtonClicked()
     free(zscore_sleepstage_buf);
   }
 
-  zscore_sleepstage_buf = (int *)calloc(1, sizeof(int) * ((epochs / zscore_page_len) + 1));
+  zscore_sleepstage_buf = (double *)calloc(1, sizeof(double) * ((epochs / zscore_page_len) + 1));
   if(zscore_sleepstage_buf == NULL)
   {
     QMessageBox messagewindow(QMessageBox::Critical, "Error", "The system was not able to provide enough resources (memory) to perform the requested action.");
@@ -1179,7 +1179,7 @@ void UI_ZScoreWindow::RadioButtonsClicked(bool)
 
     sprintf(str, "%s   coefficient: %f   intercept: %f", mainwindow->signalcomp[signalnr]->signallabel, b1, b0);
 
-    curve1->drawCurve(zscore_epoch_buf, epoch_cntr, 1.0, -1.0);
+    curve1->drawCurve(zscore_epoch_buf, 0, epoch_cntr, 1.0, -1.0);
     curve1->setH_RulerValues(0, epoch_cntr);
     curve1->setLowerLabel("Epochs");
     curve1->setV_label("Z ratio");
@@ -1244,7 +1244,7 @@ void UI_ZScoreWindow::RadioButtonsClicked(bool)
 
     sprintf(str, "%s   coefficient: %f   intercept: %f", mainwindow->signalcomp[signalnr]->signallabel, b1, b0);
 
-    curve1->drawCurve(zscore_page_buf, zscore_pages, 1.0, -1.0);
+    curve1->drawCurve(zscore_page_buf, 0, zscore_pages, 1.0, -1.0);
     curve1->setH_RulerValues(0, zscore_pages);
     curve1->setLowerLabel("Pages");
     curve1->setV_label("Z ratio");
@@ -1297,7 +1297,7 @@ void UI_ZScoreWindow::RadioButtonsClicked(bool)
 
     sprintf(str, "%s    sleep: %i%%", mainwindow->signalcomp[signalnr]->signallabel, sleep_pct);
 
-    curve1->drawCurve(zscore_sleepstage_buf, zscore_pages, 3.0, -3.0);
+    curve1->drawCurve(zscore_sleepstage_buf, 0, zscore_pages, 3.0, -3.0);
     curve1->setH_RulerValues(0, zscore_pages);
     curve1->setLowerLabel("Pages");
     curve1->setV_label("Sleep/Wake");

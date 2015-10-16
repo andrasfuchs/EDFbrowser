@@ -545,7 +545,7 @@ void UI_AverageCurveWindow::sliderMoved(int)
     mainwindow->average_bw = 0;
   }
 
-  curve1->drawCurve(avgbuf + startstep, stopstep - startstep, dtmp1, dtmp2);
+  curve1->drawCurve(avgbuf, startstep, stopstep - startstep, dtmp1, dtmp2);
 
   max_sec = pagetime * stopstep / steps - (pagetime * (1.0 / avg_trigger_position_ratio));
 

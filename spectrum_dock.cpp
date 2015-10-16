@@ -39,11 +39,11 @@ UI_SpectrumDockWindow::UI_SpectrumDockWindow(QWidget *w_parent)
 {
   char str[600];
 
-  buf1 = NULL;
-  buf2 = NULL;
-  buf3 = NULL;
-  buf4 = NULL;
-  buf5 = NULL;
+  buf_samples = NULL;
+  buf_fft = NULL;
+  buf_fft_sqrt = NULL;
+  buf_fft_vlog = NULL;
+  buf_fft_sqrt_vlog = NULL;
 
   busy = 0;
 
@@ -416,7 +416,7 @@ void UI_SpectrumDockWindow::print_to_txt()
 
   for(i=0; i<steps; i++)
   {
-    fprintf(outputfile, "%.16f\t%.16f\n", freqstep * i, buf2[i]);
+    fprintf(outputfile, "%.16f\t%.16f\n", freqstep * i, buf_fft[i]);
   }
 
   fclose (outputfile);
@@ -551,13 +551,13 @@ void UI_SpectrumDockWindow::sliderMoved(int)
     {
       mainwindow->spectrumdock_vlog = 1;
 
-      curve1->drawCurve(buf5 + startstep, stopstep - startstep, (maxvalue_sqrt_vlog * 1.05 * (((double)flywheel_value / 1000.0) * (double)amplitudeSlider->value())) / 1000.0, minvalue_sqrt_vlog * (double)log_minslider->value() / 1000.0);
+      curve1->drawCurve(buf_fft_sqrt_vlog, startstep, stopstep - startstep, (maxvalue_sqrt_vlog * 1.05 * (((double)flywheel_value / 1000.0) * (double)amplitudeSlider->value())) / 1000.0, minvalue_sqrt_vlog * (double)log_minslider->value() / 1000.0);
     }
     else
     {
       mainwindow->spectrumdock_vlog = 0;
 
-      curve1->drawCurve(buf3 + startstep, stopstep - startstep, (maxvalue_sqrt * 1.05 * (((double)flywheel_value / 1000.0) * (double)amplitudeSlider->value())) / 1000.0, 0.0);
+      curve1->drawCurve(buf_fft_sqrt, startstep, stopstep - startstep, (maxvalue_sqrt * 1.05 * (((double)flywheel_value / 1000.0) * (double)amplitudeSlider->value())) / 1000.0, 0.0);
     }
   }
   else
@@ -568,13 +568,13 @@ void UI_SpectrumDockWindow::sliderMoved(int)
     {
       mainwindow->spectrumdock_vlog = 1;
 
-      curve1->drawCurve(buf4 + startstep, stopstep - startstep, (maxvalue_vlog * 1.05 * (((double)flywheel_value / 1000.0) * (double)amplitudeSlider->value())) / 1000.0, minvalue_vlog * (double)log_minslider->value() / 1000.0);
+      curve1->drawCurve(buf_fft_vlog, startstep, stopstep - startstep, (maxvalue_vlog * 1.05 * (((double)flywheel_value / 1000.0) * (double)amplitudeSlider->value())) / 1000.0, minvalue_vlog * (double)log_minslider->value() / 1000.0);
     }
     else
     {
       mainwindow->spectrumdock_vlog = 0;
 
-      curve1->drawCurve(buf2 + startstep, stopstep - startstep, (maxvalue * 1.05 * (((double)flywheel_value / 1000.0) * (double)amplitudeSlider->value())) / 1000.0, 0.0);
+      curve1->drawCurve(buf_fft, startstep, stopstep - startstep, (maxvalue * 1.05 * (((double)flywheel_value / 1000.0) * (double)amplitudeSlider->value())) / 1000.0, 0.0);
     }
   }
 
@@ -698,34 +698,34 @@ void UI_SpectrumDockWindow::clear()
 
   viewbuf = NULL;
 
-  if(buf1 != NULL)
+  if(buf_samples != NULL)
   {
-    free(buf1);
-    buf1 = NULL;
+    free(buf_samples);
+    buf_samples = NULL;
   }
 
-  if(buf2 != NULL)
+  if(buf_fft != NULL)
   {
-    free(buf2);
-    buf2 = NULL;
+    free(buf_fft);
+    buf_fft = NULL;
   }
 
-  if(buf3 != NULL)
+  if(buf_fft_sqrt != NULL)
   {
-    free(buf3);
-    buf3 = NULL;
+    free(buf_fft_sqrt);
+    buf_fft_sqrt = NULL;
   }
 
-  if(buf4 != NULL)
+  if(buf_fft_vlog != NULL)
   {
-    free(buf4);
-    buf4 = NULL;
+    free(buf_fft_vlog);
+    buf_fft_vlog = NULL;
   }
 
-  if(buf5 != NULL)
+  if(buf_fft_sqrt_vlog != NULL)
   {
-    free(buf5);
-    buf5 = NULL;
+    free(buf_fft_sqrt_vlog);
+    buf_fft_sqrt_vlog = NULL;
   }
 
   if(spectrum_color != NULL)
@@ -814,12 +814,12 @@ void UI_SpectrumDockWindow::update_curve()
     return;
   }
 
-  if(buf1 != NULL)
+  if(buf_samples != NULL)
   {
-    free(buf1);
+    free(buf_samples);
   }
-  buf1 = (double *)malloc(sizeof(double) * signalcomp->samples_on_screen);
-  if(buf1 == NULL)
+  buf_samples = (double *)malloc(sizeof(double) * signalcomp->samples_on_screen);
+  if(buf_samples == NULL)
   {
     QMessageBox messagewindow(QMessageBox::Critical, "Error", "The system was not able to provide enough resources (memory) to perform the requested action.\n"
                                   "Decrease the timescale and try again.");
@@ -930,7 +930,7 @@ void UI_SpectrumDockWindow::update_curve()
 
     if(s>=signalcomp->sample_start)
     {
-      buf1[samples++] = dig_value * signalcomp->edfhdr->edfparam[signalcomp->edfsignal[0]].bitvalue;
+      buf_samples[samples++] = dig_value * signalcomp->edfhdr->edfparam[signalcomp->edfsignal[0]].bitvalue;
     }
   }
 
@@ -972,71 +972,71 @@ void UI_SpectrumDockWindow::update_curve()
 
   steps = fft_outputbufsize;
 
-  if(buf2 != NULL)
+  if(buf_fft != NULL)
   {
-    free(buf2);
+    free(buf_fft);
   }
-  buf2 = (double *)calloc(1, sizeof(double) * fft_outputbufsize);
-  if(buf2 == NULL)
+  buf_fft = (double *)calloc(1, sizeof(double) * fft_outputbufsize);
+  if(buf_fft == NULL)
   {
     QMessageBox messagewindow(QMessageBox::Critical, "Error", "The system was not able to provide enough resources (memory) to perform the requested action.");
     messagewindow.exec();
-    free(buf1);
-    buf1 = NULL;
+    free(buf_samples);
+    buf_samples = NULL;
     return;
   }
 
-  if(buf3 != NULL)
+  if(buf_fft_sqrt != NULL)
   {
-    free(buf3);
+    free(buf_fft_sqrt);
   }
-  buf3 = (double *)malloc(sizeof(double) * fft_outputbufsize);
-  if(buf3 == NULL)
+  buf_fft_sqrt = (double *)malloc(sizeof(double) * fft_outputbufsize);
+  if(buf_fft_sqrt == NULL)
   {
     QMessageBox messagewindow(QMessageBox::Critical, "Error", "The system was not able to provide enough resources (memory) to perform the requested action.");
     messagewindow.exec();
-    free(buf1);
-    free(buf2);
-    buf1 = NULL;
-    buf2 = NULL;
+    free(buf_samples);
+    free(buf_fft);
+    buf_samples = NULL;
+    buf_fft = NULL;
     return;
   }
 
-  if(buf4 != NULL)
+  if(buf_fft_vlog != NULL)
   {
-    free(buf4);
+    free(buf_fft_vlog);
   }
-  buf4 = (double *)malloc(sizeof(double) * fft_outputbufsize);
-  if(buf4 == NULL)
+  buf_fft_vlog = (double *)malloc(sizeof(double) * fft_outputbufsize);
+  if(buf_fft_vlog == NULL)
   {
     QMessageBox messagewindow(QMessageBox::Critical, "Error", "The system was not able to provide enough resources (memory) to perform the requested action.");
     messagewindow.exec();
-    free(buf1);
-    free(buf2);
-    free(buf3);
-    buf1 = NULL;
-    buf2 = NULL;
-    buf3 = NULL;
+    free(buf_samples);
+    free(buf_fft);
+    free(buf_fft_sqrt);
+    buf_samples = NULL;
+    buf_fft = NULL;
+    buf_fft_sqrt = NULL;
     return;
   }
 
-  if(buf5 != NULL)
+  if(buf_fft_sqrt_vlog != NULL)
   {
-    free(buf5);
+    free(buf_fft_sqrt_vlog);
   }
-  buf5 = (double *)malloc(sizeof(double) * fft_outputbufsize);
-  if(buf5 == NULL)
+  buf_fft_sqrt_vlog = (double *)malloc(sizeof(double) * fft_outputbufsize);
+  if(buf_fft_sqrt_vlog == NULL)
   {
     QMessageBox messagewindow(QMessageBox::Critical, "Error", "The system was not able to provide enough resources (memory) to perform the requested action.");
     messagewindow.exec();
-    free(buf1);
-    free(buf2);
-    free(buf3);
-    free(buf4);
-    buf1 = NULL;
-    buf2 = NULL;
-    buf3 = NULL;
-    buf4 = NULL;
+    free(buf_samples);
+    free(buf_fft);
+    free(buf_fft_sqrt);
+    free(buf_fft_vlog);
+    buf_samples = NULL;
+    buf_fft = NULL;
+    buf_fft_sqrt = NULL;
+    buf_fft_vlog = NULL;
     return;
   }
 
@@ -1069,16 +1069,16 @@ void UI_SpectrumDockWindow::update_curve()
   {
     QMessageBox messagewindow(QMessageBox::Critical, "Error", "The system was not able to provide enough resources (memory) to perform the requested action.");
     messagewindow.exec();
-    free(buf1);
-    free(buf2);
-    free(buf3);
-    free(buf4);
-    free(buf5);
-    buf1 = NULL;
-    buf2 = NULL;
-    buf3 = NULL;
-    buf4 = NULL;
-    buf5 = NULL;
+    free(buf_samples);
+    free(buf_fft);
+    free(buf_fft_sqrt);
+    free(buf_fft_vlog);
+    free(buf_fft_sqrt_vlog);
+    buf_samples = NULL;
+    buf_fft = NULL;
+    buf_fft_sqrt = NULL;
+    buf_fft_vlog = NULL;
+    buf_fft_sqrt_vlog = NULL;
     return;
   }
 
@@ -1086,40 +1086,40 @@ void UI_SpectrumDockWindow::update_curve()
 
   for(j=0; j<dftblocks; j++)
   {
-    kiss_fftr(cfg, buf1 + (j * dftblocksize), kiss_fftbuf);
+    kiss_fftr(cfg, buf_samples + (j * dftblocksize), kiss_fftbuf);
 
     for(i=0; i<fft_outputbufsize; i++)
     {
-      buf2[i] += (((kiss_fftbuf[i].r * kiss_fftbuf[i].r) + (kiss_fftbuf[i].i * kiss_fftbuf[i].i)) / fft_outputbufsize);
+      buf_fft[i] += (((kiss_fftbuf[i].r * kiss_fftbuf[i].r) + (kiss_fftbuf[i].i * kiss_fftbuf[i].i)) / fft_outputbufsize);
     }
   }
 
   if(samplesleft)
   {
-    kiss_fftr(cfg, buf1 + (((j-1) * dftblocksize) + samplesleft), kiss_fftbuf);
+    kiss_fftr(cfg, buf_samples + (((j-1) * dftblocksize) + samplesleft), kiss_fftbuf);
 
     for(i=0; i<fft_outputbufsize; i++)
     {
-      buf2[i] += (((kiss_fftbuf[i].r * kiss_fftbuf[i].r) + (kiss_fftbuf[i].i * kiss_fftbuf[i].i)) / fft_outputbufsize);
+      buf_fft[i] += (((kiss_fftbuf[i].r * kiss_fftbuf[i].r) + (kiss_fftbuf[i].i * kiss_fftbuf[i].i)) / fft_outputbufsize);
 
-      buf2[i] /= (dftblocks + 1);
+      buf_fft[i] /= (dftblocks + 1);
     }
   }
   else
   {
     for(i=0; i<fft_outputbufsize; i++)
     {
-      buf2[i] /= dftblocks;
+      buf_fft[i] /= dftblocks;
     }
   }
 
   if(signalcomp->ecg_filter == NULL)
   {
-    buf2[0] /= 2.0;  // DC!
+    buf_fft[0] /= 2.0;  // DC!
   }
   else
   {
-    buf2[0] = 0.0;  // Remove DC because heart rate is always a positive value
+    buf_fft[0] = 0.0;  // Remove DC because heart rate is always a positive value
   }
 
   free(cfg);
@@ -1128,60 +1128,60 @@ void UI_SpectrumDockWindow::update_curve()
 
   for(i=0; i<fft_outputbufsize; i++)
   {
-    buf2[i] /= samplefreq;
+    buf_fft[i] /= samplefreq;
 
-    buf3[i] = sqrt(buf2[i] * freqstep);
+    buf_fft_sqrt[i] = sqrt(buf_fft[i] * freqstep);
 
-    if(buf2[i] <= SPECT_LOG_MINIMUM)
+    if(buf_fft[i] <= SPECT_LOG_MINIMUM)
     {
-      buf4[i] = log10(SPECT_LOG_MINIMUM);
+      buf_fft_vlog[i] = log10(SPECT_LOG_MINIMUM);
     }
     else
     {
-      buf4[i] = log10(buf2[i]);
+      buf_fft_vlog[i] = log10(buf_fft[i]);
     }
 
-    if(buf3[i] <= SPECT_LOG_MINIMUM)
+    if(buf_fft_sqrt[i] <= SPECT_LOG_MINIMUM)
     {
-      buf5[i] = log10(SPECT_LOG_MINIMUM);
+      buf_fft_sqrt_vlog[i] = log10(SPECT_LOG_MINIMUM);
     }
     else
     {
-      buf5[i] = log10(buf3[i]);
+      buf_fft_sqrt_vlog[i] = log10(buf_fft_sqrt[i]);
     }
 
     if(init_maxvalue && !set_settings)
     {
       if(i)  // don't use the dc-bin for the autogain of the screen
       {
-        if(buf2[i] > maxvalue)
+        if(buf_fft[i] > maxvalue)
         {
-          maxvalue = buf2[i];
+          maxvalue = buf_fft[i];
         }
 
-        if(buf3[i] > maxvalue_sqrt)
+        if(buf_fft_sqrt[i] > maxvalue_sqrt)
         {
-          maxvalue_sqrt = buf3[i];
+          maxvalue_sqrt = buf_fft_sqrt[i];
         }
 
-        if(buf4[i] > maxvalue_vlog)
+        if(buf_fft_vlog[i] > maxvalue_vlog)
         {
-          maxvalue_vlog = buf4[i];
+          maxvalue_vlog = buf_fft_vlog[i];
         }
 
-        if(buf5[i] > maxvalue_sqrt_vlog)
+        if(buf_fft_sqrt_vlog[i] > maxvalue_sqrt_vlog)
         {
-          maxvalue_sqrt_vlog = buf5[i];
+          maxvalue_sqrt_vlog = buf_fft_sqrt_vlog[i];
         }
 
-        if((buf4[i] < minvalue_vlog) && (buf4[i] >= SPECT_LOG_MINIMUM_LOG))
+        if((buf_fft_vlog[i] < minvalue_vlog) && (buf_fft_vlog[i] >= SPECT_LOG_MINIMUM_LOG))
         {
-          minvalue_vlog = buf4[i];
+          minvalue_vlog = buf_fft_vlog[i];
         }
 
-        if((buf5[i] < minvalue_sqrt_vlog) && (buf5[i] >= SPECT_LOG_MINIMUM_LOG))
+        if((buf_fft_sqrt_vlog[i] < minvalue_sqrt_vlog) && (buf_fft_sqrt_vlog[i] >= SPECT_LOG_MINIMUM_LOG))
         {
-          minvalue_sqrt_vlog = buf5[i];
+          minvalue_sqrt_vlog = buf_fft_sqrt_vlog[i];
         }
       }
     }
@@ -1201,11 +1201,11 @@ void UI_SpectrumDockWindow::update_curve()
     dftblocks++;
   }
 
-  if(buf1 != NULL)
+  if(buf_samples != NULL)
   {
-    free(buf1);
+    free(buf_samples);
 
-    buf1 = NULL;
+    buf_samples = NULL;
   }
 
   sprintf(str, "FFT resolution: %f Hz   %i blocks of %i samples", freqstep, dftblocks, dftblocksize);
@@ -1230,20 +1230,20 @@ void UI_SpectrumDockWindow::update_curve()
         {
           if(spectrum_color->method == 0)  // sum
           {
-            spectrum_color->value[0] += buf2[j];
+            spectrum_color->value[0] += buf_fft[j];
           }
 
           if(spectrum_color->method == 1)  // peak
           {
-            if(spectrum_color->value[0] < buf2[j])
+            if(spectrum_color->value[0] < buf_fft[j])
             {
-              spectrum_color->value[0] = buf2[j];
+              spectrum_color->value[0] = buf_fft[j];
             }
           }
 
           if(spectrum_color->method == 2)  // average
           {
-            spectrum_color->value[0] += buf2[j];
+            spectrum_color->value[0] += buf_fft[j];
 
             n++;
           }
@@ -1271,20 +1271,20 @@ void UI_SpectrumDockWindow::update_curve()
         {
           if(spectrum_color->method == 0)  // sum
           {
-            spectrum_color->value[i] += buf2[j];
+            spectrum_color->value[i] += buf_fft[j];
           }
 
           if(spectrum_color->method == 1)  // peak
           {
-            if(spectrum_color->value[i] < buf2[j])
+            if(spectrum_color->value[i] < buf_fft[j])
             {
-              spectrum_color->value[i] = buf2[j];
+              spectrum_color->value[i] = buf_fft[j];
             }
           }
 
           if(spectrum_color->method == 2)  // average
           {
-            spectrum_color->value[i] += buf2[j];
+            spectrum_color->value[i] += buf_fft[j];
 
             n++;
           }
@@ -1386,24 +1386,24 @@ void UI_SpectrumDockWindow::update_curve()
 
 UI_SpectrumDockWindow::~UI_SpectrumDockWindow()
 {
-  if(buf2 != NULL)
+  if(buf_fft != NULL)
   {
-    free(buf2);
+    free(buf_fft);
   }
 
-  if(buf3 != NULL)
+  if(buf_fft_sqrt != NULL)
   {
-    free(buf3);
+    free(buf_fft_sqrt);
   }
 
-  if(buf4 != NULL)
+  if(buf_fft_vlog != NULL)
   {
-    free(buf4);
+    free(buf_fft_vlog);
   }
 
-  if(buf5 != NULL)
+  if(buf_fft_sqrt_vlog != NULL)
   {
-    free(buf5);
+    free(buf_fft_sqrt_vlog);
   }
 
   delete SpectrumDialog;
