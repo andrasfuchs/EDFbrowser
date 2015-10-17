@@ -374,11 +374,11 @@ void UI_BIOX2EDFwindow::SelectFileButton()
 
       wr_buf[sf * 2 + j] <<= 2;
 
-      wr_buf[j] += (tmp_bits >> 6) & 0x0b00000011;
+      wr_buf[j] += (tmp_bits >> 6) & 0b00000011;
 
-      wr_buf[sf + j] += (tmp_bits >> 4) & 0x0b00000011;
+      wr_buf[sf + j] += (tmp_bits >> 4) & 0b00000011;
 
-      wr_buf[sf * 2 + j] += (tmp_bits >> 2) & 0x0b00000011;
+      wr_buf[sf * 2 + j] += (tmp_bits >> 2) & 0b00000011;
 
       if(++j == sf)
       {
