@@ -137,6 +137,10 @@ signals:
   void dashBoardClicked();
   void markerHasMoved();
 
+private:
+  void drawTheCurve(QPainter *painter, int curve_w, int curve_h);
+  void drawTextOnRuler(QPainter *painter, int curve_h, int bottom_border_size, int position, double value, int precision, bool is_vertical, bool is_upsidedown = false);
+
 private slots:
   void exec_sidemenu();
 #if QT_VERSION < 0x050000
@@ -147,7 +151,6 @@ private slots:
   void print_to_printer();
   void print_to_ascii();
   void send_button_event();
-  void draw_the_curve(QPainter *painter, int curve_w, int curve_h);
 
 private:
   QDialog     *sidemenu;

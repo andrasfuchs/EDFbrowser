@@ -399,6 +399,13 @@ void SignalCurve::wheelEvent(QWheelEvent * event)
     double zoom_x_pct = 1;
     double zoom_y_pct = 1 + (-(double)delta / 5000);
 
+    // check if we are in the valid range
+    if (h_ruler_startvalue + ((h_ruler_endvalue - h_ruler_startvalue) * zoom_y_pct * zoom_x_pct) > 256)
+    {
+        zoom_x_pct = 1;
+        zoom_y_pct = 1;
+    }
+
 
     // 1, horizontal scale
     bufsize = (bufsize * zoom_y_pct * zoom_x_pct);
@@ -1329,7 +1336,6 @@ void SignalCurve::drawWidget(QPainter *painter, int curve_w, int curve_h)
 
   char str[128];
 
-  QString q_str;
 
 
   painter->setFont(QFont("Arial", 8));
@@ -1429,6 +1435,15 @@ void SignalCurve::drawWidget(QPainter *painter, int curve_w, int curve_h)
       }
     }
 
+
+    int horizontal_ruler_text_start_position = (int)((double)(p_ruler_startvalue - p_ruler_startvalue) * p_pixels_per_unit);
+    double horizontal_start_value = (double)p_ruler_startvalue / (double)p_multiplier;
+    drawTextOnRuler(painter, curve_h, bordersize, horizontal_ruler_text_start_position, horizontal_start_value, h_ruler_precision, false);
+
+    int horizontal_ruler_text_end_position = (int)((double)(p_ruler_endvalue - p_ruler_startvalue) * p_pixels_per_unit);
+    double horizontal_end_value = (double)p_ruler_endvalue / (double)p_multiplier;
+    drawTextOnRuler(painter, curve_h, bordersize, horizontal_ruler_text_end_position, horizontal_end_value, h_ruler_precision, false);
+
     for(i = (p_ruler_startvalue / p_divisor) * p_divisor; i <= p_ruler_endvalue; i += p_divisor)
     {
       if(i < p_ruler_startvalue)
@@ -1436,14 +1451,30 @@ void SignalCurve::drawWidget(QPainter *painter, int curve_w, int curve_h)
         continue;
       }
 
-      q_str.setNum((double)i / (double)p_multiplier, 'f', h_ruler_precision);
+      int horizoltal_position = (int)((double)(i - p_ruler_startvalue) * p_pixels_per_unit);
+      double horizoltal_value = (double)i / (double)p_multiplier;
 
-      p_tmp = (double)(i - p_ruler_startvalue) * p_pixels_per_unit;
-
-      painter->drawText(bordersize + p_tmp - 30,  curve_h - bordersize + 18, 60, 16, Qt::AlignCenter | Qt::TextSingleLine, q_str);
-
-      painter->drawLine(bordersize + p_tmp, curve_h - bordersize + 5, bordersize + p_tmp, curve_h - bordersize + 5 + 10);
+      if ((horizoltal_position > horizontal_ruler_text_start_position + 20) && (horizoltal_position < horizontal_ruler_text_end_position - 20))
+      {
+        drawTextOnRuler(painter, curve_h, bordersize, horizoltal_position, horizoltal_value, h_ruler_precision, false);
+      }
     }
+
+//    for(i = (p_ruler_startvalue / p_divisor) * p_divisor; i <= p_ruler_endvalue; i += p_divisor)
+//    {
+//      if(i < p_ruler_startvalue)
+//      {
+//        continue;
+//      }
+
+//      q_str.setNum((double)i / (double)p_multiplier, 'f', h_ruler_precision);
+
+//      p_tmp = (double)(i - p_ruler_startvalue) * p_pixels_per_unit;
+
+//      painter->drawText(bordersize + p_tmp - 30,  curve_h - bordersize + 18, 60, 16, Qt::AlignCenter | Qt::TextSingleLine, q_str);
+
+//      painter->drawLine(bordersize + p_tmp, curve_h - bordersize + 5, bordersize + p_tmp, curve_h - bordersize + 5 + 10);
+//    }
 
     painter->drawText(curve_w - bordersize + 20,  curve_h - bordersize + 18, 40, 16, Qt::AlignLeft | Qt::AlignVCenter | Qt::TextSingleLine, h_label);
   }
@@ -1542,6 +1573,14 @@ void SignalCurve::drawWidget(QPainter *painter, int curve_w, int curve_h)
       }
     }
 
+    int vertical_ruler_text_start_position = (int)((double)(p2_ruler_startvalue - p2_ruler_startvalue) * p2_pixels_per_unit);
+    double vertical_start_value = (double)p2_ruler_startvalue / (double)p2_multiplier;
+    drawTextOnRuler(painter, curve_h, bordersize, vertical_ruler_text_start_position, vertical_start_value, precision, true, curveUpSideDown);
+
+    int vertical_ruler_text_end_position = (int)((double)(p2_ruler_endvalue - p2_ruler_startvalue) * p2_pixels_per_unit);
+    double vertical_end_value = (double)p2_ruler_endvalue / (double)p2_multiplier;
+    drawTextOnRuler(painter, curve_h, bordersize, vertical_ruler_text_end_position, vertical_end_value, precision, true, curveUpSideDown);
+
     for(i = (p2_ruler_startvalue / p2_divisor) * p2_divisor; i <= p2_ruler_endvalue; i += p2_divisor)
     {
       if(i < p2_ruler_startvalue)
@@ -1549,21 +1588,12 @@ void SignalCurve::drawWidget(QPainter *painter, int curve_w, int curve_h)
         continue;
       }
 
-      q_str.setNum((double)i / (double)p2_multiplier, 'f', precision);
+      int vertical_position = (int)((double)(i - p2_ruler_startvalue) * p2_pixels_per_unit);
+      double vertical_value = (double)i / (double)p2_multiplier;
 
-      p2_tmp = (double)(i - p2_ruler_startvalue) * p2_pixels_per_unit;
-
-      if(curveUpSideDown == false)
+      if ((vertical_position > vertical_ruler_text_start_position + 12) && (vertical_position < vertical_ruler_text_end_position - 12))
       {
-        painter->drawText(3, curve_h - bordersize - p2_tmp - 8, 40, 16, Qt::AlignRight | Qt::AlignVCenter | Qt::TextSingleLine, q_str);
-
-        painter->drawLine(bordersize - 5, curve_h - bordersize - p2_tmp, bordersize - 5 - 10, curve_h - bordersize - p2_tmp);
-      }
-      else
-      {
-        painter->drawText(3, bordersize + p2_tmp - 8, 40, 16, Qt::AlignRight | Qt::AlignVCenter | Qt::TextSingleLine, q_str);
-
-        painter->drawLine(bordersize - 5, bordersize + p2_tmp, bordersize - 5 - 10, bordersize + p2_tmp);
+        drawTextOnRuler(painter, curve_h, bordersize, vertical_position, vertical_value, precision, true, curveUpSideDown);
       }
     }
   }
@@ -1776,7 +1806,7 @@ void SignalCurve::drawWidget(QPainter *painter, int curve_w, int curve_h)
 
 /////////////////////////////////// draw the curve ///////////////////////////////////////////
 
-draw_the_curve(painter, curve_w, curve_h);
+drawTheCurve(painter, curve_w, curve_h);
 
 /////////////////////////////////// draw the line ///////////////////////////////////////////
 
@@ -1818,10 +1848,10 @@ draw_the_curve(painter, curve_w, curve_h);
 
     painter->setFont(QFont("Arial", 10));
     painter->fillRect(crosshair_1_x_position + 6, crosshair_1_y_position - 23, 60, 16, BackgroundColor);
-    snprintf(str, 128, "%f", crosshair_1_value);
+    snprintf(str, 128, "%f %s", crosshair_1_value, v_label);
     painter->drawText(crosshair_1_x_position + 8, crosshair_1_y_position - 10, str);
     painter->fillRect(crosshair_1_x_position + 6, crosshair_1_y_position - 3, 60, 16, BackgroundColor);
-    snprintf(str, 128, "%f %s", crosshair_1_value_2, h_label);
+    snprintf(str, 128, "@%f %s", crosshair_1_value_2, h_label);
     painter->drawText(crosshair_1_x_position + 8, crosshair_1_y_position + 10, str);
   }
 
@@ -1846,8 +1876,48 @@ draw_the_curve(painter, curve_w, curve_h);
   }
 }
 
+void SignalCurve::drawTextOnRuler(QPainter *painter, int curve_h, int bottom_border_size, int position, double value, int precision, bool is_vertical, bool is_upsidedown)
+{
+    QString q_str;
 
-void SignalCurve::draw_the_curve(QPainter *painter, int curve_w, int curve_h)
+    if (precision > 0)
+    {
+        q_str.setNum(value, 'f', precision);
+    } else {
+        char value_str[64];
+        thousandsep(value, value_str, sizeof value_str, 0);
+        q_str.append(value_str);
+    }
+
+    if (is_vertical)
+    {
+        if(is_upsidedown == false)
+        {
+          int real_vertical_position = curve_h - bottom_border_size - position;
+
+          painter->drawText(3, real_vertical_position - 8, 40, 16, Qt::AlignRight | Qt::AlignVCenter | Qt::TextSingleLine, q_str);
+
+          painter->drawLine(bottom_border_size - 5, real_vertical_position, bottom_border_size - 5 - 10, real_vertical_position);
+        }
+        else
+        {
+          int real_vertical_position = bottom_border_size + position;
+
+          painter->drawText(3, real_vertical_position - 8, 40, 16, Qt::AlignRight | Qt::AlignVCenter | Qt::TextSingleLine, q_str);
+
+          painter->drawLine(bottom_border_size - 5, real_vertical_position, bottom_border_size - 5 - 10, real_vertical_position);
+        }
+    } else {
+        int real_horizontal_position = bottom_border_size + position;
+
+        painter->drawText(real_horizontal_position - 30, curve_h - bottom_border_size + 18, 60, 16, Qt::AlignCenter | Qt::TextSingleLine, q_str);
+
+        painter->drawLine(real_horizontal_position, curve_h - bottom_border_size + 5, real_horizontal_position, curve_h - bottom_border_size + 5 + 10);
+    }
+}
+
+
+void SignalCurve::drawTheCurve(QPainter *painter, int curve_w, int curve_h)
 {
     int i;
 

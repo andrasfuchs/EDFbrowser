@@ -1792,11 +1792,25 @@ int thousandsep(double in, char* out_str, size_t out_len, unsigned int precision
     snprintf(in_str, sizeof in_str, format, in);
     snprintf(int_str, sizeof int_str, "%d", (int)in);
 
+    if (in < 0)
+    {
+        // discard the - sign
+        memcpy(in_str, in_str + 1, strlen(in_str));
+        memcpy(int_str, int_str + 1, strlen(int_str));
+    }
+
     dlen = strlen(in_str);
     mod = strlen(int_str) % 3;
     c = (mod == 0) ? 3 : mod;
 
-    for (i=0, j=0; i<dlen; i++, j++, c--) {
+    j = 0;
+    if (in < 0)
+    {
+        out_str[j] = '-';
+        j = 1;
+    }
+
+    for (i=0; i<dlen; i++, j++, c--) {
         if (j >= out_len - 1) {
             /* out_str is too small */
             return -1;
