@@ -388,10 +388,16 @@ void SignalCurve::wheelEvent(QWheelEvent * event)
     // we need to zoom the chart
 
     // 0, convert the amount of movement from angles to percent
-    QPoint delta = event->angleDelta();
 
-    double zoom_x_pct = 1 + ((double)delta.x() / 5000);
-    double zoom_y_pct = 1 + (-(double)delta.y() / 5000);
+    // this one works only with Qt 5.5+ and it enables the x and y axis wheel usage
+    //QPoint delta = event->angleDelta();
+    //double zoom_x_pct = 1 + ((double)delta.x() / 5000);
+    //double zoom_y_pct = 1 + (-(double)delta.y() / 5000);
+
+    // this one works with Qt 4.8 too but only y axis wheel movement is registered
+    int delta = event->delta();
+    double zoom_x_pct = 1;
+    double zoom_y_pct = 1 + (-(double)delta / 5000);
 
 
     // 1, horizontal scale
