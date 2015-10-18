@@ -52,6 +52,7 @@
 #include <QMessageBox>
 
 #include <string.h>
+#include <float.h>
 
 #include "global.h"
 #include "utils.h"
@@ -205,7 +206,9 @@ private:
   //double dbuf[];
   double *dbuf;
 
-  int bordersize,
+  QRect chartArea;  // the size of the chart area (replacement for w,h and bordersize)
+
+  int bordersize,   // DEPRECATED: the size of the border in pixels around the chart area from all directions
       h_ruler_precision,
       drawHruler,
       drawVruler,
@@ -226,8 +229,8 @@ private:
       marker_2_x_position,
       line1_start_x,
       line1_end_x,
-      w,
-      h,
+      w,            // DEPRECATED: width of the chart area
+      h,            // DEPRECATED: height of the chart area
       old_w,
       updates_enabled,
       fillsurface;
@@ -265,6 +268,7 @@ protected:
   void mouseMoveEvent(QMouseEvent *);  
   void resizeEvent(QResizeEvent *);
   void wheelEvent(QWheelEvent * event);
+  void mouseDoubleClickEvent(QMouseEvent *);
 
 };
 

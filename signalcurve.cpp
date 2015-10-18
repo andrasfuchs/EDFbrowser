@@ -56,6 +56,7 @@ SignalCurve::SignalCurve(QWidget *w_parent) : QWidget(w_parent)
   bufsize = 0;
   dbuf = NULL;
   bordersize = 60;
+  chartArea = QRect(60, 60, w - 2*60, h - 2*60);
   drawHruler = 1;
   drawVruler = 1;
   h_ruler_startvalue = 0.0;
@@ -136,6 +137,7 @@ void SignalCurve::mousePressEvent(QMouseEvent *press_event)
   m_x = press_event->x() - bordersize;
   m_y = press_event->y() - bordersize;
 
+  // check if the mouse is over the chart area
   if(m_x < 0 ||
      m_x > (w - (bordersize * 2)) ||
      m_y < 0 ||
@@ -144,6 +146,7 @@ void SignalCurve::mousePressEvent(QMouseEvent *press_event)
     return;
   }
 
+  // check if the left button was pressed
   if(press_event->button()==Qt::LeftButton)
   {
     if(printEnabled == true)
@@ -245,10 +248,14 @@ void SignalCurve::mousePressEvent(QMouseEvent *press_event)
       }
     }
 
-    use_move_events = 1;
-    setMouseTracking(true);
-    mouse_old_x = m_x;
-    mouse_old_y = m_y;
+    // if the mouse is on the chart area
+    if ((m_x > (0) && (m_x < (w - 50))) && (m_y > (0) && (m_y < (h - 50))))
+    {
+        use_move_events = 1;
+        setMouseTracking(true);
+        mouse_old_x = m_x;
+        mouse_old_y = m_y;
+    }
   }
 }
 
@@ -262,6 +269,42 @@ void SignalCurve::mouseReleaseEvent(QMouseEvent *)
   setMouseTracking(false);
 }
 
+void SignalCurve::mouseDoubleClickEvent(QMouseEvent *)
+{
+    // 1, set the horizontal axis to default, 20 pixel / Hz
+    double width_change = (h_ruler_startvalue - h_ruler_endvalue);
+    h_ruler_startvalue = 0;
+    h_ruler_endvalue = (w - bordersize*2) / 20;
+    width_change /= (h_ruler_startvalue - h_ruler_endvalue);
+
+    startindex = 0;
+    bufsize *= 1/width_change;
+
+    // 2, set the vertical values to the 90% of the minimum and 110% of the maximum value
+    min_value = DBL_MAX;
+    max_value = DBL_MIN;
+
+    // TODO: after changing the buffer type to array, do this on the whole array
+    for(int i = 0; i < bufsize; i++)
+    {
+      double value = (dbuf[i + (int)startindex]);
+
+      if (value < min_value)
+      {
+          min_value = value;
+      }
+
+      if (value > max_value)
+      {
+          max_value = value;
+      }
+    }
+
+    min_value *= (min_value > 0 ? 0.9 : 1.1);
+    max_value *= (max_value > 0 ? 1.1 : 0.9);
+
+    update();
+}
 
 void SignalCurve::mouseMoveEvent(QMouseEvent *move_event)
 {
