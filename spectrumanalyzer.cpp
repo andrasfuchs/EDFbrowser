@@ -40,7 +40,9 @@ UI_FreqSpectrumWindow::UI_FreqSpectrumWindow(struct signalcompblock *signal_comp
 {
   int i;
 
-  char str[1024];
+  char windowtitle[1024];
+  char name[1024];
+  char unit[1024];
 
   long long l_temp;
 
@@ -136,13 +138,15 @@ UI_FreqSpectrumWindow::UI_FreqSpectrumWindow(struct signalcompblock *signal_comp
   SpectrumDialog->setWindowFlags(Qt::Window | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
   if(mainwindow->spectrum_sqrt)
   {
-    snprintf(str, 512, "Amplitude Spectrum %s", signallabel);
+    snprintf(windowtitle, 512, "Amplitude Spectrum %s", signallabel);
+    snprintf(name, 512, "Amplitude");
   }
   else
   {
-    snprintf(str, 512, "Power Spectral Density %s", signallabel);
+    snprintf(windowtitle, 512, "Power Spectral Density %s", signallabel);
+    snprintf(name, 512, "Intensity");
   }
-  SpectrumDialog->setWindowTitle(str);
+  SpectrumDialog->setWindowTitle(windowtitle);
   SpectrumDialog->setWindowIcon(QIcon(":/images/edf.png"));
 
   curve1 = new SignalCurve;
@@ -150,33 +154,33 @@ UI_FreqSpectrumWindow::UI_FreqSpectrumWindow(struct signalcompblock *signal_comp
   curve1->setBackgroundColor(Qt::black);
   curve1->setRasterColor(Qt::gray);
   curve1->setTraceWidth(0);
-  curve1->setH_label("Hz");
-  curve1->setLowerLabel("Frequency");
+  curve1->setHorizontalRulerText("Frequency", "Hz");
+
   if(mainwindow->spectrum_sqrt)
   {
     if(mainwindow->spectrum_vlog)
     {
-      sprintf(str, "log10(%s)", physdimension);
+      sprintf(unit, "log10(%s)", physdimension);
 
-      curve1->setV_label(str);
+      curve1->setVerticalRulerText(name, unit);
     }
     else
     {
-      curve1->setV_label(physdimension);
+      curve1->setVerticalRulerText(name, physdimension);
     }
   }
   else
   {
     if(mainwindow->spectrum_vlog)
     {
-      sprintf(str, "log10((%s)^2/Hz)", physdimension);
+      sprintf(unit, "log10((%s)^2/Hz)", physdimension);
     }
     else
     {
-      sprintf(str, "(%s)^2/Hz", physdimension);
+      sprintf(unit, "(%s)^2/Hz", physdimension);
     }
 
-    curve1->setV_label(str);
+    curve1->setVerticalRulerText(name, unit);
   }
   curve1->create_button("to Text");
   curve1->setDashBoardEnabled(false);
@@ -426,7 +430,9 @@ void UI_FreqSpectrumWindow::sliderMoved(int)
   double max_freq,
          start_freq;
 
-  char str[1024];
+  char windowtitle[1024];
+  char name[1024];
+  char unit[1024];
 
 
   if(VlogCheckBox->checkState() == Qt::Checked)
@@ -446,39 +452,41 @@ void UI_FreqSpectrumWindow::sliderMoved(int)
   {
     mainwindow->spectrum_sqrt = 1;
 
-    sprintf(str, "Amplitude Spectrum %s", signallabel);
+    sprintf(windowtitle, "Amplitude Spectrum %s", signallabel);
+    SpectrumDialog->setWindowTitle(windowtitle);
 
-    SpectrumDialog->setWindowTitle(str);
+    sprintf(name, "Amplitude");
 
     if(mainwindow->spectrum_vlog)
     {
-      sprintf(str, "log10(%s)", physdimension);
+      sprintf(unit, "log10(%s)", physdimension);
 
-      curve1->setV_label(str);
+      curve1->setVerticalRulerText(name, unit);
     }
     else
     {
-      curve1->setV_label(physdimension);
+      curve1->setVerticalRulerText(name, physdimension);
     }
   }
   else
   {
     mainwindow->spectrum_sqrt = 0;
 
-    sprintf(str, "Power Spectral Density %s", signallabel);
+    sprintf(windowtitle, "Power Spectral Density %s", signallabel);
+    SpectrumDialog->setWindowTitle(windowtitle);
 
-    SpectrumDialog->setWindowTitle(str);
+    sprintf(name, "Intensity");
 
     if(mainwindow->spectrum_vlog)
     {
-      sprintf(str, "log10((%s)^2/Hz)", physdimension);
+      sprintf(unit, "log10((%s)^2/Hz)", physdimension);
     }
     else
     {
-      sprintf(str, "(%s)^2/Hz", physdimension);
+      sprintf(unit, "(%s)^2/Hz", physdimension);
     }
 
-    curve1->setV_label(str);
+    curve1->setVerticalRulerText(name, unit);
   }
 
   if(BWCheckBox->isChecked() == true)
@@ -1030,9 +1038,9 @@ void UI_FreqSpectrumWindow::update_curve()
 
   remove_trailing_zeros(str);
 
-  curve1->setUpperLabel1(str);
+  curve1->setHeaderText(str);
 
-  curve1->setUpperLabel2(signallabel);
+  curve1->setSubheaderText(signallabel);
 
   sliderMoved(0);
 

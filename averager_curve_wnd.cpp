@@ -95,15 +95,14 @@ UI_AverageCurveWindow::UI_AverageCurveWindow(struct signalcompblock *signal_comp
   curve1->setRasterColor(Qt::gray);
   curve1->setCrosshairColor(Qt::red);
   curve1->setTraceWidth(0);
-  curve1->setH_label("sec");
-  curve1->setLowerLabel("Time");
-  curve1->setV_label(signalcomp->physdimension);
+  curve1->setHorizontalRulerText("Time","sec");
+  curve1->setVerticalRulerText(NULL, signalcomp->physdimension);
   curve1->setDashBoardEnabled(false);
   curve1->setMarker1Color(Qt::yellow);
   curve1->create_button("to EDF/BDF");
 
   sprintf(str, "Averaging %i triggers \"%s\"", avg_cnt, avg_annotation);
-  curve1->setUpperLabel1(str);
+  curve1->setHeaderText(str);
 
   flywheel1 = new UI_Flywheel;
   flywheel1->setMinimumSize(20, 85);

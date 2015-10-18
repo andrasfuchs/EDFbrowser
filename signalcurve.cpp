@@ -55,20 +55,12 @@ SignalCurve::SignalCurve(QWidget *w_parent) : QWidget(w_parent)
 
   bufsize = 0;
   dbuf = NULL;
-  bordersize = 60;
-  chartArea = QRect(60, 60, w - 2*60, h - 2*60);
-  drawHruler = 1;
-  drawVruler = 1;
-  h_ruler_startvalue = 0.0;
-  h_ruler_endvalue = 100.0;
-  h_ruler_precision = 2;
-  h_label[0] = 0;
-  v_label[0] = 0;
-  upperlabel1[0] = 0;
-  upperlabel2[0] = 0;
-  lowerlabel[0] = 0;
-  max_value = 100.0;
-  min_value = -100.0;
+  isHorizontalRulerVisible = 1;
+  isVerticalRulerVisible = 1;
+  h_ruler_min_value = 0.0;
+  h_ruler_max_value = 100.0;
+  v_ruler_max_value = 100.0;
+  v_ruler_min_value = -100.0;
   extra_button = 0;
   extra_button_txt[0] = 0;
   use_move_events = 0;
@@ -126,137 +118,88 @@ void SignalCurve::clear()
 
 void SignalCurve::mousePressEvent(QMouseEvent *press_event)
 {
-  int m_x,
-      m_y;
-
   setFocus(Qt::MouseFocusReason);
 
-  w = width();
-  h = height();
-
-  m_x = press_event->x() - bordersize;
-  m_y = press_event->y() - bordersize;
+  int m_x = press_event->x() - chartArea.x();
+  int m_y = press_event->y() - chartArea.y();
 
   // check if the mouse is over the chart area
-  if(m_x < 0 ||
-     m_x > (w - (bordersize * 2)) ||
-     m_y < 0 ||
-     m_y > (h - (bordersize * 2)))
+  if (chartArea.contains(press_event->x(), press_event->y()))
   {
-    return;
-  }
-
-  // check if the left button was pressed
-  if(press_event->button()==Qt::LeftButton)
-  {
-    if(printEnabled == true)
-    {
-      if((m_y<21)&&(m_y>3)&&(m_x>((w - (bordersize * 2)) - 43))&&(m_x<((w - (bordersize * 2)) - 3)))
+      // check if the left button was pressed
+      if(press_event->button()==Qt::LeftButton)
       {
-        exec_sidemenu();
+          mouseLastPosition = QPoint(m_x, m_y);
 
-        return;
-      }
-    }
-
-    if(dashBoardEnabled == true)
-    {
-      if((m_y<61)&&(m_y>43)&&(m_x>((w - (bordersize * 2)) - 43))&&(m_x<((w - (bordersize * 2)) - 3)))
-      {
-        emit dashBoardClicked();
-
-        return;
-      }
-    }
-
-    if(cursorEnabled == true)
-    {
-      if((m_y<41)&&(m_y>23)&&(m_x>((w - (bordersize * 2)) - 43))&&(m_x<((w - (bordersize * 2)) - 3)))
-      {
-        if(crosshair_1_active)
+        if ((printEnabled == true) && ((m_y<21)&&(m_y>3)&&(m_x>(chartArea.width() - 43))&&(m_x<(chartArea.width() - 3))))
         {
-          crosshair_1_active = 0;
-          crosshair_1_moving = 0;
-          use_move_events = 0;
-          setMouseTracking(false);
+          exec_sidemenu();
+          return;
         }
-        else
+        else if ((dashBoardEnabled == true) && ((m_y<61)&&(m_y>43)&&(m_x>(chartArea.width() - 43))&&(m_x<(chartArea.width() - 3))))
         {
-          crosshair_1_active = 1;
-          if(!crosshair_1_x_position)
+          emit dashBoardClicked();
+          return;
+        }
+        else if ((cursorEnabled == true) && ((m_y<41)&&(m_y>23)&&(m_x>(chartArea.width() - 43))&&(m_x<(chartArea.width() - 3))))
+        {
+            if(crosshair_1_active)
+            {
+              crosshair_1_active = 0;
+              crosshair_1_moving = 0;
+              use_move_events = 0;
+              setMouseTracking(false);
+            }
+            else
+            {
+              crosshair_1_active = 1;
+              if(!crosshair_1_x_position)
+              {
+                crosshair_1_value = 0.0;
+                crosshair_1_x_position = chartArea.width() / 2;
+                crosshair_1_y_position = chartArea.height() / 2;
+                mouseLastPosition = QPoint(crosshair_1_x_position, crosshair_1_y_position);
+              }
+            }
+        }
+        else if ((crosshair_1_active)
+            && (((m_y<(crosshair_1_y_position + 15))&&(m_y>(crosshair_1_y_position - 25))&&(m_x>crosshair_1_x_position)&&(m_x<(crosshair_1_x_position + 65)))
+                || (m_x>(crosshair_1_x_position-10)&&(m_x<(crosshair_1_x_position + 10)))))
+        {
+            crosshair_1_moving = 1;
+            use_move_events = 1;
+            setMouseTracking(true);
+        }
+        else if((Marker1MovableEnabled == true) && (Marker1Enabled == true))
+        {
+          marker_1_x_position = chartArea.width() * marker_1_position;
+
+          if(m_x > (marker_1_x_position - 5) && (m_x < (marker_1_x_position + 5)))
           {
-            crosshair_1_value = 0.0;
-            crosshair_1_x_position = (w - (bordersize * 2)) / 2;
-            crosshair_1_y_position = (h - (bordersize * 2)) / 2;
-            mouse_old_x = crosshair_1_x_position;
-            mouse_old_y = crosshair_1_y_position;
+            marker_1_moving = 1;
+            use_move_events = 1;
+            setMouseTracking(true);
           }
         }
+        else if((Marker2MovableEnabled == true) && (Marker2Enabled == true))
+        {
+          marker_2_x_position = chartArea.width() * marker_2_position;
 
-        update();
-
-        return;
+          if(m_x > (marker_2_x_position - 5) && (m_x < (marker_2_x_position + 5)))
+          {
+            marker_2_moving = 1;
+            use_move_events = 1;
+            setMouseTracking(true);
+          }
+        } else {
+            // if the mouse is on the chart area and not over the cursor/marker/button
+            use_move_events = 1;
+            setMouseTracking(true);
+        }
       }
-    }
-
-    if(crosshair_1_active)
-    {
-      if((m_y<(crosshair_1_y_position + 15))&&(m_y>(crosshair_1_y_position - 25))&&(m_x>crosshair_1_x_position)&&(m_x<(crosshair_1_x_position + 65)))
-      {
-        crosshair_1_moving = 1;
-        use_move_events = 1;
-        setMouseTracking(true);
-        mouse_old_x = m_x;
-        mouse_old_y = m_y;
-      }
-
-      if(m_x>(crosshair_1_x_position-10)&&(m_x<(crosshair_1_x_position + 10)))
-      {
-        crosshair_1_moving = 1;
-        use_move_events = 1;
-        setMouseTracking(true);
-        mouse_old_x = m_x;
-        mouse_old_y = m_y;
-      }
-    }
-
-    if((Marker1MovableEnabled == true) && (Marker1Enabled == true))
-    {
-      marker_1_x_position = (w - (bordersize * 2)) * marker_1_position;
-
-      if(m_x > (marker_1_x_position - 5) && (m_x < (marker_1_x_position + 5)))
-      {
-        marker_1_moving = 1;
-        use_move_events = 1;
-        setMouseTracking(true);
-        mouse_old_x = m_x;
-        mouse_old_y = m_y;
-      }
-    }
-
-    if((Marker2MovableEnabled == true) && (Marker2Enabled == true))
-    {
-      marker_2_x_position = (w - (bordersize * 2)) * marker_2_position;
-
-      if(m_x > (marker_2_x_position - 5) && (m_x < (marker_2_x_position + 5)))
-      {
-        marker_2_moving = 1;
-        use_move_events = 1;
-        setMouseTracking(true);
-        mouse_old_x = m_x;
-        mouse_old_y = m_y;
-      }
-    }
-
-    // if the mouse is on the chart area
-    if ((m_x > (0) && (m_x < (w - 50))) && (m_y > (0) && (m_y < (h - 50))))
-    {
-        use_move_events = 1;
-        setMouseTracking(true);
-        mouse_old_x = m_x;
-        mouse_old_y = m_y;
-    }
   }
+
+  update();
 }
 
 
@@ -272,36 +215,36 @@ void SignalCurve::mouseReleaseEvent(QMouseEvent *)
 void SignalCurve::mouseDoubleClickEvent(QMouseEvent *)
 {
     // 1, set the horizontal axis to default, 20 pixel / Hz
-    double width_change = (h_ruler_startvalue - h_ruler_endvalue);
-    h_ruler_startvalue = 0;
-    h_ruler_endvalue = (w - bordersize*2) / 20;
-    width_change /= (h_ruler_startvalue - h_ruler_endvalue);
+    double width_change = (h_ruler_min_value - h_ruler_max_value);
+    h_ruler_min_value = 0;
+    h_ruler_max_value = chartArea.width() / 20;
+    width_change /= (h_ruler_min_value - h_ruler_max_value);
 
     startindex = 0;
     bufsize *= 1/width_change;
 
     // 2, set the vertical values to the 90% of the minimum and 110% of the maximum value
-    min_value = DBL_MAX;
-    max_value = DBL_MIN;
+    v_ruler_min_value = DBL_MAX;
+    v_ruler_max_value = DBL_MIN;
 
     // TODO: after changing the buffer type to array, do this on the whole array
     for(int i = 0; i < bufsize; i++)
     {
       double value = (dbuf[i + (int)startindex]);
 
-      if (value < min_value)
+      if (value < v_ruler_min_value)
       {
-          min_value = value;
+          v_ruler_min_value = value;
       }
 
-      if (value > max_value)
+      if (value > v_ruler_max_value)
       {
-          max_value = value;
+          v_ruler_max_value = value;
       }
     }
 
-    min_value *= (min_value > 0 ? 0.9 : 1.1);
-    max_value *= (max_value > 0 ? 1.1 : 0.9);
+    v_ruler_min_value *= (v_ruler_min_value > 0 ? 0.9 : 1.1);
+    v_ruler_max_value *= (v_ruler_max_value > 0 ? 1.1 : 0.9);
 
     update();
 }
@@ -313,12 +256,12 @@ void SignalCurve::mouseMoveEvent(QMouseEvent *move_event)
     return;
   }
 
-  mouse_x = move_event->x() - bordersize;
-  mouse_y = move_event->y() - bordersize;
-  int mouse_delta_x = (mouse_x - mouse_old_x);
-  int mouse_delta_y = (mouse_y - mouse_old_y);
-  mouse_old_x = mouse_x;
-  mouse_old_y = mouse_y;
+  QPoint mousePosition = QPoint(move_event->x() - chartArea.x(), move_event->y() - chartArea.y());
+
+  int mouse_delta_x = (mousePosition.x() - mouseLastPosition.x());
+  int mouse_delta_y = (mousePosition.y() - mouseLastPosition.y());
+
+  mouseLastPosition = mousePosition;
 
   if(crosshair_1_moving)
   {
@@ -328,9 +271,9 @@ void SignalCurve::mouseMoveEvent(QMouseEvent *move_event)
     {
       crosshair_1_x_position = 2;
     }
-    if(crosshair_1_x_position>(w-(bordersize * 2) -2))
+    if(crosshair_1_x_position>chartArea.width()-2)
     {
-      crosshair_1_x_position = w-(bordersize * 2) -2;
+      crosshair_1_x_position = chartArea.width() -2;
     }
 
     crosshair_1_y_position += mouse_delta_y;
@@ -338,9 +281,9 @@ void SignalCurve::mouseMoveEvent(QMouseEvent *move_event)
     {
       crosshair_1_y_position = 25;
     }
-    if(crosshair_1_y_position>(h-(bordersize * 2) -25))
+    if(crosshair_1_y_position>(chartArea.height() -25))
     {
-      crosshair_1_y_position = h-(bordersize * 2) -25;
+      crosshair_1_y_position = chartArea.height() -25;
     }
   }
   else if(marker_1_moving)
@@ -350,12 +293,12 @@ void SignalCurve::mouseMoveEvent(QMouseEvent *move_event)
     {
       marker_1_x_position = 2;
     }
-    if(marker_1_x_position>(w-(bordersize * 2) - 2))
+    if(marker_1_x_position>(chartArea.width() - 2))
     {
-      marker_1_x_position = w-(bordersize * 2) - 2;
+      marker_1_x_position = chartArea.width() - 2;
     }
 
-    marker_1_position = (double)marker_1_x_position / (double)(w-(bordersize * 2));
+    marker_1_position = (double)marker_1_x_position / (double)chartArea.width();
 
     emit markerHasMoved();
   }
@@ -366,12 +309,12 @@ void SignalCurve::mouseMoveEvent(QMouseEvent *move_event)
     {
       marker_2_x_position = 2;
     }
-    if(marker_2_x_position>(w-(bordersize * 2) - 2))
+    if(marker_2_x_position>(chartArea.width() - 2))
     {
-      marker_2_x_position = w-(bordersize * 2) - 2;
+      marker_2_x_position = chartArea.width() - 2;
     }
 
-    marker_2_position = (double)marker_2_x_position / (double)(w-(bordersize * 2));
+    marker_2_position = (double)marker_2_x_position / (double)chartArea.width();
 
     emit markerHasMoved();
   }
@@ -380,11 +323,11 @@ void SignalCurve::mouseMoveEvent(QMouseEvent *move_event)
       // we need to scroll the chart
 
       // 0, convert the amount of movement from pixels to percent
-      double value_delta_x_pct = (double)mouse_delta_x / w;
-      double value_delta_y_pct = (double)mouse_delta_y / h;
+      double value_delta_x_pct = (double)mouse_delta_x / width();
+      double value_delta_y_pct = (double)mouse_delta_y / height();
 
       // width should remain the same when we are scrolling
-      double h_ruler_width = h_ruler_endvalue - h_ruler_startvalue;
+      double h_ruler_width = h_ruler_max_value - h_ruler_min_value;
 
       // check if we are in the valid range
       if (startindex - (value_delta_x_pct * bufsize) < 0)
@@ -400,7 +343,7 @@ void SignalCurve::mouseMoveEvent(QMouseEvent *move_event)
 //      }
 
       // so let's limit the horizontal range to 256 Hz  for now
-      if (h_ruler_startvalue - (value_delta_x_pct * h_ruler_width) + h_ruler_width > 256)
+      if (h_ruler_min_value - (value_delta_x_pct * h_ruler_width) + h_ruler_width > 256)
       {
           value_delta_x_pct = 0;
       }
@@ -411,16 +354,16 @@ void SignalCurve::mouseMoveEvent(QMouseEvent *move_event)
       // 2, move the horizontal ruler
 
       // move the starting point
-      h_ruler_startvalue -= value_delta_x_pct * h_ruler_width;
+      h_ruler_min_value -= value_delta_x_pct * h_ruler_width;
 
       // set the endvalue of the ruler
-      h_ruler_endvalue = h_ruler_startvalue + h_ruler_width;
+      h_ruler_max_value = h_ruler_min_value + h_ruler_width;
 
       // 3, move the chart vertically
-      double value_width = max_value - min_value;
+      double value_width = v_ruler_max_value - v_ruler_min_value;
 
-      min_value += value_delta_y_pct * value_width;
-      max_value = min_value + value_width;
+      v_ruler_min_value += value_delta_y_pct * value_width;
+      v_ruler_max_value = v_ruler_min_value + value_width;
   }
 
   update();
@@ -443,7 +386,7 @@ void SignalCurve::wheelEvent(QWheelEvent * event)
     double zoom_y_pct = 1 + (-(double)delta / 5000);
 
     // check if we are in the valid range
-    if (h_ruler_startvalue + ((h_ruler_endvalue - h_ruler_startvalue) * zoom_y_pct * zoom_x_pct) > 256)
+    if (h_ruler_min_value + ((h_ruler_max_value - h_ruler_min_value) * zoom_y_pct * zoom_x_pct) > 256)
     {
         zoom_x_pct = 1;
         zoom_y_pct = 1;
@@ -453,14 +396,14 @@ void SignalCurve::wheelEvent(QWheelEvent * event)
     // 1, horizontal scale
     bufsize = (bufsize * zoom_y_pct * zoom_x_pct);
 
-    double h_ruler_width = (h_ruler_endvalue - h_ruler_startvalue) * zoom_y_pct * zoom_x_pct;
-    h_ruler_endvalue = h_ruler_startvalue + h_ruler_width;
+    double h_ruler_width = (h_ruler_max_value - h_ruler_min_value) * zoom_y_pct * zoom_x_pct;
+    h_ruler_max_value = h_ruler_min_value + h_ruler_width;
 
     // 2, vertical scale
-    double value_width = (max_value - min_value) * zoom_y_pct;
+    double value_width = (v_ruler_max_value - v_ruler_min_value) * zoom_y_pct;
 
     //min_value -= value_width_change / 2;
-    max_value = min_value + value_width;
+    v_ruler_max_value = v_ruler_min_value + value_width;
 
     update();
 }
@@ -481,9 +424,7 @@ void SignalCurve::shiftCursorIndexLeft(int idxs)
     return;
   }
 
-  w = width();
-
-  ppi = (double)(w-(bordersize * 2)) / (double)bufsize;
+  ppi = (double)chartArea.width() / (double)bufsize;
 
   idx = (double)crosshair_1_x_position / ppi;
 
@@ -521,9 +462,7 @@ void SignalCurve::shiftCursorIndexRight(int idxs)
     return;
   }
 
-  w = width();
-
-  ppi = (double)(w-(bordersize * 2)) / (double)bufsize;
+  ppi = (double)chartArea.width() / (double)bufsize;
 
   idx = (double)crosshair_1_x_position / ppi;
 
@@ -569,12 +508,10 @@ void SignalCurve::shiftCursorPixelsRight(int pixels)
     return;
   }
 
-  w = width();
-
   crosshair_1_x_position += pixels;
-  if(crosshair_1_x_position>(w-(bordersize * 2) -2))
+  if(crosshair_1_x_position>(chartArea.width() -2))
   {
-    crosshair_1_x_position = w-(bordersize * 2) -2;
+    crosshair_1_x_position = chartArea.width() -2;
   }
 
   update();
@@ -585,8 +522,11 @@ void SignalCurve::resizeEvent(QResizeEvent *resize_event)
 {
   if(crosshair_1_active)
   {
-    crosshair_1_x_position *= ((double)(width() - (bordersize * 2)) / (double)(old_w - (bordersize * 2)));
+    crosshair_1_x_position *= ((double)chartArea.width() / (double)(old_w - (width() - chartArea.width())));
   }
+
+  // set the size of the chart area by setting its size compared to the widget
+  chartArea = QRect(90, 50, width() - (90+30), height() - (50+70));
 
   QWidget::resizeEvent(resize_event);
 }
@@ -783,7 +723,7 @@ void SignalCurve::print_to_postscript()
 
   QPainter paint(&curve_printer);
 
-  drawWidget_to_printer(&paint, curve_printer.pageRect().width(), curve_printer.pageRect().height());
+  drawWidget(&paint, curve_printer.pageRect().width(), curve_printer.pageRect().height(), true);
 
   restore_colors_after_printing();
 
@@ -826,7 +766,7 @@ void SignalCurve::print_to_pdf()
 
   QPainter paint(&curve_printer);
 
-  drawWidget_to_printer(&paint, curve_printer.pageRect().width(), curve_printer.pageRect().height());
+  drawWidget(&paint, curve_printer.pageRect().width(), curve_printer.pageRect().height(), true);
 
   restore_colors_after_printing();
 
@@ -891,443 +831,11 @@ void SignalCurve::print_to_printer()
 
   QPainter paint(&curve_printer);
 
-  drawWidget_to_printer(&paint, curve_printer.pageRect().width(), curve_printer.pageRect().height());
+  drawWidget(&paint, curve_printer.pageRect().width(), curve_printer.pageRect().height(), true);
 
   restore_colors_after_printing();
 
   sidemenu->close();
-}
-
-
-void SignalCurve::drawWidget_to_printer(QPainter *painter, int curve_w, int curve_h)
-{
-  int i,
-      precision,
-      bordersize_backup=0,
-      p_w,
-      p_divisor,
-      p_range,
-      p_multiplier,
-      p_ruler_startvalue,
-      p_ruler_endvalue,
-      p_tmp,
-      p_h,
-      p2_divisor,
-      p2_range,
-      p2_multiplier,
-      p2_ruler_startvalue,
-      p2_ruler_endvalue,
-      p2_tmp;
-
-  char str[128];
-
-  double v_sens,
-         offset,
-         h_step,
-         value,
-         p_factor,
-         p_pixels_per_unit,
-         p2_pixels_per_unit;
-
-  QString q_str;
-
-  QFont curve_font;
-
-  QPen printer_pen;
-
-
-  curve_w -= 30;
-  curve_h -= 30;
-
-  p_factor = (double)curve_w / width();
-
-  bordersize_backup = bordersize;
-  bordersize *= p_factor;
-
-  curve_font.setFamily("Arial");
-  curve_font.setPixelSize((int)((double)curve_w / 104.0));
-  painter->setFont(curve_font);
-
-  if((curve_w < ((bordersize * 2) + 5)) || (curve_h < ((bordersize * 2) + 5)))
-  {
-    bordersize = bordersize_backup;
-
-    return;
-  }
-
-  printer_pen = QPen(Qt::SolidPattern, 2, Qt::SolidLine, Qt::SquareCap, Qt::BevelJoin);
-  printer_pen.setColor(Qt::black);
-
-  painter->setPen(printer_pen);
-
-/////////////////////////////////// draw the window ///////////////////////////////////////////
-
-  painter->drawLine(0, 0, 0, curve_h);
-  painter->drawLine(0, 0, curve_w, 0);
-  painter->drawLine(curve_w, curve_h, curve_w, 0);
-  painter->drawLine(curve_w, curve_h, 0, curve_h);
-
-/////////////////////////////////// draw the rulers ///////////////////////////////////////////
-
-  p_w = curve_w - bordersize - bordersize;
-
-  p_multiplier = 1;
-
-  while((h_ruler_endvalue * p_multiplier) < 10000.0)
-  {
-    p_multiplier *= 10;
-
-    if(p_multiplier > 10000000)
-    {
-      break;
-    }
-  }
-
-  p_ruler_startvalue = h_ruler_startvalue * p_multiplier;
-
-  p_ruler_endvalue = h_ruler_endvalue * p_multiplier;
-
-  p_range = p_ruler_endvalue - p_ruler_startvalue;
-
-  p_pixels_per_unit = (double)p_w / (double)p_range;
-
-  p_divisor = 1;
-
-  while((p_range / p_divisor) > 10)
-  {
-    p_divisor *= 2;
-
-    if((p_range / p_divisor) <= 10)
-    {
-      break;
-    }
-
-    p_divisor /= 2;
-
-    p_divisor *= 5;
-
-    if((p_range / p_divisor) <= 10)
-    {
-      break;
-    }
-
-    p_divisor *= 2;
-  }
-
-  if(drawHruler && (bordersize > (19 * p_factor)))
-  {
-    painter->drawLine(bordersize, curve_h - bordersize + (5 * p_factor), curve_w - bordersize, curve_h - bordersize + (5 * p_factor));
-
-    h_ruler_precision = 0;
-
-    if((h_ruler_endvalue < 10.0) && (h_ruler_endvalue > -10.0) && (h_ruler_startvalue < 10.0) && (h_ruler_startvalue > -10.0))
-    {
-      h_ruler_precision = 1;
-
-      if((h_ruler_endvalue < 1.0) && (h_ruler_endvalue > -1.0) && (h_ruler_startvalue < 1.0) && (h_ruler_startvalue > -1.0))
-      {
-        h_ruler_precision = 2;
-
-        if((h_ruler_endvalue < 0.1) && (h_ruler_endvalue > -0.1) && (h_ruler_startvalue < 0.1) && (h_ruler_startvalue > -0.1))
-        {
-          h_ruler_precision = 3;
-
-          if((h_ruler_endvalue < 0.01) && (h_ruler_endvalue > -0.01) && (h_ruler_startvalue < 0.01) && (h_ruler_startvalue > -0.01))
-          {
-            h_ruler_precision = 4;
-          }
-        }
-      }
-    }
-
-    for(i = (p_ruler_startvalue / p_divisor) * p_divisor; i <= p_ruler_endvalue; i += p_divisor)
-    {
-      if(i < p_ruler_startvalue)
-      {
-        continue;
-      }
-
-      q_str.setNum((double)i / (double)p_multiplier, 'f', h_ruler_precision);
-
-      p_tmp = (double)(i - p_ruler_startvalue) * p_pixels_per_unit;
-
-      painter->drawText(bordersize + p_tmp - (30 * p_factor),  curve_h - bordersize + (18 * p_factor), 60 * p_factor, 16 * p_factor, Qt::AlignCenter | Qt::TextSingleLine, q_str);
-
-      painter->drawLine(bordersize + p_tmp, curve_h - bordersize + (5 * p_factor), bordersize + p_tmp, curve_h - bordersize + ((5 + 10) * p_factor));
-    }
-
-    painter->drawText(curve_w - bordersize + (20 * p_factor),  curve_h - bordersize + (18 * p_factor), 40 * p_factor, 16 * p_factor, Qt::AlignLeft | Qt::AlignVCenter | Qt::TextSingleLine, h_label);
-  }
-
-/////////////////////////////////// draw the vertical ruler ///////////////////////////////////////////
-
-  p_h = curve_h - bordersize - bordersize;
-
-  p2_multiplier = 1;
-
-  while(((max_value - min_value) * p2_multiplier) < 10000.0)
-  {
-    p2_multiplier *= 10;
-
-    if(p2_multiplier > 10000000)
-    {
-      break;
-    }
-  }
-
-  p2_ruler_startvalue = min_value * p2_multiplier;
-
-  p2_ruler_endvalue = max_value * p2_multiplier;
-
-  p2_range = p2_ruler_endvalue - p2_ruler_startvalue;
-
-  if(p2_range < 0)  p2_range *= -1;
-
-  p2_pixels_per_unit = (double)p_h / (double)p2_range;
-
-  p2_divisor = 1;
-
-  while((p2_range / p2_divisor) > 10)
-  {
-    p2_divisor *= 2;
-
-    if((p2_range / p2_divisor) <= 10)
-    {
-      break;
-    }
-
-    p2_divisor /= 2;
-
-    p2_divisor *= 5;
-
-    if((p2_range / p2_divisor) <= 10)
-    {
-      break;
-    }
-
-    p2_divisor *= 2;
-  }
-
-  if(drawVruler && (bordersize > (29 * p_factor)))
-  {
-    painter->drawLine(bordersize - (5 * p_factor), bordersize, bordersize - (5 * p_factor), curve_h - bordersize);
-
-    precision = 0;
-
-    if((max_value < 10.0) && (max_value > -10.0) && (min_value < 10.0) && (min_value > -10.0))
-    {
-      precision = 1;
-
-      if((max_value < 1.0) && (max_value > -1.0) && (min_value < 1.0) && (min_value > -1.0))
-      {
-        precision = 2;
-
-        if((max_value < 0.1) && (max_value > -0.1) && (min_value < 0.1) && (min_value > -0.1))
-        {
-          precision = 3;
-
-          if((max_value < 0.01) && (max_value > -0.01) && (min_value < 0.01) && (min_value > -0.01))
-          {
-            precision = 4;
-          }
-        }
-      }
-    }
-
-    for(i = (p2_ruler_startvalue / p2_divisor) * p2_divisor; i <= p2_ruler_endvalue; i += p2_divisor)
-    {
-      if(i < p2_ruler_startvalue)
-      {
-        continue;
-      }
-
-      q_str.setNum((double)i / (double)p2_multiplier, 'f', precision);
-
-      p2_tmp = (double)(i - p2_ruler_startvalue) * p2_pixels_per_unit;
-
-      if(curveUpSideDown == false)
-      {
-        painter->drawText((3 * p_factor), curve_h - bordersize - p2_tmp - (8 * p_factor), (40 * p_factor), (16 * p_factor), Qt::AlignRight | Qt::AlignVCenter | Qt::TextSingleLine, q_str);
-
-        painter->drawLine(bordersize - (5 * p_factor), curve_h - bordersize - p2_tmp, bordersize - (15 * p_factor), curve_h - bordersize - p2_tmp);
-      }
-      else
-      {
-        painter->drawText((3 * p_factor), bordersize + p2_tmp - (8 * p_factor), (40 * p_factor), (16 * p_factor), Qt::AlignRight | Qt::AlignVCenter | Qt::TextSingleLine, q_str);
-
-        painter->drawLine(bordersize - (5 * p_factor), bordersize + p2_tmp, bordersize - (15 * p_factor), bordersize + p2_tmp);
-      }
-    }
-  }
-
-/////////////////////////////////// draw the labels ///////////////////////////////////////////
-
-  painter->setFont(curve_font);
-
-  if(v_label[0] != 0)
-  {
-    painter->drawText(8 * p_factor, 30 * p_factor, 100 * p_factor, 16 * p_factor, Qt::AlignCenter | Qt::TextSingleLine, v_label);
-  }
-
-  if(upperlabel1[0] != 0)
-  {
-    painter->drawText(curve_w / 2 - (150 * p_factor), 10 * p_factor, 300 * p_factor, 16 * p_factor, Qt::AlignCenter | Qt::TextSingleLine, upperlabel1);
-  }
-
-  if(upperlabel2[0] != 0)
-  {
-    painter->drawText(curve_w / 2 - (150 * p_factor), 30 * p_factor, 300 * p_factor, 16 * p_factor, Qt::AlignCenter | Qt::TextSingleLine, upperlabel2);
-  }
-
-  if(lowerlabel[0] != 0)
-  {
-    painter->drawText(curve_w / 2 - (80 * p_factor), curve_h - (20 * p_factor), 160 * p_factor, 16 * p_factor, Qt::AlignCenter | Qt::TextSingleLine, lowerlabel);
-  }
-
-/////////////////////////////////// translate coordinates, draw and fill a rectangle ///////////////////////////////////////////
-
-  painter->translate(QPoint(bordersize, bordersize));
-
-  curve_w -= (bordersize * 2);
-
-  curve_h -= (bordersize * 2);
-
-  painter->setClipping(true);
-  painter->setClipRegion(QRegion(0, 0, curve_w, curve_h), Qt::ReplaceClip);
-
-/////////////////////////////////// draw the rasters ///////////////////////////////////////////
-
-  painter->drawRect (0, 0, curve_w - 1, curve_h - 1);
-
-  for(i = (p_ruler_startvalue / p_divisor) * p_divisor; i <= p_ruler_endvalue; i += p_divisor)
-  {
-    if(i < p_ruler_startvalue)
-    {
-      continue;
-    }
-
-    p_tmp = (double)(i - p_ruler_startvalue) * p_pixels_per_unit;
-
-    painter->drawLine(p_tmp, 0, p_tmp, curve_h);
-  }
-
-  for(i = (p2_ruler_startvalue / p2_divisor) * p2_divisor; i <= p2_ruler_endvalue; i += p2_divisor)
-  {
-    if(i < p2_ruler_startvalue)
-    {
-      continue;
-    }
-
-    p2_tmp = (double)(i - p2_ruler_startvalue) * p2_pixels_per_unit;
-
-    if(curveUpSideDown == false)
-    {
-      painter->drawLine(0, curve_h - p2_tmp, curve_w, curve_h - p2_tmp);
-    }
-    else
-    {
-      painter->drawLine(0, p2_tmp, curve_w, p2_tmp);
-    }
-  }
-
-/////////////////////////////////// draw the curve ///////////////////////////////////////////
-
-  if(dbuf == NULL) return;
-
-  if(max_value <= min_value)  return;
-
-  if(bufsize < 2)  return;
-
-  if(curveUpSideDown == true)
-  {
-    offset = (-(min_value));
-
-    v_sens = curve_h / (max_value - min_value);
-  }
-  else
-  {
-    offset = (-(max_value));
-
-    v_sens = (-(curve_h / (max_value - min_value)));
-  }
-
-  h_step = (double)curve_w / (double)bufsize;
-
-  QPen linePen = QPen(QBrush(SignalLineColor, Qt::SolidPattern), tracewidth, Qt::SolidLine, Qt::SquareCap, Qt::BevelJoin);
-  QBrush fillBrush = QBrush(SignalFillColor, Qt::SolidPattern);
-
-  QPolygon curvePolygon = QPolygon();
-  curvePolygon.append(QPoint(0, curve_h));
-
-  if(dbuf)
-  {
-    for(i = 0; i < bufsize; i++)
-    {
-        double vertical_position = (dbuf[i + (int)startindex] + offset) * v_sens;
-        curvePolygon.append(QPoint((i * h_step) + (h_step/2), vertical_position));
-
-      if(crosshair_1_active)
-      {
-        if(i==((int)(((double)crosshair_1_x_position * p_factor) / h_step)))
-        {
-          crosshair_1_y_value = vertical_position;
-          crosshair_1_value = dbuf[i + (int)startindex];
-          value = (h_ruler_endvalue - h_ruler_startvalue) / bufsize;
-          crosshair_1_value_2 = (i * value) + (0.5 * value) + h_ruler_startvalue;
-        }
-      }
-    }
-  }
-
-  curvePolygon.append(QPoint(curve_w, curve_h));
-  curvePolygon.append(QPoint(0, curve_h));
-
-  QPainterPath path;
-  path.addPolygon(curvePolygon);
-
-  // Draw polygon
-  painter->setPen(linePen);
-  painter->drawPolygon(curvePolygon);
-  painter->fillPath(path, fillBrush);
-
-
-/////////////////////////////////// draw the line ///////////////////////////////////////////
-
-  if(line1Enabled == true)
-  {
-    painter->drawLine(line1_start_x * h_step, (line1_start_y + offset) * v_sens, line1_end_x * h_step, (line1_end_y + offset) * v_sens);
-  }
-
-/////////////////////////////////// draw the markers ///////////////////////////////////////////
-
-  if(Marker1Enabled == true)
-  {
-    painter->drawLine(curve_w * marker_1_position, 0, curve_w * marker_1_position, curve_h);
-  }
-
-  if(Marker2Enabled == true)
-  {
-    painter->drawLine(curve_w * marker_2_position, 0, curve_w * marker_2_position, curve_h);
-  }
-
-/////////////////////////////////// draw the cursor ///////////////////////////////////////////
-
-  if(crosshair_1_active)
-  {
-    QPainterPath cursor_path;
-    cursor_path.moveTo(crosshair_1_x_position * p_factor, crosshair_1_y_value);
-    cursor_path.lineTo((crosshair_1_x_position - 4) * p_factor, crosshair_1_y_value - (9 * p_factor));
-    cursor_path.lineTo((crosshair_1_x_position + 4) * p_factor, crosshair_1_y_value - (9 * p_factor));
-    cursor_path.lineTo(crosshair_1_x_position * p_factor, crosshair_1_y_value);
-    painter->fillPath(cursor_path, QBrush(Qt::black));
-
-    snprintf(str, 128, "%f", crosshair_1_value);
-    painter->drawText((crosshair_1_x_position + 8) * p_factor, (crosshair_1_y_position - 10) * p_factor, str);
-    snprintf(str, 128, "%f %s", crosshair_1_value_2, h_label);
-    painter->drawText((crosshair_1_x_position + 8) * p_factor, (crosshair_1_y_position + 10) * p_factor, str);
-  }
-
-  bordersize = bordersize_backup;
 }
 
 
@@ -1350,142 +858,74 @@ void SignalCurve::paintEvent(QPaintEvent *)
 }
 
 
-void SignalCurve::drawWidget(QPainter *painter, int curve_w, int curve_h)
+void SignalCurve::drawWidget(QPainter *painter, int curve_w, int curve_h, bool is_printer)
 {
   int i,
-      precision,
-      p_w,
+      p_precision,
       p_divisor,
       p_range,
       p_multiplier,
       p_ruler_startvalue,
       p_ruler_endvalue,
-      p_tmp,
-      p_h,
-      p2_divisor,
-      p2_range,
-      p2_multiplier,
-      p2_ruler_startvalue,
-      p2_ruler_endvalue,
-      p2_tmp;
+      raster_position;
 
   double v_sens=0.0,
          offset=0.0,
          h_step=0.0,
          pixelsPerUnit,
          sum_colorbar_value,
-         p_pixels_per_unit,
-         p2_pixels_per_unit;
+         p_pixels_per_unit;
 
   char str[128];
 
 
 
   painter->setFont(QFont("Arial", 8));
-
   painter->fillRect(0, 0, curve_w, curve_h, BorderColor);
 
-  if((curve_w < ((bordersize * 2) + 5)) || (curve_h < ((bordersize * 2) + 5)))
+  // if the desired chart size is too small (smaller than 5x5)
+  if((curve_w < (width()-chartArea.width() + 5)) || (curve_h < (width()-chartArea.width() + 5)))
   {
     return;
   }
 
+
+  if (is_printer) {
+    QPen printerPen = QPen(Qt::SolidPattern, 2, Qt::SolidLine, Qt::SquareCap, Qt::BevelJoin);
+    printerPen.setColor(Qt::black);
+
+    painter->setPen(printerPen);
+    painter->setFont(QFont("Arial", 8));
+
+  /////////////////////////////////// draw the window for the printer ///////////////////////////////////////////
+
+    painter->drawLine(0, 0, 0, curve_h);
+    painter->drawLine(0, 0, curve_w, 0);
+    painter->drawLine(curve_w, curve_h, curve_w, 0);
+    painter->drawLine(curve_w, curve_h, 0, curve_h);
+  }
+
 /////////////////////////////////// draw the horizontal ruler ///////////////////////////////////////////
 
-  p_w = curve_w - bordersize - bordersize;
-
-  p_multiplier = 1;
-
-  while((h_ruler_endvalue * p_multiplier) < 10000.0)
+  if(isHorizontalRulerVisible)
   {
-    p_multiplier *= 10;
+    calculateRulerParameters(
+                  chartArea.width(), h_ruler_min_value, h_ruler_max_value,
+                  &p_multiplier, &p_ruler_startvalue, &p_ruler_endvalue, &p_range, &p_pixels_per_unit, &p_divisor, &p_precision
+                  );
 
-    if(p_multiplier > 10000000)
-    {
-      break;
-    }
-  }
-
-  p_ruler_startvalue = h_ruler_startvalue * p_multiplier;
-
-  p_ruler_endvalue = h_ruler_endvalue * p_multiplier;
-
-  p_range = p_ruler_endvalue - p_ruler_startvalue;
-
-  p_pixels_per_unit = (double)p_w / (double)p_range;
-
-  p_divisor = 1;
-
-  while((p_range / p_divisor) > 10)
-  {
-    p_divisor *= 2;
-
-    if((p_range / p_divisor) <= 10)
-    {
-      break;
-    }
-
-    p_divisor /= 2;
-
-    p_divisor *= 5;
-
-    if((p_range / p_divisor) <= 10)
-    {
-      break;
-    }
-
-    p_divisor *= 2;
-  }
-
-//   printf("p_multiplier is %i\n"
-//         "p_ruler_startvalue is %i\n"
-//         "p_ruler_endvalue is %i\n"
-//         "p_range is %i\n"
-//         "p_divisor is %i\n"
-//         "p_pixels_per_unit is %f\n\n",
-//         p_multiplier,
-//         p_ruler_startvalue,
-//         p_ruler_endvalue,
-//         p_range,
-//         p_divisor,
-//         p_pixels_per_unit);
-
-  if(drawHruler && (bordersize > 19))
-  {
     painter->setPen(RulerColor);
+    painter->drawLine(chartArea.left(), chartArea.bottom() + 5, chartArea.right(), chartArea.bottom() + 5);
 
-    painter->drawLine(bordersize, curve_h - bordersize + 5, curve_w - bordersize, curve_h - bordersize + 5);
-
-    h_ruler_precision = 0;
-
-    if((h_ruler_endvalue < 10.0) && (h_ruler_endvalue > -10.0) && (h_ruler_startvalue < 10.0) && (h_ruler_startvalue > -10.0))
-    {
-      h_ruler_precision = 1;
-
-      if((h_ruler_endvalue < 1.0) && (h_ruler_endvalue > -1.0) && (h_ruler_startvalue < 1.0) && (h_ruler_startvalue > -1.0))
-      {
-        h_ruler_precision = 2;
-
-        if((h_ruler_endvalue < 0.1) && (h_ruler_endvalue > -0.1) && (h_ruler_startvalue < 0.1) && (h_ruler_startvalue > -0.1))
-        {
-          h_ruler_precision = 3;
-
-          if((h_ruler_endvalue < 0.01) && (h_ruler_endvalue > -0.01) && (h_ruler_startvalue < 0.01) && (h_ruler_startvalue > -0.01))
-          {
-            h_ruler_precision = 4;
-          }
-        }
-      }
-    }
-
-
+    // the minimum value on the ruler
     int horizontal_ruler_text_start_position = (int)((double)(p_ruler_startvalue - p_ruler_startvalue) * p_pixels_per_unit);
     double horizontal_start_value = (double)p_ruler_startvalue / (double)p_multiplier;
-    drawTextOnRuler(painter, curve_h, bordersize, horizontal_ruler_text_start_position, horizontal_start_value, h_ruler_precision, false);
+    drawTextOnRuler(painter, chartArea, horizontal_ruler_text_start_position, horizontal_start_value, p_precision, false);
 
+    // the maximum value on the ruler
     int horizontal_ruler_text_end_position = (int)((double)(p_ruler_endvalue - p_ruler_startvalue) * p_pixels_per_unit);
     double horizontal_end_value = (double)p_ruler_endvalue / (double)p_multiplier;
-    drawTextOnRuler(painter, curve_h, bordersize, horizontal_ruler_text_end_position, horizontal_end_value, h_ruler_precision, false);
+    drawTextOnRuler(painter, chartArea, horizontal_ruler_text_end_position, horizontal_end_value, p_precision, false);
 
     for(i = (p_ruler_startvalue / p_divisor) * p_divisor; i <= p_ruler_endvalue; i += p_divisor)
     {
@@ -1494,149 +934,49 @@ void SignalCurve::drawWidget(QPainter *painter, int curve_w, int curve_h)
         continue;
       }
 
-      int horizoltal_position = (int)((double)(i - p_ruler_startvalue) * p_pixels_per_unit);
+      int horizontal_position = (int)((double)(i - p_ruler_startvalue) * p_pixels_per_unit);
       double horizoltal_value = (double)i / (double)p_multiplier;
 
-      if ((horizoltal_position > horizontal_ruler_text_start_position + 20) && (horizoltal_position < horizontal_ruler_text_end_position - 20))
+      if ((horizontal_position > horizontal_ruler_text_start_position + 20) && (horizontal_position < horizontal_ruler_text_end_position - 20))
       {
-        drawTextOnRuler(painter, curve_h, bordersize, horizoltal_position, horizoltal_value, h_ruler_precision, false);
+        drawTextOnRuler(painter, chartArea, horizontal_position, horizoltal_value, p_precision, false);
       }
     }
-
-//    for(i = (p_ruler_startvalue / p_divisor) * p_divisor; i <= p_ruler_endvalue; i += p_divisor)
-//    {
-//      if(i < p_ruler_startvalue)
-//      {
-//        continue;
-//      }
-
-//      q_str.setNum((double)i / (double)p_multiplier, 'f', h_ruler_precision);
-
-//      p_tmp = (double)(i - p_ruler_startvalue) * p_pixels_per_unit;
-
-//      painter->drawText(bordersize + p_tmp - 30,  curve_h - bordersize + 18, 60, 16, Qt::AlignCenter | Qt::TextSingleLine, q_str);
-
-//      painter->drawLine(bordersize + p_tmp, curve_h - bordersize + 5, bordersize + p_tmp, curve_h - bordersize + 5 + 10);
-//    }
-
-    painter->drawText(curve_w - bordersize + 20,  curve_h - bordersize + 18, 40, 16, Qt::AlignLeft | Qt::AlignVCenter | Qt::TextSingleLine, h_label);
   }
 
 /////////////////////////////////// draw the vertical ruler ///////////////////////////////////////////
 
-  p_h = curve_h - bordersize - bordersize;
-
-  p2_multiplier = 1;
-
-  while(((max_value - min_value) * p2_multiplier) < 10000.0)
+  if(isVerticalRulerVisible)
   {
-    p2_multiplier *= 10;
+    calculateRulerParameters(
+                  chartArea.height(), v_ruler_min_value, v_ruler_max_value,
+                  &p_multiplier, &p_ruler_startvalue, &p_ruler_endvalue, &p_range, &p_pixels_per_unit, &p_divisor, &p_precision
+                  );
 
-    if(p2_multiplier > 10000000)
-    {
-      break;
-    }
-  }
-
-  p2_ruler_startvalue = min_value * p2_multiplier;
-
-  p2_ruler_endvalue = max_value * p2_multiplier;
-
-  p2_range = p2_ruler_endvalue - p2_ruler_startvalue;
-
-  if(p2_range < 0)  p2_range *= -1;
-
-  p2_pixels_per_unit = (double)p_h / (double)p2_range;
-
-  p2_divisor = 1;
-
-  while((p2_range / p2_divisor) > 10)
-  {
-    p2_divisor *= 2;
-
-    if((p2_range / p2_divisor) <= 10)
-    {
-      break;
-    }
-
-    p2_divisor /= 2;
-
-    p2_divisor *= 5;
-
-    if((p2_range / p2_divisor) <= 10)
-    {
-      break;
-    }
-
-    p2_divisor *= 2;
-  }
-
-//   printf("p2_multiplier is %i\n"
-//         "p2_ruler_startvalue is %i\n"
-//         "p2_ruler_endvalue is %i\n"
-//         "p2_range is %i\n"
-//         "p2_divisor is %i\n"
-//         "p2_pixels_per_unit is %f\n"
-//         "max_value is %f\n"
-//         "min_value is %f\n\n",
-//         p2_multiplier,
-//         p2_ruler_startvalue,
-//         p2_ruler_endvalue,
-//         p2_range,
-//         p2_divisor,
-//         p2_pixels_per_unit,
-//         max_value,
-//         min_value);
-
-  if(drawVruler && (bordersize > 29))
-  {
     painter->setPen(RulerColor);
+    painter->drawLine(chartArea.x() - 5, chartArea.y(), chartArea.x() - 5, chartArea.bottom());
 
-    painter->drawLine(bordersize - 5, bordersize, bordersize - 5, curve_h - bordersize);
+    int vertical_ruler_text_start_position = (int)((double)(p_ruler_startvalue - p_ruler_startvalue) * p_pixels_per_unit);
+    double vertical_start_value = (double)p_ruler_startvalue / (double)p_multiplier;
+    drawTextOnRuler(painter, chartArea, vertical_ruler_text_start_position, vertical_start_value, p_precision, true, curveUpSideDown);
 
-    precision = 0;
+    int vertical_ruler_text_end_position = (int)((double)(p_ruler_endvalue - p_ruler_startvalue) * p_pixels_per_unit);
+    double vertical_end_value = (double)p_ruler_endvalue / (double)p_multiplier;
+    drawTextOnRuler(painter, chartArea, vertical_ruler_text_end_position, vertical_end_value, p_precision, true, curveUpSideDown);
 
-    if((max_value < 10.0) && (max_value > -10.0) && (min_value < 10.0) && (min_value > -10.0))
+    for(i = (p_ruler_startvalue / p_divisor) * p_divisor; i <= p_ruler_endvalue; i += p_divisor)
     {
-      precision = 1;
-
-      if((max_value < 1.0) && (max_value > -1.0) && (min_value < 1.0) && (min_value > -1.0))
-      {
-        precision = 2;
-
-        if((max_value < 0.1) && (max_value > -0.1) && (min_value < 0.1) && (min_value > -0.1))
-        {
-          precision = 3;
-
-          if((max_value < 0.01) && (max_value > -0.01) && (min_value < 0.01) && (min_value > -0.01))
-          {
-            precision = 4;
-          }
-        }
-      }
-    }
-
-    int vertical_ruler_text_start_position = (int)((double)(p2_ruler_startvalue - p2_ruler_startvalue) * p2_pixels_per_unit);
-    double vertical_start_value = (double)p2_ruler_startvalue / (double)p2_multiplier;
-    drawTextOnRuler(painter, curve_h, bordersize, vertical_ruler_text_start_position, vertical_start_value, precision, true, curveUpSideDown);
-
-    int vertical_ruler_text_end_position = (int)((double)(p2_ruler_endvalue - p2_ruler_startvalue) * p2_pixels_per_unit);
-    double vertical_end_value = (double)p2_ruler_endvalue / (double)p2_multiplier;
-    drawTextOnRuler(painter, curve_h, bordersize, vertical_ruler_text_end_position, vertical_end_value, precision, true, curveUpSideDown);
-
-    for(i = (p2_ruler_startvalue / p2_divisor) * p2_divisor; i <= p2_ruler_endvalue; i += p2_divisor)
-    {
-      if(i < p2_ruler_startvalue)
+      if(i < p_ruler_startvalue)
       {
         continue;
       }
 
-      int vertical_position = (int)((double)(i - p2_ruler_startvalue) * p2_pixels_per_unit);
-      double vertical_value = (double)i / (double)p2_multiplier;
+      int vertical_position = (int)((double)(i - p_ruler_startvalue) * p_pixels_per_unit);
+      double vertical_value = (double)i / (double)p_multiplier;
 
       if ((vertical_position > vertical_ruler_text_start_position + 12) && (vertical_position < vertical_ruler_text_end_position - 12))
       {
-        drawTextOnRuler(painter, curve_h, bordersize, vertical_position, vertical_value, precision, true, curveUpSideDown);
+        drawTextOnRuler(painter, chartArea, vertical_position, vertical_value, p_precision, true, curveUpSideDown);
       }
     }
   }
@@ -1645,29 +985,27 @@ void SignalCurve::drawWidget(QPainter *painter, int curve_w, int curve_h)
 
   painter->setPen(TextColor);
   painter->setFont(QFont("Arial", 8));
+  QFontMetrics fontMetrics = QFontMetrics(painter->font());
 
-  if(v_label[0] != 0)
-  {
-    painter->drawText(8, 30, 100, 16, Qt::AlignCenter | Qt::TextSingleLine, v_label);
-  }
+  QString v_ruler_text = v_ruler_name + " [" + v_ruler_unit + "]";
+  QRect text_rect = fontMetrics.boundingRect(v_ruler_text);
+  painter->rotate(-90);
+  painter->drawText(-(chartArea.bottom() - ((chartArea.height()/2) - (text_rect.width() / 2))), chartArea.left() - 70, text_rect.width(), text_rect.height(), Qt::TextSingleLine, v_ruler_text);
+  painter->rotate(90);
 
-  if(upperlabel1[0] != 0)
-  {
-    painter->drawText(curve_w / 2 - 150, 20, 300, 16, Qt::AlignCenter | Qt::TextSingleLine, upperlabel1);
-  }
+  painter->drawText(curve_w / 2 - 150, 20, 300, 16, Qt::AlignCenter | Qt::TextSingleLine, header_label);
 
-  if(lowerlabel[0] != 0)
-  {
-    painter->drawText(curve_w / 2 - 80, curve_h - 20, 160, 16, Qt::AlignCenter | Qt::TextSingleLine, lowerlabel);
-  }
+  QString h_ruler_text = h_ruler_name + " [" + h_ruler_unit + "]";
+  text_rect = fontMetrics.boundingRect(h_ruler_text);
+  painter->drawText(chartArea.left() + (chartArea.width()/2) - (text_rect.width() / 2), chartArea.bottom() + 40, text_rect.width(), text_rect.height(), Qt::TextSingleLine, h_ruler_text);
+
 
 /////////////////////////////////// translate coordinates, draw and fill a rectangle ///////////////////////////////////////////
 
-  painter->translate(QPoint(bordersize, bordersize));
+  painter->translate(chartArea.topLeft());
 
-  curve_w -= (bordersize * 2);
-
-  curve_h -= (bordersize * 2);
+  curve_w = chartArea.width();
+  curve_h = chartArea.height();
 
   painter->fillRect(0, 0, curve_w, curve_h, BackgroundColor);
 
@@ -1704,11 +1042,11 @@ void SignalCurve::drawWidget(QPainter *painter, int curve_w, int curve_h)
       spectrum_color->max_colorbar_value *= 1.05;
     }
 
-    pixelsPerUnit = (double)curve_w / (h_ruler_endvalue - h_ruler_startvalue);
+    pixelsPerUnit = (double)curve_w / (h_ruler_max_value - h_ruler_min_value);
     double barWidth = 0;
     int barTextYPosIndex = 0;
 
-    if((spectrum_color->freq[0] > h_ruler_startvalue) && (spectrum_color->items > 1))
+    if((spectrum_color->freq[0] > h_ruler_min_value) && (spectrum_color->items > 1))
     {
       t = (spectrum_color->max_colorbar_value - spectrum_color->value[0]) * ((double)curve_h / spectrum_color->max_colorbar_value);
       if(t < 0)  t = 0;
@@ -1718,7 +1056,7 @@ void SignalCurve::drawWidget(QPainter *painter, int curve_w, int curve_h)
         QColor color = (Qt::GlobalColor)spectrum_color->color[0];
         color.setAlpha(127);
 
-        barWidth = (spectrum_color->freq[0] - h_ruler_startvalue) * pixelsPerUnit;
+        barWidth = (spectrum_color->freq[0] - h_ruler_min_value) * pixelsPerUnit;
 
         painter->fillRect(0,
                           t,
@@ -1743,7 +1081,7 @@ void SignalCurve::drawWidget(QPainter *painter, int curve_w, int curve_h)
 
     for(i=1; i < spectrum_color->items; i++)
     {
-      if(spectrum_color->freq[i] > h_ruler_startvalue)
+      if(spectrum_color->freq[i] > h_ruler_min_value)
       {
         t = (spectrum_color->max_colorbar_value - spectrum_color->value[i]) * ((double)curve_h / spectrum_color->max_colorbar_value);
         if(t < 0)  t = 0;
@@ -1755,7 +1093,7 @@ void SignalCurve::drawWidget(QPainter *painter, int curve_w, int curve_h)
 
           barWidth = (spectrum_color->freq[i] - spectrum_color->freq[i-1]) * pixelsPerUnit;
 
-          painter->fillRect((spectrum_color->freq[i-1] - h_ruler_startvalue) * pixelsPerUnit,
+          painter->fillRect((spectrum_color->freq[i-1] - h_ruler_min_value) * pixelsPerUnit,
                             t,
                             barWidth,
                             curve_h - t,
@@ -1768,7 +1106,7 @@ void SignalCurve::drawWidget(QPainter *painter, int curve_w, int curve_h)
           sprintf(str + strlen(str), " (%.1f%%)", (spectrum_color->value[i] * 100.0) / sum_colorbar_value);
         }
         painter->setPen((Qt::GlobalColor)spectrum_color->color[i]);
-        painter->drawText((spectrum_color->freq[i-1] - h_ruler_startvalue) * pixelsPerUnit + 10, 20 + (barTextYPosIndex * 20), str);
+        painter->drawText((spectrum_color->freq[i-1] - h_ruler_min_value) * pixelsPerUnit + 10, 20 + (barTextYPosIndex * 20), str);
 
         if (barWidth < 80) {
             barTextYPosIndex++;
@@ -1792,10 +1130,14 @@ void SignalCurve::drawWidget(QPainter *painter, int curve_w, int curve_h)
 /////////////////////////////////// draw the rasters ///////////////////////////////////////////
 
   painter->setPen(RasterColor);
-
   painter->drawRect (0, 0, curve_w - 1, curve_h - 1);
 
   // horizontal rasters (draw rasters between p_ruler_startvalue and p_ruler_endvalue with p_divisor steps)
+  calculateRulerParameters(
+                chartArea.width(), h_ruler_min_value, h_ruler_max_value,
+                &p_multiplier, &p_ruler_startvalue, &p_ruler_endvalue, &p_range, &p_pixels_per_unit, &p_divisor, &p_precision
+                );
+
   int isSecondary = 0;
   for(i = (p_ruler_startvalue / p_divisor) * p_divisor; i <= p_ruler_endvalue; i += p_divisor/2)
   {
@@ -1813,22 +1155,27 @@ void SignalCurve::drawWidget(QPainter *painter, int curve_w, int curve_h)
         painter->setPen(SecondaryRasterColor);
     }
 
-    p_tmp = (double)(i - p_ruler_startvalue) * p_pixels_per_unit;
-    painter->drawLine(p_tmp, 0, p_tmp, curve_h);
+    raster_position = (double)(i - p_ruler_startvalue) * p_pixels_per_unit;
+    painter->drawLine(raster_position, 0, raster_position, curve_h);
   }
 
   // vertical rasters
+  calculateRulerParameters(
+                chartArea.height(), v_ruler_min_value, v_ruler_max_value,
+                &p_multiplier, &p_ruler_startvalue, &p_ruler_endvalue, &p_range, &p_pixels_per_unit, &p_divisor, &p_precision
+                );
+
   isSecondary = 0;
-  for(i = (p2_ruler_startvalue / p2_divisor) * p2_divisor; i <= p2_ruler_endvalue; i += p2_divisor/2)
+  for(i = (p_ruler_startvalue / p_divisor) * p_divisor; i <= p_ruler_endvalue; i += p_divisor/2)
   {
     isSecondary++;
 
-    if(i < p2_ruler_startvalue)
+    if(i < p_ruler_startvalue)
     {
       continue;
     }
 
-    p2_tmp = (double)(i - p2_ruler_startvalue) * p2_pixels_per_unit;
+    raster_position = (double)(i - p_ruler_startvalue) * p_pixels_per_unit;
 
     if (isSecondary%2)
     {
@@ -1839,11 +1186,11 @@ void SignalCurve::drawWidget(QPainter *painter, int curve_w, int curve_h)
 
     if(curveUpSideDown == false)
     {
-      painter->drawLine(0, curve_h - p2_tmp, curve_w, curve_h - p2_tmp);
+      painter->drawLine(0, curve_h - raster_position, curve_w, curve_h - raster_position);
     }
     else
     {
-      painter->drawLine(0, p2_tmp, curve_w, p2_tmp);
+      painter->drawLine(0, raster_position, curve_w, raster_position);
     }
   }
 
@@ -1891,10 +1238,10 @@ drawTheCurve(painter, curve_w, curve_h);
 
     painter->setFont(QFont("Arial", 10));
     painter->fillRect(crosshair_1_x_position + 6, crosshair_1_y_position - 23, 60, 16, BackgroundColor);
-    snprintf(str, 128, "%f %s", crosshair_1_value, v_label);
+    snprintf(str, 128, "%f %s", crosshair_1_value, v_ruler_unit.toStdString().data());
     painter->drawText(crosshair_1_x_position + 8, crosshair_1_y_position - 10, str);
     painter->fillRect(crosshair_1_x_position + 6, crosshair_1_y_position - 3, 60, 16, BackgroundColor);
-    snprintf(str, 128, "@%f %s", crosshair_1_value_2, h_label);
+    snprintf(str, 128, "@%f %s", crosshair_1_value_2, h_ruler_unit.toStdString().data());
     painter->drawText(crosshair_1_x_position + 8, crosshair_1_y_position + 10, str);
   }
 
@@ -1919,7 +1266,71 @@ drawTheCurve(painter, curve_w, curve_h);
   }
 }
 
-void SignalCurve::drawTextOnRuler(QPainter *painter, int curve_h, int bottom_border_size, int position, double value, int precision, bool is_vertical, bool is_upsidedown)
+void SignalCurve::calculateRulerParameters(int length, double start_value, double end_value, int *multiplier, int *normalized_start_value, int *normalized_end_value, int *range, double *pixels_per_unit, int *divisor, int *precision)
+{
+    *multiplier = 1;
+
+    while((end_value * *multiplier) < 10000.0)
+    {
+      *multiplier *= 10;
+
+      if(*multiplier > 10000000)
+      {
+        break;
+      }
+    }
+
+    *normalized_start_value = start_value * *multiplier;
+
+    *normalized_end_value = end_value * *multiplier;
+
+    *range = *normalized_end_value - *normalized_start_value;
+
+    *pixels_per_unit = (double)length / (double)*range;
+
+    *divisor = 1;
+
+    while((*range / *divisor) > 10)
+    {
+      *divisor *= 2;
+
+      if((*range / *divisor) <= 10)
+      {
+        break;
+      }
+
+      *divisor /= 2;
+
+      *divisor *= 5;
+
+      if((*range / *divisor) <= 10)
+      {
+        break;
+      }
+
+      *divisor *= 2;
+    }
+
+    *precision = 0;
+    if((end_value < 10.0) && (end_value > -10.0) && (start_value < 10.0) && (start_value > -10.0))
+    {
+      *precision = 1;
+      if((end_value < 1.0) && (end_value > -1.0) && (start_value < 1.0) && (start_value > -1.0))
+      {
+        *precision = 2;
+        if((end_value < 0.1) && (end_value > -0.1) && (start_value < 0.1) && (start_value > -0.1))
+        {
+          *precision = 3;
+          if((end_value < 0.01) && (end_value > -0.01) && (start_value < 0.01) && (start_value > -0.01))
+          {
+            *precision = 4;
+          }
+        }
+      }
+    }
+}
+
+void SignalCurve::drawTextOnRuler(QPainter *painter, QRect area, int position, double value, int precision, bool is_vertical, bool is_upsidedown)
 {
     QString q_str;
 
@@ -1936,26 +1347,26 @@ void SignalCurve::drawTextOnRuler(QPainter *painter, int curve_h, int bottom_bor
     {
         if(is_upsidedown == false)
         {
-          int real_vertical_position = curve_h - bottom_border_size - position;
+          int real_vertical_position = area.bottom() - position;
 
-          painter->drawText(3, real_vertical_position - 8, 40, 16, Qt::AlignRight | Qt::AlignVCenter | Qt::TextSingleLine, q_str);
+          painter->drawText(area.left() - 57, real_vertical_position - 8, 40, 16, Qt::AlignRight | Qt::AlignVCenter | Qt::TextSingleLine, q_str);
 
-          painter->drawLine(bottom_border_size - 5, real_vertical_position, bottom_border_size - 5 - 10, real_vertical_position);
+          painter->drawLine(area.left() - 5, real_vertical_position, area.left() - 5 - 10, real_vertical_position);
         }
         else
         {
-          int real_vertical_position = bottom_border_size + position;
+          int real_vertical_position = area.top() + position;
 
-          painter->drawText(3, real_vertical_position - 8, 40, 16, Qt::AlignRight | Qt::AlignVCenter | Qt::TextSingleLine, q_str);
+          painter->drawText(area.left() - 57, real_vertical_position - 8, 40, 16, Qt::AlignRight | Qt::AlignVCenter | Qt::TextSingleLine, q_str);
 
-          painter->drawLine(bottom_border_size - 5, real_vertical_position, bottom_border_size - 5 - 10, real_vertical_position);
+          painter->drawLine(area.left() - 5, real_vertical_position, area.left() - 5 - 10, real_vertical_position);
         }
     } else {
-        int real_horizontal_position = bottom_border_size + position;
+        int real_horizontal_position = area.left() + position;
 
-        painter->drawText(real_horizontal_position - 30, curve_h - bottom_border_size + 18, 60, 16, Qt::AlignCenter | Qt::TextSingleLine, q_str);
+        painter->drawText(real_horizontal_position - 30, area.bottom() + 18, 60, 16, Qt::AlignCenter | Qt::TextSingleLine, q_str);
 
-        painter->drawLine(real_horizontal_position, curve_h - bottom_border_size + 5, real_horizontal_position, curve_h - bottom_border_size + 5 + 10);
+        painter->drawLine(real_horizontal_position, area.bottom() + 5, real_horizontal_position, area.bottom() + 5 + 10);
     }
 }
 
@@ -1971,21 +1382,21 @@ void SignalCurve::drawTheCurve(QPainter *painter, int curve_w, int curve_h)
 
     if(dbuf == NULL) return;
 
-      if(max_value <= min_value)  return;
+      if(v_ruler_max_value <= v_ruler_min_value)  return;
 
       if(bufsize < 2)  return;
 
       if(curveUpSideDown == true)
       {
-        offset = (-(min_value));
+        offset = (-(v_ruler_min_value));
 
-        v_sens = curve_h / (max_value - min_value);
+        v_sens = curve_h / (v_ruler_max_value - v_ruler_min_value);
       }
       else
       {
-        offset = (-(max_value));
+        offset = (-(v_ruler_max_value));
 
-        v_sens = (-(curve_h / (max_value - min_value)));
+        v_sens = (-(curve_h / (v_ruler_max_value - v_ruler_min_value)));
       }
 
       h_step = (double)curve_w / (double)bufsize; /// width of one bar = width of the area where we draw / number of bars
@@ -2020,8 +1431,8 @@ void SignalCurve::drawTheCurve(QPainter *painter, int curve_w, int curve_h)
         {
           crosshair_1_y_value = vertical_position;
           crosshair_1_value = dbuf[i + (int)startindex];
-          value = (h_ruler_endvalue - h_ruler_startvalue) / bufsize;
-          crosshair_1_value_2 = (i * value) + h_ruler_startvalue;
+          value = (h_ruler_max_value - h_ruler_min_value) / bufsize;
+          crosshair_1_value_2 = (i * value) + h_ruler_min_value;
         }
       }
     }
@@ -2090,9 +1501,9 @@ void SignalCurve::drawCurve(double *sample_buffer, int start_index, int buffer_s
 
   bufsize = buffer_size;
 
-  max_value = h_max_value;
+  v_ruler_max_value = h_max_value;
 
-  min_value = h_min_value;
+  v_ruler_min_value = h_min_value;
 
   update();
 }
@@ -2192,8 +1603,8 @@ double SignalCurve::getMarker2Position(void)
 
 void SignalCurve::setH_RulerValues(double start, double end)
 {
-  h_ruler_startvalue = start;
-  h_ruler_endvalue = end;
+  h_ruler_min_value = start;
+  h_ruler_max_value = end;
 
   update();
 }
@@ -2250,51 +1661,47 @@ void SignalCurve::setTextColor(QColor newColor)
 }
 
 
-void SignalCurve::setBorderSize(int newsize)
+void SignalCurve::setHorizontalRulerText(const char *name, const char *unit)
 {
-  bordersize = newsize;
-  if(bordersize < 0)  bordersize = 0;
-  update();
+    if (name != NULL)
+    {
+        h_ruler_name = name;
+    }
+
+    if (unit != NULL)
+    {
+        h_ruler_unit = unit;
+    }
+
+    update();
 }
 
 
-void SignalCurve::setH_label(const char *str)
+void SignalCurve::setVerticalRulerText(const char *name, const char *unit)
 {
-  strncpy(h_label, str, 32);
-  h_label[31] = 0;
-  update();
+    if (name != NULL)
+    {
+        v_ruler_name = name;
+    }
+
+    if (unit != NULL)
+    {
+        v_ruler_unit = unit;
+    }
+
+    update();
 }
 
 
-void SignalCurve::setV_label(const char *str)
+void SignalCurve::setHeaderText(const char *str)
 {
-  strncpy(v_label, str, 20);
-  v_label[20] = 0;
+  header_label = str;
   update();
 }
 
-
-void SignalCurve::setUpperLabel1(const char *str)
+void SignalCurve::setSubheaderText(const char *str)
 {
-  strncpy(upperlabel1, str, 64);
-  upperlabel1[63] = 0;
-  update();
-}
-
-
-void SignalCurve::setUpperLabel2(const char *str)
-{
-  strncpy(upperlabel2, str, 64);
-  upperlabel2[63] = 0;
-  update();
-}
-
-
-void SignalCurve::setLowerLabel(const char *str)
-{
-  strncpy(lowerlabel, str, 64);
-  lowerlabel[63] = 0;
-  update();
+  // TODO: implement the subheader label
 }
 
 
@@ -2346,11 +1753,11 @@ void SignalCurve::setV_rulerEnabled(bool value)
 {
   if(value == true)
   {
-    drawVruler = 1;
+    isVerticalRulerVisible = 1;
   }
   else
   {
-    drawVruler = 0;
+    isVerticalRulerVisible = 0;
   }
 }
 

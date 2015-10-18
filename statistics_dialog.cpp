@@ -79,10 +79,9 @@ UI_StatisticWindow::UI_StatisticWindow(struct signalcompblock *signalcomp, long 
     curve1->setBackgroundColor(Qt::black);
     curve1->setRasterColor(Qt::gray);
     curve1->setTraceWidth(0);
-    curve1->setH_label(signalcomp->physdimension);
-    curve1->setLowerLabel("HR (beats/min)");
+    curve1->setHorizontalRulerText("HR (beats/min)", signalcomp->physdimension);
     curve1->setDashBoardEnabled(false);
-    curve1->setUpperLabel1("Distribution");
+    curve1->setHeaderText("Distribution");
     curve1->setFillSurfaceEnabled(true);
 
     vlayout2_1 = new QVBoxLayout;

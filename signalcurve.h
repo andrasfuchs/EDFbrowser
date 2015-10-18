@@ -93,12 +93,11 @@ public:
   void setRasterColor(QColor);
   void setBorderColor(QColor);
   void setTextColor(QColor);
-  void setBorderSize(int);
   void setH_RulerValues(double, double);
-  void setH_label(const char *);
-  void setV_label(const char *);
-  void setUpperLabel1(const char *);
-  void setUpperLabel2(const char *);
+  void setHorizontalRulerText(const char *name, const char *unit);
+  void setVerticalRulerText(const char *name, const char *unit);
+  void setHeaderText(const char *);
+  void setSubheaderText(const char *);
   void setLowerLabel(const char *);
   void drawCurve(double *sample_buffer, int start_index, int buffer_size, double h_max_value, double h_min_value);
   void drawLine(int, double, int, double, QColor);
@@ -140,7 +139,8 @@ signals:
 
 private:
   void drawTheCurve(QPainter *painter, int curve_w, int curve_h);
-  void drawTextOnRuler(QPainter *painter, int curve_h, int bottom_border_size, int position, double value, int precision, bool is_vertical, bool is_upsidedown = false);
+  void drawTextOnRuler(QPainter *painter, QRect area, int position, double value, int precision, bool is_vertical, bool is_upsidedown = false);
+  void calculateRulerParameters(int length, double start_value, double end_value, int *multiplier, int *normalized_start_value, int *normalized_end_value, int *range, double *pixels_per_unit, int *divisor, int *precision);
 
 private slots:
   void exec_sidemenu();
@@ -187,12 +187,12 @@ private:
   QPen Marker1Pen,
        Marker2Pen;
 
-  double max_value,
-         min_value,
-         bufsize,    // the amount of data we should display from dbuf (it needs to be a double because of the fine scrolling movements, but it is always rounded to int when accessing the actual data)
+  double bufsize,    // the amount of data we should display from dbuf (it needs to be a double because of the fine scrolling movements, but it is always rounded to int when accessing the actual data)
          startindex, // the index where we should start displaying data from dbuf (it needs to be a double because of the fine scrolling movements, but it is always rounded to int when accessing the actual data)
-         h_ruler_startvalue,
-         h_ruler_endvalue,
+         v_ruler_min_value,     // the minimum value on the vertical ruler
+         v_ruler_max_value,     // the maximum value on the vertical ruler
+         h_ruler_min_value,     // the minimum value on the horizontal ruler
+         h_ruler_max_value,     // the maximum value on the horizontal ruler
          printsize_x_factor,
          printsize_y_factor,
          crosshair_1_value,
@@ -208,17 +208,11 @@ private:
 
   QRect chartArea;  // the size of the chart area (replacement for w,h and bordersize)
 
-  int bordersize,   // DEPRECATED: the size of the border in pixels around the chart area from all directions
-      h_ruler_precision,
-      drawHruler,
-      drawVruler,
-      tracewidth,
+  QPoint mouseLastPosition;  // position of the mouse at the moment of clicking
+
+  int tracewidth,
       extra_button,
       use_move_events,
-      mouse_x,
-      mouse_y,
-      mouse_old_x,
-      mouse_old_y,
       crosshair_1_active,
       crosshair_1_moving,
       crosshair_1_y_position,
@@ -229,18 +223,19 @@ private:
       marker_2_x_position,
       line1_start_x,
       line1_end_x,
-      w,            // DEPRECATED: width of the chart area
-      h,            // DEPRECATED: height of the chart area
       old_w,
       updates_enabled,
       fillsurface;
 
-  char h_label[32],
-       v_label[21],
-       upperlabel1[64],
-       upperlabel2[64],
-       lowerlabel[64],
-       extra_button_txt[16],
+  QString   header_label,       // the text displayed above the chart
+            h_ruler_name,       // the name displayed below the horizontal ruler
+            h_ruler_unit,       // the unit displayed below the horizontal ruler
+            v_ruler_name,       // the name displayed next to the vertical ruler
+            v_ruler_unit;       // the unit displayed next to the vertical ruler
+
+
+
+  char extra_button_txt[16],
        recent_savedir[SC_MAX_PATH_LEN];
 
   bool printEnabled,
@@ -251,14 +246,15 @@ private:
        Marker2Enabled,
        Marker2MovableEnabled,
        curveUpSideDown,
-       line1Enabled;
+       line1Enabled,
+       isHorizontalRulerVisible,
+       isVerticalRulerVisible;
 
   struct spectrum_markersblock *spectrum_color;
 
   void backup_colors_for_printing();
   void restore_colors_after_printing();
-  void drawWidget(QPainter *, int, int);
-  void drawWidget_to_printer(QPainter *, int, int);
+  void drawWidget(QPainter *, int, int, bool is_printer = false);
   int get_directory_from_path(char *, const char *, int);
 
 protected:

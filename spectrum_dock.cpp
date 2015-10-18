@@ -37,7 +37,7 @@
 
 UI_SpectrumDockWindow::UI_SpectrumDockWindow(QWidget *w_parent)
 {
-  char str[600];
+  char unit[600];
 
   buf_samples = NULL;
   buf_fft = NULL;
@@ -84,33 +84,32 @@ UI_SpectrumDockWindow::UI_SpectrumDockWindow(QWidget *w_parent)
 
   curve1 = new SignalCurve;  
   curve1->setSignalColor(QColor(255,127,0));
-  curve1->setH_label("Hz");
-  curve1->setLowerLabel("Frequency");
+  curve1->setHorizontalRulerText("Frequency", "Hz");
 
   if(mainwindow->spectrumdock_sqrt)
   {
     if(mainwindow->spectrumdock_vlog)
     {
-      snprintf(str, 512, "log10(%s)", physdimension);
-      curve1->setV_label(str);
+      snprintf(unit, 512, "log10(%s)", physdimension);
+      curve1->setVerticalRulerText(NULL, unit);
     }
     else
     {
-      curve1->setV_label(physdimension);
+      curve1->setVerticalRulerText(NULL, physdimension);
     }
   }
   else
   {
     if(mainwindow->spectrumdock_vlog)
     {
-      snprintf(str, 512, "log((%s)^2/Hz)", physdimension);
+      snprintf(unit, 512, "log((%s)^2/Hz)", physdimension);
     }
     else
     {
-      snprintf(str, 512, "(%s)^2/Hz", physdimension);
+      snprintf(unit, 512, "(%s)^2/Hz", physdimension);
     }
 
-    curve1->setV_label(str);
+    curve1->setVerticalRulerText(NULL, unit);
   }
   curve1->create_button("to Text");
 
@@ -438,45 +437,43 @@ void UI_SpectrumDockWindow::colorBarButtonClicked(bool value)
 
 void UI_SpectrumDockWindow::sqrtButtonClicked(bool value)
 {
-  char str[600];
+  char unit[600];
 
   if(value == false)
   {
     mainwindow->spectrumdock_sqrt = 0;
 
-    sprintf(str, "Power Spectrum %s", signallabel);
-
-    dock->setWindowTitle(str);
+    sprintf(unit, "Power Spectrum %s", signallabel);
+    dock->setWindowTitle(unit);
 
     if(mainwindow->spectrumdock_vlog)
     {
-      sprintf(str, "log10((%s)^2/Hz)", physdimension);
+      sprintf(unit, "log10((%s)^2/Hz)", physdimension);
     }
     else
     {
-      sprintf(str, "(%s)^2/Hz", physdimension);
+      sprintf(unit, "(%s)^2/Hz", physdimension);
     }
 
-    curve1->setV_label(str);
+    curve1->setVerticalRulerText("Intensity", unit);
   }
   else
   {
     mainwindow->spectrumdock_sqrt = 1;
 
-    sprintf(str, "Amplitude Spectrum %s", signallabel);
-
-    dock->setWindowTitle(str);
+    sprintf(unit, "Amplitude Spectrum %s", signallabel);
+    dock->setWindowTitle(unit);
 
     if(mainwindow->spectrumdock_vlog)
     {
-      sprintf(str, "log(%s)", physdimension);
+      sprintf(unit, "log(%s)", physdimension);
     }
     else
     {
-      sprintf(str, "%s", physdimension);
+      sprintf(unit, "%s", physdimension);
     }
 
-    curve1->setV_label(str);
+    curve1->setVerticalRulerText("Amplitude", unit);
   }
 
   sliderMoved(0);
@@ -485,7 +482,7 @@ void UI_SpectrumDockWindow::sqrtButtonClicked(bool value)
 
 void UI_SpectrumDockWindow::vlogButtonClicked(bool value)
 {
-  char str[600];
+  char unit[600];
 
   if(value == false)
   {
@@ -493,14 +490,14 @@ void UI_SpectrumDockWindow::vlogButtonClicked(bool value)
 
     if(mainwindow->spectrumdock_sqrt)
     {
-      sprintf(str, "%s", physdimension);
+      sprintf(unit, "%s", physdimension);
     }
     else
     {
-      sprintf(str, "(%s)^2/Hz", physdimension);
+      sprintf(unit, "(%s)^2/Hz", physdimension);
     }
 
-    curve1->setV_label(str);
+    curve1->setVerticalRulerText(NULL, unit);
 
     log_minslider->setVisible(false);
   }
@@ -510,14 +507,14 @@ void UI_SpectrumDockWindow::vlogButtonClicked(bool value)
 
     if(mainwindow->spectrumdock_sqrt)
     {
-      sprintf(str, "log10(%s)", physdimension);
+      sprintf(unit, "log10(%s)", physdimension);
     }
     else
     {
-      sprintf(str, "log10((%s)^2/Hz)", physdimension);
+      sprintf(unit, "log10((%s)^2/Hz)", physdimension);
     }
 
-    curve1->setV_label(str);
+    curve1->setVerticalRulerText(NULL, unit);
 
     log_minslider->setVisible(true);
   }
@@ -610,7 +607,7 @@ void UI_SpectrumDockWindow::sliderMoved(int)
 
 void UI_SpectrumDockWindow::init(int signal_num)
 {
-  char str[600];
+  char unit[600];
 
   init_maxvalue = 1;
 
@@ -641,14 +638,14 @@ void UI_SpectrumDockWindow::init(int signal_num)
       {
         vlogButton->setChecked(true);
 
-        snprintf(str, 512, "log10(%s)", physdimension);
-        curve1->setV_label(str);
+        snprintf(unit, 512, "log10(%s)", physdimension);
+        curve1->setVerticalRulerText(NULL, unit);
       }
       else
       {
         vlogButton->setChecked(false);
 
-        curve1->setV_label(physdimension);
+        curve1->setVerticalRulerText("Amplitude", physdimension);
       }
     }
     else
@@ -659,21 +656,21 @@ void UI_SpectrumDockWindow::init(int signal_num)
       {
         vlogButton->setChecked(true);
 
-        snprintf(str, 512, "log((%s)^2/Hz)", physdimension);
+        snprintf(unit, 512, "log((%s)^2/Hz)", physdimension);
       }
       else
       {
         vlogButton->setChecked(false);
 
-        snprintf(str, 512, "(%s)^2/Hz", physdimension);
+        snprintf(unit, 512, "(%s)^2/Hz", physdimension);
       }
 
-      curve1->setV_label(str);
+      curve1->setVerticalRulerText("Intensity", unit);
     }
 
-    amplitudeSlider->setValue(1000);
+//    amplitudeSlider->setValue(1000);
 
-    log_minslider->setValue(1000);
+//    log_minslider->setValue(1000);
 
     dock->show();
 
@@ -1212,9 +1209,9 @@ void UI_SpectrumDockWindow::update_curve()
 
   remove_trailing_zeros(str);
 
-  curve1->setUpperLabel1(str);
+  curve1->setHeaderText(str);
 
-  curve1->setUpperLabel2(signallabel);
+  curve1->setSubheaderText(signallabel);
 
   if(spectrum_color != NULL)
   {

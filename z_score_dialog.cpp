@@ -1181,9 +1181,9 @@ void UI_ZScoreWindow::RadioButtonsClicked(bool)
 
     curve1->drawCurve(zscore_epoch_buf, 0, epoch_cntr, 1.0, -1.0);
     curve1->setH_RulerValues(0, epoch_cntr);
-    curve1->setLowerLabel("Epochs");
-    curve1->setV_label("Z ratio");
-    curve1->setUpperLabel1(str);
+    curve1->setHorizontalRulerText("Epochs", NULL);
+    curve1->setVerticalRulerText("Z ratio", NULL);
+    curve1->setHeaderText(str);
     curve1->drawLine(marker_start, b0 + b1, marker_end, b0 + (b1 * regression_samples), Qt::yellow);
     curve1->setMarker1Enabled(true);
     curve1->setMarker1MovableEnabled(true);
@@ -1246,9 +1246,9 @@ void UI_ZScoreWindow::RadioButtonsClicked(bool)
 
     curve1->drawCurve(zscore_page_buf, 0, zscore_pages, 1.0, -1.0);
     curve1->setH_RulerValues(0, zscore_pages);
-    curve1->setLowerLabel("Pages");
-    curve1->setV_label("Z ratio");
-    curve1->setUpperLabel1(str);
+    curve1->setHorizontalRulerText("Pages", NULL);
+    curve1->setVerticalRulerText("Z ratio", NULL);
+    curve1->setHeaderText(str);
     curve1->drawLine(marker_start, b0 + b1, marker_end, b0 + (b1 * regression_samples), Qt::yellow);
     curve1->setMarker1Enabled(true);
     curve1->setMarker1MovableEnabled(true);
@@ -1299,9 +1299,9 @@ void UI_ZScoreWindow::RadioButtonsClicked(bool)
 
     curve1->drawCurve(zscore_sleepstage_buf, 0, zscore_pages, 3.0, -3.0);
     curve1->setH_RulerValues(0, zscore_pages);
-    curve1->setLowerLabel("Pages");
-    curve1->setV_label("Sleep/Wake");
-    curve1->setUpperLabel1(str);
+    curve1->setHorizontalRulerText("Pages", NULL);
+    curve1->setVerticalRulerText("Sleep/Wake", NULL);
+    curve1->setHeaderText(str);
     curve1->setLineEnabled(false);
     curve1->setMarker1Enabled(true);
     curve1->setMarker1MovableEnabled(true);
