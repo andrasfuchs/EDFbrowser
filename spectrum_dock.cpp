@@ -476,6 +476,7 @@ void UI_SpectrumDockWindow::sqrtButtonClicked(bool value)
     curve1->setVerticalRulerText("Amplitude", unit);
   }
 
+  curve1->signal_values.clear();
   sliderMoved(0);
 }
 
@@ -519,6 +520,8 @@ void UI_SpectrumDockWindow::vlogButtonClicked(bool value)
     log_minslider->setVisible(true);
   }
 
+
+  curve1->signal_values.clear();
   sliderMoved(0);
 }
 
@@ -527,12 +530,7 @@ void UI_SpectrumDockWindow::sliderMoved(int)
 {
   int startstep,
       stopstep,
-      precision,
       spanstep;
-
-  double max_freq,
-         start_freq;
-
 
   spanstep = spanSlider->value() * steps / 1000;
 
@@ -574,34 +572,6 @@ void UI_SpectrumDockWindow::sliderMoved(int)
       curve1->drawCurve(buf_fft, startstep, stopstep - startstep, (maxvalue * 1.05 * (((double)flywheel_value / 1000.0) * (double)amplitudeSlider->value())) / 1000.0, 0.0);
     }
   }
-
-  max_freq = ((double)samplefreq / 2.0) * stopstep / steps;
-
-  precision = 0;
-  if(max_freq < 10.0)
-  {
-    precision = 1;
-  }
-  if(max_freq < 1.0)
-  {
-    precision = 2;
-  }
-  if(max_freq < 0.1)
-  {
-    precision = 3;
-  }
-  if(max_freq < 0.01)
-  {
-    precision = 4;
-  }
-
-  start_freq = ((double)samplefreq / 2.0) * startstep / steps;
-
-  curve1->setH_RulerValues(start_freq, max_freq);
-
-  centerLabel->setText(QString::number(start_freq + ((max_freq - start_freq) / 2.0), 'f', precision).append(" Hz").prepend("Center "));
-
-  spanLabel->setText(QString::number(max_freq - start_freq, 'f', precision).append(" Hz").prepend("Span "));
 }
 
 
@@ -967,7 +937,11 @@ void UI_SpectrumDockWindow::update_curve()
 
   fft_outputbufsize = dftblocksize / 2;
 
-  steps = fft_outputbufsize;
+  if (steps != fft_outputbufsize)
+  {
+    steps = fft_outputbufsize;
+    curve1->signal_values.clear();
+  }
 
   if(buf_fft != NULL)
   {
@@ -1405,23 +1379,3 @@ UI_SpectrumDockWindow::~UI_SpectrumDockWindow()
 
   delete SpectrumDialog;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

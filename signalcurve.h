@@ -100,6 +100,7 @@ public:
   void setSubheaderText(const char *);
   void setLowerLabel(const char *);
   void drawCurve(double *sample_buffer, int start_index, int buffer_size, double h_max_value, double h_min_value);
+  void drawCurve(QVector<double> signal, double h_resolution, double v_resolution, double h_min_value, double h_max_value, double v_min_value, double v_max_value);
   void drawLine(int, double, int, double, QColor);
   void setLineEnabled(bool);
   void create_button(const char *);
@@ -141,6 +142,7 @@ private:
   void drawTheCurve(QPainter *painter, int curve_w, int curve_h);
   void drawTextOnRuler(QPainter *painter, QRect area, int position, double value, int precision, bool is_vertical, bool is_upsidedown = false);
   void calculateRulerParameters(int length, double start_value, double end_value, int *multiplier, int *normalized_start_value, int *normalized_end_value, int *range, double *pixels_per_unit, int *divisor, int *precision);
+  void resetRulers();
 
 private slots:
   void exec_sidemenu();
@@ -187,13 +189,37 @@ private:
   QPen Marker1Pen,
        Marker2Pen;
 
-  double bufsize,    // the amount of data we should display from dbuf (it needs to be a double because of the fine scrolling movements, but it is always rounded to int when accessing the actual data)
-         startindex, // the index where we should start displaying data from dbuf (it needs to be a double because of the fine scrolling movements, but it is always rounded to int when accessing the actual data)
+  // MODEL RELATED
+public:
+  QVector<double> signal_values;// signal values
+
+private:
+  double signal_index,          // the index where we are positioned at the moment
+         signal_h_density,      // the horizontal density of the signal (e.g. number of values per Hz by and FFT signal)
+         signal_v_density,      // the vertical density of the signal (e.g. number of values per Volt by and FFT amplitude signal)
+         SIGNAL_NA_VALUE;       // special value which represents the missing value
+
+  // VIEW RELATED
+  QRect chartArea;              // the size of the chart area (replacement for w,h and bordersize)
+
+  QPoint mouseLastPosition;     // position of the mouse at the moment of clicking
+
+  QString   header_label,       // the text displayed above the chart
+            h_ruler_name,       // the name displayed below the horizontal ruler
+            h_ruler_unit,       // the unit displayed below the horizontal ruler
+            v_ruler_name,       // the name displayed next to the vertical ruler
+            v_ruler_unit;       // the unit displayed next to the vertical ruler
+
+  double signal_display_start,  // the index where we should display the values from
+         signal_display_length, // the number of values we should display
+
          v_ruler_min_value,     // the minimum value on the vertical ruler
          v_ruler_max_value,     // the maximum value on the vertical ruler
          h_ruler_min_value,     // the minimum value on the horizontal ruler
-         h_ruler_max_value,     // the maximum value on the horizontal ruler
-         printsize_x_factor,
+         h_ruler_max_value;     // the maximum value on the horizontal ruler
+
+  //
+  double printsize_x_factor,
          printsize_y_factor,
          crosshair_1_value,
          crosshair_1_value_2,
@@ -202,13 +228,6 @@ private:
          line1_end_y,
          marker_1_position,
          marker_2_position;
-
-  //double dbuf[];
-  double *dbuf;
-
-  QRect chartArea;  // the size of the chart area (replacement for w,h and bordersize)
-
-  QPoint mouseLastPosition;  // position of the mouse at the moment of clicking
 
   int tracewidth,
       extra_button,
@@ -226,12 +245,6 @@ private:
       old_w,
       updates_enabled,
       fillsurface;
-
-  QString   header_label,       // the text displayed above the chart
-            h_ruler_name,       // the name displayed below the horizontal ruler
-            h_ruler_unit,       // the unit displayed below the horizontal ruler
-            v_ruler_name,       // the name displayed next to the vertical ruler
-            v_ruler_unit;       // the unit displayed next to the vertical ruler
 
 
 
