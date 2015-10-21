@@ -36,9 +36,8 @@ SignalCurve::SignalCurve(QWidget *w_parent) : QWidget(w_parent)
 
   recent_savedir[0] = 0;
 
-  SignalLineColor = QColor(0,0,255);
-  SignalFillColor = QColor(0,0,31);
-  tracewidth = 1;
+  SignalLineColor = QColor(0,0,255);  
+  signal_pen = QPen(SignalLineColor, 1.0, Qt::DashDotLine);
   BackgroundColor = QColor(0,0,0);
   RasterColor = QColor(127,127,127,191);
   SecondaryRasterColor = QColor(127,127,127,63);
@@ -1200,7 +1199,7 @@ drawTheCurve(painter, curve_w, curve_h);
 
   if(line1Enabled == true)
   {
-    painter->setPen(QPen(QBrush(line1Color, Qt::SolidPattern), tracewidth, Qt::SolidLine, Qt::SquareCap, Qt::BevelJoin));
+    painter->setPen(signal_pen);
 
     painter->drawLine(line1_start_x * h_step, (line1_start_y + offset) * v_sens, line1_end_x * h_step, (line1_end_y + offset) * v_sens);
   }
@@ -1225,22 +1224,50 @@ drawTheCurve(painter, curve_w, curve_h);
 
   if(crosshair_1_active)
   {
-    painter->setPen(crosshair_1_color);
+    painter->setPen(signal_pen);
 
+    // draw the little triangle
     QPainterPath path;
     path.moveTo(crosshair_1_x_position, crosshair_1_y_value);
     path.lineTo(crosshair_1_x_position - 4, crosshair_1_y_value - 10);
     path.lineTo(crosshair_1_x_position + 5, crosshair_1_y_value - 10);
     path.lineTo(crosshair_1_x_position, crosshair_1_y_value);
-    painter->fillPath(path, QBrush(crosshair_1_color));
+    painter->fillPath(path, signal_pen.brush());
 
+    // constrant the information to be displayed
     painter->setFont(QFont("Arial", 10));
-    painter->fillRect(crosshair_1_x_position + 6, crosshair_1_y_position - 23, 60, 16, BackgroundColor);
-    snprintf(str, 128, "%f %s", crosshair_1_value, v_ruler_unit.toStdString().data());
-    painter->drawText(crosshair_1_x_position + 8, crosshair_1_y_position - 10, str);
-    painter->fillRect(crosshair_1_x_position + 6, crosshair_1_y_position - 3, 60, 16, BackgroundColor);
-    snprintf(str, 128, "@%f %s", crosshair_1_value_2, h_ruler_unit.toStdString().data());
-    painter->drawText(crosshair_1_x_position + 8, crosshair_1_y_position + 10, str);
+    QString value_at_crosshair = QString::number(crosshair_1_value, 'g', 5) + " " + v_ruler_unit;
+    QString range_at_crosshair = "@" + QString::number(crosshair_1_value_2, 'g', 4) + "-" + QString::number(crosshair_1_value_2 + (1 / signal_h_density), 'g', 4) + " " + h_ruler_unit;
+
+    fontMetrics = QFontMetrics(painter->font());
+    QRect crosshairRect_value = fontMetrics.boundingRect(value_at_crosshair);
+    QRect crosshairRect_range = fontMetrics.boundingRect(range_at_crosshair);
+    QRect crosshairRect = QRect(0, 0,
+                                ((crosshairRect_value.width() > crosshairRect_range.width()) ? crosshairRect_value.width() : crosshairRect_range.width()) + 10,
+                                ((crosshairRect_value.height() > crosshairRect_range.height()) ? crosshairRect_value.height() : crosshairRect_range.height()) + 25);
+
+    crosshairRect.translate(crosshair_1_x_position - (crosshairRect.width()/2), crosshair_1_y_value - crosshairRect.height() - 10);
+    if (crosshairRect.left() < 0)
+    {
+        crosshairRect.translate(-crosshairRect.x(), 0);
+    }
+    if (crosshairRect.right() > chartArea.width())
+    {
+        crosshairRect.translate(chartArea.width()-crosshairRect.right(), 0);
+    }
+
+    // draw the rectangle around it and then the information itself
+    painter->setPen(signal_pen);
+    painter->fillRect(crosshairRect, BackgroundColor);
+    painter->drawRect(crosshairRect);
+
+    // add the margin
+    crosshairRect.translate(5,5);
+    painter->drawText(crosshairRect, value_at_crosshair);
+
+    // move to the next line
+    crosshairRect.translate(0,16);
+    painter->drawText(crosshairRect, range_at_crosshair);
   }
 
 /////////////////////////////////// draw the buttons ///////////////////////////////////////////
@@ -1398,8 +1425,8 @@ void SignalCurve::drawTheCurve(QPainter *painter, int curve_w, int curve_h)
 
       h_step = (double)curve_w / (double)signal_display_length; /// width of one bar = width of the area where we draw / number of bars
 
-      QPen linePen = QPen(QBrush(SignalLineColor, Qt::SolidPattern), tracewidth, Qt::SolidLine, Qt::SquareCap, Qt::BevelJoin);
-      QBrush fillBrush = QBrush(SignalFillColor, Qt::SolidPattern);
+      QPen linePen = QPen(signal_pen);
+      QBrush fillBrush = QBrush(QColor(linePen.color().red(), linePen.color().green(), linePen.color().blue(), 31), Qt::SolidPattern);
 
       QPolygon curvePolygon = QPolygon();
       curvePolygon.append(QPoint(0, curve_h));
@@ -1635,8 +1662,10 @@ void SignalCurve::setH_RulerValues(double start, double end)
 
 void SignalCurve::setSignalColor(QColor newColor)
 {
+  signal_pen.setColor(newColor);
+
   SignalLineColor = newColor;
-  SignalFillColor = QColor(newColor.red(),newColor.green(),newColor.blue(),31);
+
   update();
 }
 
@@ -1650,9 +1679,9 @@ void SignalCurve::setCrosshairColor(QColor newColor)
 
 void SignalCurve::setTraceWidth(int tr_width)
 {
-  tracewidth = tr_width;
-  if(tracewidth < 0)  tracewidth = 0;
-  update();
+    signal_pen.setWidth(tr_width);
+
+    update();
 }
 
 

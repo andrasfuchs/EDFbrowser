@@ -167,8 +167,7 @@ private:
               *sidemenuButton5,
               *sidemenuButton6;
 
-  QColor SignalLineColor,
-         SignalFillColor,
+  QColor SignalLineColor,         
          BackgroundColor,
          RasterColor,
          SecondaryRasterColor,
@@ -218,6 +217,8 @@ private:
          h_ruler_min_value,     // the minimum value on the horizontal ruler
          h_ruler_max_value;     // the maximum value on the horizontal ruler
 
+  QPen signal_pen;              // pen of the signal
+
   //
   double printsize_x_factor,
          printsize_y_factor,
@@ -229,8 +230,7 @@ private:
          marker_1_position,
          marker_2_position;
 
-  int tracewidth,
-      extra_button,
+  int extra_button,
       use_move_events,
       crosshair_1_active,
       crosshair_1_moving,
