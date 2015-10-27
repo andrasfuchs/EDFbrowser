@@ -82,8 +82,22 @@ SignalCurve::SignalCurve(QWidget *w_parent) : QWidget(w_parent)
   spectrum_color = NULL;
 
   old_w = 10000;
+
+  // limit our refresh rate
+  update_timer = new QTimer(this);
+  update_timer->setInterval((long)(1000/MAX_FPS) + 1);
+  connect(update_timer, SIGNAL(timeout()), this, SLOT(updateWidget()));
+  update_timer->start();
 }
 
+void SignalCurve::updateWidget()
+{
+    if (update_pending)
+    {
+        update();
+        update_pending = false;
+    }
+}
 
 void SignalCurve::clearSignal()
 {
@@ -108,7 +122,7 @@ void SignalCurve::clear()
   Marker2MovableEnabled = false;
   line1Enabled = false;
 
-  update();
+  update_pending = true;
 }
 
 
@@ -195,7 +209,7 @@ void SignalCurve::mousePressEvent(QMouseEvent *press_event)
       }
   }
 
-  update();
+  update_pending = true;
 }
 
 
@@ -212,7 +226,7 @@ void SignalCurve::mouseDoubleClickEvent(QMouseEvent *)
 {
     resetRulers();
 
-    update();
+    update_pending = true;
 }
 
 void SignalCurve::resetRulers()
@@ -368,7 +382,7 @@ void SignalCurve::mouseMoveEvent(QMouseEvent *move_event)
       v_ruler_max_value = v_ruler_min_value + value_width;
   }
 
-  update();
+  update_pending = true;
 }
 
 void SignalCurve::wheelEvent(QWheelEvent * event)
@@ -415,7 +429,7 @@ void SignalCurve::wheelEvent(QWheelEvent * event)
     //min_value -= value_width_change / 2;
     v_ruler_max_value = v_ruler_min_value + value_width;
 
-    update();
+    update_pending = true;
 }
 
 void SignalCurve::shiftCursorIndexLeft(int idxs)
@@ -452,7 +466,7 @@ void SignalCurve::shiftCursorIndexLeft(int idxs)
 
   crosshair_1_x_position = (double)idx * ppi + (0.5 * ppi);
 
-  update();
+  update_pending = true;
 }
 
 
@@ -490,7 +504,7 @@ void SignalCurve::shiftCursorIndexRight(int idxs)
 
   crosshair_1_x_position = (double)idx * ppi + (0.5 * ppi);
 
-  update();
+  update_pending = true;
 }
 
 
@@ -507,7 +521,7 @@ void SignalCurve::shiftCursorPixelsLeft(int pixels)
     crosshair_1_x_position = 2;
   }
 
-  update();
+  update_pending = true;
 }
 
 
@@ -524,7 +538,7 @@ void SignalCurve::shiftCursorPixelsRight(int pixels)
     crosshair_1_x_position = chartArea.width() -2;
   }
 
-  update();
+  update_pending = true;
 }
 
 
@@ -884,7 +898,6 @@ void SignalCurve::drawWidget(QPainter *painter, int curve_w, int curve_h, bool i
          p_pixels_per_unit;
 
   char str[128];
-
 
 
   painter->setFont(QFont("Arial", 8));
@@ -1518,7 +1531,7 @@ void SignalCurve::drawLine(int start_x, double start_y, int end_x, double end_y,
 
   line1Enabled = true;
 
-  update();
+  update_pending = true;
 }
 
 
@@ -1526,7 +1539,7 @@ void SignalCurve::setLineEnabled(bool stat)
 {
   line1Enabled = stat;
 
-  update();
+  update_pending = true;
 }
 
 
@@ -1548,7 +1561,8 @@ void SignalCurve::drawCurve(double *sample_buffer, int start_index, int buffer_s
     } else {
         // this is an old signal, so we don't need to calibrate the histogram
         signal[0]->SetValues(values);
-        update();
+
+        update_pending = true;
     }
 }
 
@@ -1566,7 +1580,7 @@ void SignalCurve::drawCurve(Signal *signal, double h_min_value, double h_max_val
   signal_display_start = 0;
   signal_display_length = (h_max_value - h_min_value) * this->signal[0]->GetHorizontalDensity();
 
-  update();
+  update_pending = true;
 }
 
 void SignalCurve::setFillSurfaceEnabled(bool enabled)
@@ -1580,7 +1594,7 @@ void SignalCurve::setFillSurfaceEnabled(bool enabled)
     fillsurface = 0;
   }
 
-  update();
+  update_pending = true;
 }
 
 
@@ -1592,28 +1606,31 @@ void SignalCurve::setMarker1Position(double mrk_pos)
 
   if(marker_1_position < 0.0001)  marker_1_position = 0.0001;
 
-  update();
+  update_pending = true;
 }
 
 
 void SignalCurve::setMarker1Enabled(bool on)
 {
   Marker1Enabled = on;
-  update();
+
+  update_pending = true;
 }
 
 
 void SignalCurve::setMarker1MovableEnabled(bool on)
 {
   Marker1MovableEnabled = on;
-  update();
+
+  update_pending = true;
 }
 
 
 void SignalCurve::setMarker1Color(QColor color)
 {
   Marker1Pen.setColor(color);
-  update();
+
+  update_pending = true;
 }
 
 
@@ -1631,28 +1648,31 @@ void SignalCurve::setMarker2Position(double mrk_pos)
 
   if(marker_2_position < 0.0001)  marker_2_position = 0.0001;
 
-  update();
+  update_pending = true;
 }
 
 
 void SignalCurve::setMarker2Enabled(bool on)
 {
   Marker2Enabled = on;
-  update();
+
+  update_pending = true;
 }
 
 
 void SignalCurve::setMarker2MovableEnabled(bool on)
 {
   Marker2MovableEnabled = on;
-  update();
+
+  update_pending = true;
 }
 
 
 void SignalCurve::setMarker2Color(QColor color)
 {
   Marker2Pen.setColor(color);
-  update();
+
+  update_pending = true;
 }
 
 
@@ -1667,7 +1687,7 @@ void SignalCurve::setH_RulerValues(double start, double end)
   h_ruler_min_value = start;
   h_ruler_max_value = end;
 
-  update();
+  update_pending = true;
 }
 
 
@@ -1677,14 +1697,15 @@ void SignalCurve::setSignalColor(QColor newColor)
 
   SignalLineColor = newColor;
 
-  update();
+  update_pending = true;
 }
 
 
 void SignalCurve::setCrosshairColor(QColor newColor)
 {
   crosshair_1_color = newColor;
-  update();
+
+  update_pending = true;
 }
 
 
@@ -1692,35 +1713,39 @@ void SignalCurve::setTraceWidth(int tr_width)
 {
     signal_pen.setWidth(tr_width);
 
-    update();
+    update_pending = true;
 }
 
 
 void SignalCurve::setBackgroundColor(QColor newColor)
 {
   BackgroundColor = newColor;
-  update();
+
+  update_pending = true;
 }
 
 
 void SignalCurve::setRasterColor(QColor newColor)
 {
   RasterColor = newColor;
-  update();
+
+  update_pending = true;
 }
 
 
 void SignalCurve::setBorderColor(QColor newColor)
 {
   BorderColor = newColor;
-  update();
+
+  update_pending = true;
 }
 
 
 void SignalCurve::setTextColor(QColor newColor)
 {
   TextColor = newColor;
-  update();
+
+  update_pending = true;
 }
 
 
@@ -1736,7 +1761,7 @@ void SignalCurve::setHorizontalRulerText(const char *name, const char *unit)
         h_ruler_unit = unit;
     }
 
-    update();
+    update_pending = true;
 }
 
 
@@ -1752,14 +1777,15 @@ void SignalCurve::setVerticalRulerText(const char *name, const char *unit)
         v_ruler_unit = unit;
     }
 
-    update();
+    update_pending = true;
 }
 
 
 void SignalCurve::setHeaderText(const char *str)
 {
   header_label = str;
-  update();
+
+  update_pending = true;
 }
 
 void SignalCurve::setSubheaderText(const char *str)
@@ -1801,14 +1827,16 @@ void SignalCurve::setDashBoardEnabled(bool value)
 void SignalCurve::enableSpectrumColors(struct spectrum_markersblock *spectr_col)
 {
   spectrum_color = spectr_col;
-  update();
+
+  update_pending = true;
 }
 
 
 void SignalCurve::disableSpectrumColors()
 {
   spectrum_color = NULL;
-  update();
+
+  update_pending = true;
 }
 
 

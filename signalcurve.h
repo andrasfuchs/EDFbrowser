@@ -51,6 +51,7 @@
 #include <QFont>
 #include <QMessageBox>
 #include <QList>
+#include <QTimer>
 
 #include <string.h>
 #include <float.h>
@@ -158,6 +159,8 @@ private slots:
   void print_to_ascii();
   void send_button_event();
 
+  void updateWidget();
+
 private:
   QDialog     *sidemenu;
 
@@ -195,6 +198,10 @@ private:
 
 private:
   // VIEW RELATED
+  bool update_pending = false;  // true if something was changed on the chart, so we need to update it
+  int MAX_FPS = 30;             // this will be the maximum framerate of this control
+  QTimer* update_timer;         // we use this timer to limit the refresh rate
+
   QRect chartArea;              // the size of the chart area (replacement for w,h and bordersize)
 
   QPoint mouseLastPosition;     // position of the mouse at the moment of clicking
