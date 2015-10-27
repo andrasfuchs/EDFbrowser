@@ -50,12 +50,14 @@
 #include <QStringList>
 #include <QFont>
 #include <QMessageBox>
+#include <QList>
 
 #include <string.h>
 #include <float.h>
 
 #include "global.h"
 #include "utils.h"
+#include "models\signal.h"
 
 
 #define MAXSPECTRUMMARKERS 16
@@ -100,7 +102,7 @@ public:
   void setSubheaderText(const char *);
   void setLowerLabel(const char *);
   void drawCurve(double *sample_buffer, int start_index, int buffer_size, double h_max_value, double h_min_value);
-  void drawCurve(QVector<double> signal, double h_resolution, double v_resolution, double h_min_value, double h_max_value, double v_min_value, double v_max_value);
+  void drawCurve(Signal *signal, double h_min_value, double h_max_value, double v_min_value, double v_max_value);
   void drawLine(int, double, int, double, QColor);
   void setLineEnabled(bool);
   void create_button(const char *);
@@ -120,6 +122,7 @@ public:
   void setMarker2Color(QColor);
   double getMarker2Position(void);
   void setCrosshairColor(QColor);
+  void clearSignal();
   void clear();
   void setUpdatesEnabled(bool);
   void enableSpectrumColors(struct spectrum_markersblock *);
@@ -188,16 +191,9 @@ private:
   QPen Marker1Pen,
        Marker2Pen;
 
-  // MODEL RELATED
-public:
-  QVector<double> signal_values;// signal values
+  QList<Signal*> signal;        // the list of signals to display
 
 private:
-  double signal_index,          // the index where we are positioned at the moment
-         signal_h_density,      // the horizontal density of the signal (e.g. number of values per Hz by and FFT signal)
-         signal_v_density,      // the vertical density of the signal (e.g. number of values per Volt by and FFT amplitude signal)
-         SIGNAL_NA_VALUE;       // special value which represents the missing value
-
   // VIEW RELATED
   QRect chartArea;              // the size of the chart area (replacement for w,h and bordersize)
 

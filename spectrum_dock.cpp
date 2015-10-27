@@ -476,7 +476,7 @@ void UI_SpectrumDockWindow::sqrtButtonClicked(bool value)
     curve1->setVerticalRulerText("Amplitude", unit);
   }
 
-  curve1->signal_values.clear();
+  curve1->clearSignal();
   sliderMoved(0);
 }
 
@@ -521,7 +521,7 @@ void UI_SpectrumDockWindow::vlogButtonClicked(bool value)
   }
 
 
-  curve1->signal_values.clear();
+  curve1->clearSignal();
   sliderMoved(0);
 }
 
@@ -940,9 +940,10 @@ void UI_SpectrumDockWindow::update_curve()
   if (steps != fft_outputbufsize)
   {
     steps = fft_outputbufsize;
-    curve1->signal_values.clear();
+    curve1->clearSignal();
   }
 
+  // allocate memory for the FFT buffers
   if(buf_fft != NULL)
   {
     free(buf_fft);
@@ -1011,6 +1012,7 @@ void UI_SpectrumDockWindow::update_curve()
     return;
   }
 
+  // set up the limits
   if(init_maxvalue && !set_settings)
   {
     maxvalue = 0.000001;
@@ -1031,6 +1033,8 @@ void UI_SpectrumDockWindow::update_curve()
     minvalue_sqrt_vlog = settings.minvalue_sqrt_vlog;
   }
 
+
+  // calculate FFT
   kiss_fftr_cfg cfg;
 
   kiss_fft_cpx *kiss_fftbuf;

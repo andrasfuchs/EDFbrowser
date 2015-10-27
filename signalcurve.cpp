@@ -37,7 +37,7 @@ SignalCurve::SignalCurve(QWidget *w_parent) : QWidget(w_parent)
   recent_savedir[0] = 0;
 
   SignalLineColor = QColor(0,0,255);  
-  signal_pen = QPen(SignalLineColor, 1.0, Qt::DashDotLine);
+  signal_pen = QPen(SignalLineColor, 1.0, Qt::SolidLine);
   BackgroundColor = QColor(0,0,0);
   RasterColor = QColor(127,127,127,191);
   SecondaryRasterColor = QColor(127,127,127,63);
@@ -85,9 +85,14 @@ SignalCurve::SignalCurve(QWidget *w_parent) : QWidget(w_parent)
 }
 
 
+void SignalCurve::clearSignal()
+{
+  signal.clear();
+}
+
 void SignalCurve::clear()
 {
-  signal_values.clear();
+  signal.clear();
 
   use_move_events = 0;
   crosshair_1_active = 0;
@@ -212,6 +217,11 @@ void SignalCurve::mouseDoubleClickEvent(QMouseEvent *)
 
 void SignalCurve::resetRulers()
 {
+    if (signal.count() == 0)
+    {
+        return;
+    }
+
     // 1, set the horizontal axis to default, 20 pixel / Hz
     double width_change = (h_ruler_min_value - h_ruler_max_value);
     h_ruler_min_value = 0;
@@ -222,9 +232,9 @@ void SignalCurve::resetRulers()
     v_ruler_min_value = DBL_MAX;
     v_ruler_max_value = DBL_MIN;
 
-    for(int i = 0; i < signal_values.count(); i++)
+    for(int i = 0; i < signal[0]->GetValues().count(); i++)
     {
-      double value = (signal_values[i]);
+      double value = (signal[0]->GetValues()[i]);
 
       if (value < v_ruler_min_value)
       {
@@ -242,7 +252,7 @@ void SignalCurve::resetRulers()
 
 
     signal_display_start = 0;
-    signal_display_length = h_ruler_max_value * signal_h_density;
+    signal_display_length = h_ruler_max_value * signal[0]->GetHorizontalDensity();
 }
 
 void SignalCurve::mouseMoveEvent(QMouseEvent *move_event)
@@ -328,9 +338,9 @@ void SignalCurve::mouseMoveEvent(QMouseEvent *move_event)
       // check if we are in the valid range
       double desired_signal_display_start = signal_display_start - (value_delta_x_pct * signal_display_length);
 
-      if (desired_signal_display_start + signal_display_length >= signal_values.count() - 1)
+      if (desired_signal_display_start + signal_display_length >= signal[0]->GetValues().count() - 1)
       {
-          desired_signal_display_start = signal_values.count() - (int)signal_display_length - 1;
+          desired_signal_display_start = signal[0]->GetValues().count() - (int)signal_display_length - 1;
           value_delta_x_pct = (signal_display_start - desired_signal_display_start) / signal_display_length;
       }
 
@@ -387,9 +397,9 @@ void SignalCurve::wheelEvent(QWheelEvent * event)
     // 1, horizontal scale
     double desired_signal_display_length = signal_display_length * zoom_y_pct * zoom_x_pct;
 
-    if (signal_display_start + desired_signal_display_length >= signal_values.count() - 1)
+    if (signal_display_start + desired_signal_display_length >= signal[0]->GetValues().count() - 1)
     {
-        desired_signal_display_length = signal_values.count() - (int)signal_display_start - 1;
+        desired_signal_display_length = signal[0]->GetValues().count() - (int)signal_display_start - 1;
         zoom_y_pct = desired_signal_display_length / signal_display_length;
     }
 
@@ -674,9 +684,9 @@ void SignalCurve::print_to_ascii()
     return;
   }
 
-  for(i=0; i<signal_values.count(); i++)
+  for(i=0; i<signal[0]->GetValues().count(); i++)
   {
-    fprintf(outputfile, "%.8f\n", signal_values[i]);
+    fprintf(outputfile, "%.8f\n", signal[0]->GetValues()[i]);
   }
 
   fclose(outputfile);
@@ -1124,6 +1134,7 @@ void SignalCurve::drawWidget(QPainter *painter, int curve_w, int curve_h, bool i
     }
   }
 
+
 /////////////////////////////////// draw the rasters ///////////////////////////////////////////
 
   painter->setPen(RasterColor);
@@ -1136,7 +1147,7 @@ void SignalCurve::drawWidget(QPainter *painter, int curve_w, int curve_h, bool i
                 );
 
   int isSecondary = 0;
-  for(i = (p_ruler_startvalue / p_divisor) * p_divisor; i <= p_ruler_endvalue; i += p_divisor/2)
+  for(i = (p_ruler_startvalue / p_divisor) * p_divisor; i < p_ruler_endvalue; i += p_divisor/2)
   {
     isSecondary++;
 
@@ -1163,7 +1174,7 @@ void SignalCurve::drawWidget(QPainter *painter, int curve_w, int curve_h, bool i
                 );
 
   isSecondary = 0;
-  for(i = (p_ruler_startvalue / p_divisor) * p_divisor; i <= p_ruler_endvalue; i += p_divisor/2)
+  for(i = (p_ruler_startvalue / p_divisor) * p_divisor; i < p_ruler_endvalue; i += p_divisor/2)
   {
     isSecondary++;
 
@@ -1237,7 +1248,7 @@ drawTheCurve(painter, curve_w, curve_h);
     // constrant the information to be displayed
     painter->setFont(QFont("Arial", 10));
     QString value_at_crosshair = QString::number(crosshair_1_value, 'g', 5) + " " + v_ruler_unit;
-    QString range_at_crosshair = "@" + QString::number(crosshair_1_value_2, 'g', 4) + "-" + QString::number(crosshair_1_value_2 + (1 / signal_h_density), 'g', 4) + " " + h_ruler_unit;
+    QString range_at_crosshair = "@" + QString::number(crosshair_1_value_2, 'g', 4) + "-" + QString::number(crosshair_1_value_2 + (1 / signal[0]->GetHorizontalDensity()), 'g', 4) + " " + h_ruler_unit;
 
     fontMetrics = QFontMetrics(painter->font());
     QRect crosshairRect_value = fontMetrics.boundingRect(value_at_crosshair);
@@ -1410,6 +1421,8 @@ void SignalCurve::drawTheCurve(QPainter *painter, int curve_w, int curve_h)
 
       if(signal_display_length < 2)  return;
 
+      if (signal.count() == 0)  return;
+
       if(curveUpSideDown == true)
       {
         offset = (-(v_ruler_min_value));
@@ -1433,7 +1446,7 @@ void SignalCurve::drawTheCurve(QPainter *painter, int curve_w, int curve_h)
 
       for(i = 0; i < signal_display_length; i++)
       {
-        double vertical_position = (signal_values[i + (int)signal_display_start] + offset) * v_sens;
+        double vertical_position = (signal[0]->GetValues()[i + (int)signal_display_start] + offset) * v_sens;
 
         if (i == 0)
         {
@@ -1454,7 +1467,7 @@ void SignalCurve::drawTheCurve(QPainter *painter, int curve_w, int curve_h)
         if(i==((int)(((double)crosshair_1_x_position) / h_step)))
         {
           crosshair_1_y_value = vertical_position;
-          crosshair_1_value = signal_values[i + (int)signal_display_start];
+          crosshair_1_value = signal[0]->GetValues()[i + (int)signal_display_start];
           value = (h_ruler_max_value - h_ruler_min_value) / signal_display_length;
           crosshair_1_value_2 = (i * value) + h_ruler_min_value;
         }
@@ -1525,26 +1538,24 @@ void SignalCurve::drawCurve(double *sample_buffer, int start_index, int buffer_s
         values.append(sample_buffer[i]);
     }
 
-    if (signal_values.count() == 0)
+    if (signal.count() == 0)
     {
         // this is a new signal
-        drawCurve(values, buffer_size / 256.0, 1.0, 0.0, chartArea.width() / 20.0, h_min_value, h_max_value);
+        Signal *newSignal = new Signal("ADC", "ADC-FFT", "Frontal lobe", values, "Frequency", "Hz", buffer_size / 256.0, "Intensity", "???", 1.0);
+
+        drawCurve(newSignal, 0.0, chartArea.width() / 20.0, h_min_value, h_max_value);
         resetRulers();
     } else {
         // this is an old signal, so we don't need to calibrate the histogram
-        signal_values = values;
+        signal[0]->SetValues(values);
         update();
     }
 }
 
-void SignalCurve::drawCurve(QVector<double> values, double h_resolution, double v_resolution, double h_min_value, double h_max_value, double v_min_value, double v_max_value)
+void SignalCurve::drawCurve(Signal *signal, double h_min_value, double h_max_value, double v_min_value, double v_max_value)
 {
-  signal_values = values;
-  signal_index = 0;
-  SIGNAL_NA_VALUE = DBL_MIN;
-
-  signal_h_density = h_resolution;
-  signal_v_density = v_resolution;
+    this->signal.clear();
+    this->signal.append(signal);
 
   h_ruler_min_value = h_min_value;
   h_ruler_max_value = h_max_value;
@@ -1553,7 +1564,7 @@ void SignalCurve::drawCurve(QVector<double> values, double h_resolution, double 
   v_ruler_max_value = v_max_value;
 
   signal_display_start = 0;
-  signal_display_length = (h_max_value - h_min_value) * h_resolution;
+  signal_display_length = (h_max_value - h_min_value) * this->signal[0]->GetHorizontalDensity();
 
   update();
 }

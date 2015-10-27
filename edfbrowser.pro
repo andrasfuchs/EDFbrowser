@@ -38,7 +38,8 @@ OBJECTS_DIR = ./objects
 MOC_DIR = ./moc
 
 HEADERS += global.h \
-    multitargetsupport.h
+    multitargetsupport.h \
+    models/signal.h
 HEADERS += mainwindow.h
 HEADERS += viewcurve.h
 HEADERS += popup_messagewindow.h
@@ -126,7 +127,8 @@ HEADERS += third_party/kiss_fft/kiss_fftr.h
 
 
 SOURCES += main.cpp \
-    multitargetsupport.cpp
+    multitargetsupport.cpp \
+    models/signal.cpp
 SOURCES += mainwindow.cpp
 SOURCES += viewcurve.cpp
 SOURCES += popup_messagewindow.cpp
@@ -216,7 +218,7 @@ win32 {
  RC_FILE = edfbrowser.rc
 }
 
-QMAKE_CXXFLAGS += -Wextra -Wshadow -Wformat-nonliteral -Wformat-security -Wtype-limits -Wfatal-errors
+QMAKE_CXXFLAGS += -Wextra -Wshadow -Wformat-nonliteral -Wformat-security -Wtype-limits -Wfatal-errors -std=c++11
 
 unix {
 target.path = /usr/bin
