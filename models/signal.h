@@ -5,6 +5,7 @@
 
 #include <QString>
 #include <QColor>
+#include <QPen>
 #include <QVector>
 
 enum class SubSignalType { Unknown = 0, LogScale = 1, SquareRoot = 2, FFT = 4, ZScore = 8, BMP = 16, Average = 32 };
@@ -28,8 +29,8 @@ class Signal : public QObject
       QVector<double> GetValues();
       void SetValues(QVector<double> values);
 
-      QColor GetColor();
-      void SetColor(QColor color);
+      QPen GetPen();
+      void SetPen(QPen pen);
 
       double GetPosition();
       void SetPosition(double position);
@@ -50,7 +51,7 @@ class Signal : public QObject
 
     signals:
       void aliasChanged(QString newAlias);
-      void colorChanged(QColor newColor);
+      void penChanged(QPen newPen);
       void valuesChanged(QVector<double> newValues);
       void positionChanged(double newPosition);
       void horizontalDensityChanged(double density);
@@ -70,7 +71,7 @@ class Signal : public QObject
                 v_name = "",
                 v_unit = "";
 
-      QColor color = QColor(255, 255, 0);   // default it to yellow
+      QPen pen = QPen(Qt::yellow, 1.0, Qt::SolidLine);   // default it to yellow
 };
 
 #endif

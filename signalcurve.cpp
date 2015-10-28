@@ -36,8 +36,6 @@ SignalCurve::SignalCurve(QWidget *w_parent) : QWidget(w_parent)
 
   recent_savedir[0] = 0;
 
-  SignalLineColor = QColor(0,0,255);  
-  signal_pen = QPen(SignalLineColor, 1.0, Qt::SolidLine);
   BackgroundColor = QColor(0,0,0);
   RasterColor = QColor(127,127,127,191);
   SecondaryRasterColor = QColor(127,127,127,63);
@@ -644,8 +642,6 @@ void SignalCurve::create_button(const char *txt)
 
 void SignalCurve::backup_colors_for_printing(void)
 {
-  backup_color_1 = SignalLineColor;
-  SignalLineColor = Qt::black;
   backup_color_2 = RasterColor;
   RasterColor = Qt::black;
   backup_color_3 = BorderColor;
@@ -661,7 +657,6 @@ void SignalCurve::backup_colors_for_printing(void)
 
 void SignalCurve::restore_colors_after_printing(void)
 {
-  SignalLineColor = backup_color_1;
   RasterColor = backup_color_2;
   BorderColor = backup_color_3;
   RulerColor = backup_color_4;
@@ -1239,7 +1234,7 @@ void SignalCurve::drawWidget(QPainter *painter, int curve_w, int curve_h, bool i
 
   if(line1Enabled == true)
   {
-    painter->setPen(signal_pen);
+    painter->setPen(signals_[0]->GetPen());
 
     painter->drawLine(line1_start_x * h_step, (line1_start_y + offset) * v_sens, line1_end_x * h_step, (line1_end_y + offset) * v_sens);
   }
@@ -1264,7 +1259,7 @@ void SignalCurve::drawWidget(QPainter *painter, int curve_w, int curve_h, bool i
 
   if(crosshair_1_active)
   {
-    painter->setPen(signal_pen);
+    painter->setPen(signals_[0]->GetPen());
 
     // draw the little triangle
     QPainterPath path;
@@ -1272,7 +1267,7 @@ void SignalCurve::drawWidget(QPainter *painter, int curve_w, int curve_h, bool i
     path.lineTo(crosshair_1_x_position - 4, crosshair_1_y_value - 10);
     path.lineTo(crosshair_1_x_position + 5, crosshair_1_y_value - 10);
     path.lineTo(crosshair_1_x_position, crosshair_1_y_value);
-    painter->fillPath(path, signal_pen.brush());
+    painter->fillPath(path, signals_[0]->GetPen().brush());
 
     // constrant the information to be displayed
     painter->setFont(QFont("Arial", 10));
@@ -1297,7 +1292,7 @@ void SignalCurve::drawWidget(QPainter *painter, int curve_w, int curve_h, bool i
     }
 
     // draw the rectangle around it and then the information itself
-    painter->setPen(signal_pen);
+    painter->setPen(signals_[0]->GetPen());
     painter->fillRect(crosshairRect, BackgroundColor);
     painter->drawRect(crosshairRect);
 
@@ -1467,11 +1462,10 @@ void SignalCurve::drawSignalCurve(QPainter *painter, int curve_w, int curve_h, S
 
       h_step = (double)curve_w / (double)signal_display_length; /// width of one bar = width of the area where we draw / number of bars
 
-      QPen linePen = QPen(signal->GetColor(), 1.0, Qt::SolidLine);
-      QBrush fillBrush = QBrush(QColor(linePen.color().red(), linePen.color().green(), linePen.color().blue(), 31), Qt::SolidPattern);
+      QPen linePen = signal->GetPen();
+      QBrush fillBrush = QBrush(QColor(linePen.color().red(), linePen.color().green(), linePen.color().blue(), linePen.color().alpha() / 8), Qt::SolidPattern);
 
       QPolygon curvePolygon = QPolygon();
-      curvePolygon.append(QPoint(0, curve_h));
 
       for(i = 0; i < signal_display_length; i++)
       {
@@ -1480,24 +1474,12 @@ void SignalCurve::drawSignalCurve(QPainter *painter, int curve_w, int curve_h, S
 
           if (value != signal->SIGNAL_NA_VALUE)
           {
-              if (i == 0)
-              {
-                  // this is our first point
-                  curvePolygon.append(QPoint(0, vertical_position));
-              }
-
               curvePolygon.append(QPoint((i * h_step) + (h_step/2), vertical_position));
-
-              if (i == (int)signal_display_length-1)
-              {
-                  // this is our last point
-                  curvePolygon.append(QPoint(((int)signal_display_length * h_step), vertical_position));
-              }
           }
           else
           {
-              curvePolygon.append(QPoint((i * h_step), curve_h));
-              curvePolygon.append(QPoint(((i+1) * h_step), curve_h));
+              drawSignalCurveSegment(painter, curvePolygon, curve_h, linePen, fillBrush);
+              curvePolygon.clear();
           }
 
           if(crosshair_1_active)
@@ -1512,17 +1494,26 @@ void SignalCurve::drawSignalCurve(QPainter *painter, int curve_w, int curve_h, S
           }
       }
 
-    curvePolygon.append(QPoint(curve_w, curve_h));
-    curvePolygon.append(QPoint(0, curve_h));
+      drawSignalCurveSegment(painter, curvePolygon, curve_h, linePen, fillBrush);
+}
+
+void SignalCurve::drawSignalCurveSegment(QPainter *painter, QPolygon curvePolygon, int curve_h, QPen linePen, QBrush fillBrush)
+{
+    if (curvePolygon.count() == 0) return;
+
+    // TODO: convert the polygon to a bezier curve
+
+    // draw the curve
+    painter->setPen(linePen);
+    painter->drawPolyline(curvePolygon);
+
+    // fill below
+    curvePolygon.append(QPoint(curvePolygon.at(curvePolygon.count()-1).x(), curve_h));
+    curvePolygon.append(QPoint(curvePolygon.at(0).x(), curve_h));
 
     QPainterPath path;
     path.addPolygon(curvePolygon);
-
-    // Draw polygon
-    painter->setPen(linePen);
-    painter->drawPolygon(curvePolygon);
     painter->fillPath(path, fillBrush);
-
 }
 
 
@@ -1629,7 +1620,7 @@ void SignalCurve::addSignal(Signal *signal)
 
     if (!signalFound)
     {
-        removeSignal();     // TODO: this is temporary until we use the multi-signal feature
+        //removeSignal();     // TODO: this is temporary until we use the multi-signal feature
         this->signals_.append(signal);
 
         QObject::connect(this->signals_[this->signals_.count()-1], SIGNAL(valuesChanged(QVector<double>)), this, SLOT(signalValueChanged(QVector<double>)));
@@ -1782,9 +1773,9 @@ void SignalCurve::setH_RulerValues(double start, double end)
 
 void SignalCurve::setSignalColor(QColor newColor)
 {
-  signal_pen.setColor(newColor);
-
-  SignalLineColor = newColor;
+  QPen pen = signals_[0]->GetPen();
+  pen.setColor(newColor);
+  signals_[0]->SetPen(pen);
 
   update_pending = true;
 }
@@ -1800,7 +1791,9 @@ void SignalCurve::setCrosshairColor(QColor newColor)
 
 void SignalCurve::setTraceWidth(int tr_width)
 {
-    signal_pen.setWidth(tr_width);
+    QPen pen = signals_[0]->GetPen();
+    pen.setWidth(tr_width);
+    signals_[0]->SetPen(pen);
 
     update_pending = true;
 }

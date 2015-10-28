@@ -75,7 +75,6 @@ UI_SpectrumDockWindow::UI_SpectrumDockWindow(QWidget *w_parent)
   }
 
   curve1 = new SignalCurve;  
-  curve1->setSignalColor(QColor(255,127,0));
 
   curve1->create_button("to Text");
 
@@ -345,13 +344,17 @@ void UI_SpectrumDockWindow::changeSignals()
     mainwindow->spectrumdock_sqrt = 0;
     mainwindow->spectrumdock_vlog = 0;
 
+    curve1->removeSignal();
     curve1->addSignal(fft);
+    curve1->addSignal(fft2);
+    curve1->addSignal(fft4);
   }
   else if ((sqrtButton->checkState() == Qt::Checked) && (vlogButton->checkState() != Qt::Checked))
   {
     mainwindow->spectrumdock_sqrt = 1;
     mainwindow->spectrumdock_vlog = 0;
 
+    curve1->removeSignal();
     curve1->addSignal(fft_sqrt);
   }
   else if ((sqrtButton->checkState() != Qt::Checked) && (vlogButton->checkState() == Qt::Checked))
@@ -359,6 +362,7 @@ void UI_SpectrumDockWindow::changeSignals()
     mainwindow->spectrumdock_sqrt = 0;
     mainwindow->spectrumdock_vlog = 1;
 
+    curve1->removeSignal();
     curve1->addSignal(fft_vlog);
   }
   else if ((sqrtButton->checkState() == Qt::Checked) && (vlogButton->checkState() == Qt::Checked))
@@ -366,6 +370,7 @@ void UI_SpectrumDockWindow::changeSignals()
     mainwindow->spectrumdock_sqrt = 1;
     mainwindow->spectrumdock_vlog = 1;
 
+    curve1->removeSignal();
     curve1->addSignal(fft_sqrt_vlog);
   }
 }
@@ -391,9 +396,18 @@ void UI_SpectrumDockWindow::init(int signal_num)
     QString signal_alias = signalcomp->alias;
 
     base_samples = new Signal("ADC", signal_name, signal_alias, QVector<double>(), "Time", "seconds", (double)signalcomp->edfhdr->edfparam[signalcomp->edfsignal[0]].smp_per_record / ((double)signalcomp->edfhdr->long_data_record_duration / TIME_DIMENSION), "Voltage", base_unit, 1.0);
-    base_samples->SetColor(QColor(signalcomp->color));
+    base_samples->SetPen(QPen(static_cast<Qt::GlobalColor>(signalcomp->color)));
+    QColor signalColor = base_samples->GetPen().color();
 
     fft = new Signal("FFT", signal_name + "-FFT", signal_alias + "-FFT", QVector<double>(), "Frequency", "Hz", 1.0, "Amplitude", base_unit, 1.0);
+    fft->SetPen(QPen(QColor(signalColor.red(), signalColor.green(), signalColor.blue(), signalColor.alpha() / 4), 1.0, Qt::DotLine));
+
+    fft2 = new Signal("FFT2", signal_name + "-FFTp2", signal_alias + "-FFTp2", QVector<double>(), "Frequency", "Hz", 1.0, "Amplitude", base_unit, 1.0);
+    fft2->SetPen(QPen(QColor(signalColor.red(), signalColor.green(), signalColor.blue(), signalColor.alpha() / 2), 1.0, Qt::DashDotLine));
+
+    fft4 = new Signal("FFT4", signal_name + "-FFTp4", signal_alias + "-FFTp4", QVector<double>(), "Frequency", "Hz", 1.0, "Amplitude", base_unit, 1.0);
+    fft4->SetPen(QPen(QColor(signalColor.red(), signalColor.green(), signalColor.blue(), signalColor.alpha() / 1), 1.0, Qt::SolidLine));
+
     fft_vlog = new Signal("FFT-VLOG", signal_name + "-FFT-VLOG", signal_alias + "-FFT-VLOG", QVector<double>(), "Frequency", "Hz", 1.0, "Amplitude", "log10("+base_unit+")", 1.0);
     fft_sqrt = new Signal("FFT-SQRT", signal_name + "-FFT-SQRT", signal_alias + "-FFT-SQRT", QVector<double>(), "Frequency", "Hz", 1.0, "Intensity", "("+base_unit+")^2/Hz", 1.0);
     fft_sqrt_vlog = new Signal("FFT-SQRT-VLOG", signal_name + "-FFT-SQRT-VLOG", signal_alias + "-FFT-SQRT-VLOG", QVector<double>(), "Frequency", "Hz", 1.0, "Intensity", "log(("+base_unit+")^2/Hz)", 1.0);
@@ -546,33 +560,30 @@ void UI_SpectrumDockWindow::update_curve()
     minvalue_sqrt_vlog = settings.minvalue_sqrt_vlog;
   }
 
-  // ---------- FFT CALCULATION
-  QVector<double> fft_values = calculateFFT(buffer_of_samples, fft_outputbufsize, dftblocksize, &dftblocks);
+  // ---------- FFT CALCULATION  
+  QVector<double> fft_values = calculateFFT(buffer_of_samples, fft_outputbufsize, dftblocksize, &dftblocks, samplefreq, fft->SIGNAL_NA_VALUE);
+
+  buffer_of_samples.remove(0, 7 * (buffer_of_samples.count() / 8));
+  QVector<double> fft_values_p2 = calculateFFT(buffer_of_samples, fft_outputbufsize, dftblocksize, &dftblocks, samplefreq, fft2->SIGNAL_NA_VALUE);
+
+  buffer_of_samples.remove(0, 7 * (buffer_of_samples.count() / 8));
+  QVector<double> fft_values_p4 = calculateFFT(buffer_of_samples, fft_outputbufsize, dftblocksize, &dftblocks, samplefreq, fft4->SIGNAL_NA_VALUE);
+
   QVector<double> fft_sqrt_values = QVector<double>(fft_values.count());
   QVector<double> fft_vlog_values = QVector<double>(fft_values.count());
   QVector<double> fft_sqrt_vlog_values = QVector<double>(fft_values.count());
 
-  if(signalcomp->ecg_filter == NULL)
-  {
-    fft_values[0] /= 2.0;  // DC!
-  }
-  else
-  {
-    fft_values[0] = 0.0;  // Remove DC because heart rate is always a positive value
-  }
 
-  // there are two limitations to the FFT algorithm
-  // A, we can't meassure the intensity of a signal with a higher frequency then the half of the sample rate
-  // TODO: invalidate values above that frequency
+// TODO: I couldn't figure out why is this here
+//  if(signalcomp->ecg_filter == NULL)
+//  {
+//    fft_values[0] /= 2.0;  // DC!
+//  }
+//  else
+//  {
+//    fft_values[0] = 0.0;  // Remove DC because heart rate is always a positive value
+//  }
 
-  // B, the meassurement of the signals with wavelength less than the sample will be inaccurate
-  double samples_length_in_seconds = (double)buffer_of_samples.count() / samplefreq;
-  double freq_band = 0.0;
-  for (int i=0; freq_band<(1/samples_length_in_seconds); i++)
-  {
-      fft_values[i] = fft->SIGNAL_NA_VALUE;
-      freq_band += freqstep;
-  }
 
   for(i=0; i<fft_values.count(); i++)
   {
@@ -583,9 +594,12 @@ void UI_SpectrumDockWindow::update_curve()
           fft_sqrt_vlog_values[i] = fft_sqrt_vlog->SIGNAL_NA_VALUE;
           continue;
       }
+  }
 
 
-      fft_values[i] /= samplefreq;
+  for(i=0; i<fft_values.count(); i++)
+  {
+      if (fft_values[i] == fft->SIGNAL_NA_VALUE) continue;
 
       double fft_value = fft_values[i];
       double fft_sqrt_value = sqrt(fft_value * freqstep);
@@ -636,6 +650,12 @@ void UI_SpectrumDockWindow::update_curve()
 
   fft->SetHorizontalDensity(1.0/freqstep);
   fft->SetValues(fft_values);
+
+  fft2->SetHorizontalDensity(1.0/freqstep);
+  fft2->SetValues(fft_values_p2);
+
+  fft4->SetHorizontalDensity(1.0/freqstep);
+  fft4->SetValues(fft_values_p4);
 
   fft_sqrt->SetHorizontalDensity(1.0/freqstep);
   fft_sqrt->SetValues(fft_sqrt_values);
@@ -923,7 +943,7 @@ QVector<double> UI_SpectrumDockWindow::compileSignalFromRawData(signalcompblock 
     return result;
 }
 
-QVector<double> UI_SpectrumDockWindow::calculateFFT(QVector<double> buf_samples, int fft_outputbufsize, int dftblocksize, int *dftblocks)
+QVector<double> UI_SpectrumDockWindow::calculateFFT(QVector<double> buf_samples, int fft_outputbufsize, int dftblocksize, int *dftblocks, double samplefreq, double SIGNAL_NA_VALUE)
 {
     kiss_fftr_cfg cfg;
     kiss_fft_cpx *kiss_fftbuf;
@@ -984,6 +1004,26 @@ QVector<double> UI_SpectrumDockWindow::calculateFFT(QVector<double> buf_samples,
     free(cfg);
     free(kiss_fftbuf);
 
+
+    for (int i=0; i<result.count(); i++)
+    {
+        result[i] /= samplefreq;
+    }
+
+    double samples_length_in_seconds = (double)buf_samples.count() / samplefreq;
+
+    // there are two limitations to the FFT algorithm
+    // A, we can't meassure the intensity of a signal with a higher frequency then the half of the sample rate
+    // TODO: invalidate values above that frequency
+
+    // B, the meassurement of the signals with wavelength less than the sample will be inaccurate
+    double freqstep = samplefreq / (double)dftblocksize;
+    double freq_band = 0.0;
+    for (int i=0; freq_band<(1/samples_length_in_seconds); i++)
+    {
+        result[i] = SIGNAL_NA_VALUE;
+        freq_band += freqstep;
+    }
 
     return result;
 }

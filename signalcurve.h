@@ -148,6 +148,7 @@ private:
   void drawTextOnRuler(QPainter *painter, QRect area, int position, double value, int precision, bool is_vertical, bool is_upsidedown = false);
   void calculateRulerParameters(int length, double start_value, double end_value, int *multiplier, int *normalized_start_value, int *normalized_end_value, int *range, double *pixels_per_unit, int *divisor, int *precision);
   void resetRulers();
+  void drawSignalCurveSegment(QPainter *painter, QPolygon curvePolygon, int curve_h, QPen linePen, QBrush fillBrush);
 
 private slots:
   void exec_sidemenu();
@@ -176,8 +177,7 @@ private:
               *sidemenuButton5,
               *sidemenuButton6;
 
-  QColor SignalLineColor,         
-         BackgroundColor,
+  QColor BackgroundColor,
          RasterColor,
          SecondaryRasterColor,
          BorderColor,
@@ -222,8 +222,6 @@ private:
          v_ruler_max_value = DBL_MIN,   // the maximum value on the vertical ruler
          h_ruler_min_value = DBL_MAX,   // the minimum value on the horizontal ruler
          h_ruler_max_value = DBL_MIN;   // the maximum value on the horizontal ruler
-
-  QPen signal_pen;              // pen of the signal
 
   //
   double printsize_x_factor,

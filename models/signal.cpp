@@ -60,18 +60,18 @@ void Signal::SetValues(QVector<double> values)
   }
 }
 
-QColor Signal::GetColor()
+QPen Signal::GetPen()
 {
-  return color;
+  return pen;
 }
 
-void Signal::SetColor(QColor color)
+void Signal::SetPen(QPen pen)
 {
-  if (this->color != color)
+  if (this->pen != pen)
   {
-      this->color = color;
+      this->pen = pen;
 
-      emit colorChanged(this->color);
+      emit penChanged(this->pen);
   }
 }
 
