@@ -183,6 +183,8 @@ public:
   UI_Mainwindow();
   ~UI_Mainwindow();
 
+  int PLAYBACK_REALTIME_MS = (1000 / 50);
+
   int files_open,
       signalcomps,
       totalviewbufsize,
@@ -339,6 +341,7 @@ private:
   QAction  *former_page_Act,
            *shift_page_left_Act,
            *shift_page_right_Act,
+           *playback_realtime_Act,
            *next_page_Act,
            *shift_page_up_Act,
            *shift_page_down_Act,
@@ -417,7 +420,10 @@ private:
                *load_predefined_mtg_group;
 
   QTimer   *live_stream_timer,
-           *video_poll_timer;
+           *video_poll_timer,
+           *playback_realtime_timer;
+
+  QTime    *playback_realtime_time;
 
   QSplashScreen *splash;
 
@@ -473,6 +479,7 @@ private slots:
   void former_page();
   void shift_page_left();
   void shift_page_right();
+  void playback_realtime();
   void next_page();
   void shift_page_up();
   void shift_page_down();
@@ -541,6 +548,7 @@ private slots:
   void stop_video_generic();
   void live_stream_timer_func();
   void video_poll_timer_func();
+  void playback_realtime_timer_func();
   void organize_signals();
   void Escape_fun();
   void export_ecg_rr_interval_to_ascii();

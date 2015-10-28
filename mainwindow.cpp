@@ -245,6 +245,13 @@ UI_Mainwindow::UI_Mainwindow()
   video_poll_timer->setSingleShot(true);
   QObject::connect(video_poll_timer, SIGNAL(timeout()), this, SLOT(video_poll_timer_func()));
 
+  playback_realtime_time = new QTime();
+
+  playback_realtime_timer = new QTimer;
+  playback_realtime_timer->setInterval(PLAYBACK_REALTIME_MS);
+  playback_realtime_timer->setSingleShot(false);
+  QObject::connect(playback_realtime_timer, SIGNAL(timeout()), this, SLOT(playback_realtime_timer_func()));
+
   setCentralWidget(maincurve);
 
   menubar = menuBar();
@@ -704,6 +711,12 @@ UI_Mainwindow::UI_Mainwindow()
   shift_page_left_Act->setShortcut(QKeySequence::MoveToPreviousChar);
   connect(shift_page_left_Act, SIGNAL(triggered()), this, SLOT(shift_page_left()));
   menubar->addAction(shift_page_left_Act);
+
+  playback_realtime_Act = new QAction("[play]", this);
+  playback_realtime_Act->setShortcut(QKeySequence("Ctrl+Space"));
+  connect(playback_realtime_Act, SIGNAL(triggered()), this, SLOT(playback_realtime()));
+  menubar->addAction(playback_realtime_Act);
+
 
   shift_page_right_Act = new QAction(">", this);
   shift_page_right_Act->setShortcut(QKeySequence::MoveToNextChar);
@@ -2037,6 +2050,34 @@ void UI_Mainwindow::shift_page_right()
 }
 
 
+
+void UI_Mainwindow::playback_realtime()
+{
+    if (playback_realtime_timer->isActive())
+    {
+        playback_realtime_timer->stop();
+        playback_realtime_Act->setText("[play]");
+    }
+    else
+    {
+        playback_realtime_time->start();
+        playback_realtime_timer->start();
+        playback_realtime_Act->setText("[stop]");
+    }
+}
+
+void UI_Mainwindow::playback_realtime_timer_func()
+{
+    if((viewtime_sync==VIEWTIME_SYNCED_OFFSET)||(viewtime_sync==VIEWTIME_SYNCED_ABSOLUT)||(viewtime_sync==VIEWTIME_USER_DEF_SYNCED))
+    {
+      for(int i=0; i<files_open; i++)
+      {
+        edfheaderlist[i]->viewtime += playback_realtime_time->restart() * 10000;
+      }
+
+      setup_viewbuf();
+    }
+}
 
 void UI_Mainwindow::next_page()
 {
@@ -7770,11 +7811,3 @@ inline int UI_Mainwindow::mpr_read(char *buf, int sz)
   return video_process->readLine(buf, sz);
 #endif
 }
-
-
-
-
-
-
-
-
