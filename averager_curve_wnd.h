@@ -56,7 +56,7 @@
 #include "utils.h"
 #include "flywheel.h"
 
-
+#include "models/signalcompblock.h"
 
 
 class UI_Mainwindow;

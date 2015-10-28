@@ -52,7 +52,7 @@
 #include "ecg_filter.h"
 #include "signalcurve.h"
 
-
+#include "models/signalcompblock.h"
 
 
 class UI_StatisticWindow : public QObject

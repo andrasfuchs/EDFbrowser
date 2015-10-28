@@ -231,7 +231,7 @@ void SignalCurve::mouseDoubleClickEvent(QMouseEvent *)
 
 void SignalCurve::resetRulers()
 {
-    if (signal.count() == 0)
+    if ((signal.count() == 0) || (signal[0]->GetValues().count() == 0))
     {
         return;
     }
@@ -1217,7 +1217,7 @@ void SignalCurve::drawWidget(QPainter *painter, int curve_w, int curve_h, bool i
 
 /////////////////////////////////// draw the curve ///////////////////////////////////////////
 
-drawTheCurve(painter, curve_w, curve_h);
+drawSignalCurve(painter, curve_w, curve_h);
 
 /////////////////////////////////// draw the line ///////////////////////////////////////////
 
@@ -1420,7 +1420,7 @@ void SignalCurve::drawTextOnRuler(QPainter *painter, QRect area, int position, d
 }
 
 
-void SignalCurve::drawTheCurve(QPainter *painter, int curve_w, int curve_h)
+void SignalCurve::drawSignalCurve(QPainter *painter, int curve_w, int curve_h)
 {
     int i;
 
@@ -1568,8 +1568,14 @@ void SignalCurve::drawCurve(double *sample_buffer, int start_index, int buffer_s
 
 void SignalCurve::drawCurve(Signal *signal, double h_min_value, double h_max_value, double v_min_value, double v_max_value)
 {
-    this->signal.clear();
-    this->signal.append(signal);
+  this->signal.clear();
+  this->signal.append(signal);
+
+  h_ruler_name = signal->GetHorizontalName();
+  h_ruler_unit = signal->GetHorizontalUnit();
+
+  v_ruler_name = signal->GetVerticalName();
+  v_ruler_unit = signal->GetVerticalUnit();
 
   h_ruler_min_value = h_min_value;
   h_ruler_max_value = h_max_value;
@@ -1577,10 +1583,47 @@ void SignalCurve::drawCurve(Signal *signal, double h_min_value, double h_max_val
   v_ruler_min_value = v_min_value;
   v_ruler_max_value = v_max_value;
 
+  resetRulers();
+
   signal_display_start = 0;
-  signal_display_length = (h_max_value - h_min_value) * this->signal[0]->GetHorizontalDensity();
+  signal_display_length = (h_ruler_max_value - h_ruler_min_value) * this->signal[0]->GetHorizontalDensity();
 
   update_pending = true;
+}
+
+void SignalCurve::addSignal(Signal *signal)
+{
+    if ((this->signal.count() == 0) || (this->signal[0]->GetId() != signal->GetId()))
+    {
+        this->signal.clear();
+        this->signal.append(signal);
+
+        QObject::connect(this->signal[this->signal.count()-1], SIGNAL(valuesChanged(QVector<double>)), this, SLOT(signalValueChanged(QVector<double>)));
+
+        h_ruler_name = signal->GetHorizontalName();
+        h_ruler_unit = signal->GetHorizontalUnit();
+
+        v_ruler_name = signal->GetVerticalName();
+        v_ruler_unit = signal->GetVerticalUnit();
+
+        resetRulers();
+
+        signal_display_start = 0;
+        signal_display_length = (h_ruler_max_value - h_ruler_min_value) * this->signal[0]->GetHorizontalDensity();
+
+        update_pending = true;
+    }
+}
+
+void SignalCurve::signalValueChanged(QVector<double>)
+{
+    if (v_ruler_min_value == DBL_MAX)
+    {
+        // rulers were not initialized yer
+        resetRulers();
+    }
+
+    update_pending = true;
 }
 
 void SignalCurve::setFillSurfaceEnabled(bool enabled)
@@ -1786,11 +1829,6 @@ void SignalCurve::setHeaderText(const char *str)
   header_label = str;
 
   update_pending = true;
-}
-
-void SignalCurve::setSubheaderText(const char *str)
-{
-  // TODO: implement the subheader label
 }
 
 

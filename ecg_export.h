@@ -64,6 +64,7 @@
 #include "filteredblockread.h"
 #include "edf_annot_list.h"
 
+#include "models/signalcompblock.h"
 
 
 

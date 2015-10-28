@@ -51,7 +51,7 @@
 #include "ecg_filter.h"
 #include "utils.h"
 
-
+#include "models/signalcompblock.h"
 
 
 class UI_Mainwindow;

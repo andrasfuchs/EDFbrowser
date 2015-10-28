@@ -70,6 +70,8 @@
 #include "check_edf_file.h"
 #include "edf_annotations.h"
 
+#include "models/signalcompblock.h"
+
 
 
 class UI_Mainwindow;

@@ -36,13 +36,21 @@ class Signal : public QObject
 
       void GetSubSignal(SubSignalType type, double parameter);
 
+      QString GetHorizontalName();
+      QString GetHorizontalUnit();
       double GetHorizontalDensity();
+      void SetHorizontalDensity(double h_density);
+
+      QString GetVerticalName();
+      QString GetVerticalUnit();
+      double GetVerticalDensity();
 
     signals:
       void aliasChanged(QString newAlias);
       void colorChanged(QColor newColor);
       void valuesChanged(QVector<double> newValues);
       void positionChanged(double newPosition);
+      void horizontalDensityChanged(double density);
 
     private:
       QVector<double> values;               // signal values

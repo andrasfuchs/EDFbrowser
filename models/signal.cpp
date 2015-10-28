@@ -20,7 +20,6 @@ Signal::Signal(QString id, QString name, QString alias, QVector<double> values, 
   this->v_density = v_density;
 }
 
-
 QString Signal::GetId()
 {
   return this->id;
@@ -107,7 +106,42 @@ void Signal::GetSubSignal(SubSignalType type, double parameter)
   return;
 }
 
+QString Signal::GetHorizontalName()
+{
+    return h_name;
+}
+
+QString Signal::GetHorizontalUnit()
+{
+    return h_unit;
+}
+
 double Signal::GetHorizontalDensity()
 {
     return h_density;
+}
+
+void Signal::SetHorizontalDensity(double h_density)
+{
+    if (this->h_density != h_density)
+    {
+        this->h_density = h_density;
+
+        emit horizontalDensityChanged(this->h_density);
+    }
+}
+
+QString Signal::GetVerticalName()
+{
+    return v_name;
+}
+
+QString Signal::GetVerticalUnit()
+{
+    return v_unit;
+}
+
+double Signal::GetVerticalDensity()
+{
+    return v_density;
 }

@@ -60,8 +60,9 @@
 #include "ravg_filter.h"
 #include "flywheel.h"
 
-#include "third_party/fidlib/fidlib.h"
+#include "models/signalcompblock.h"
 
+#include "third_party/fidlib/fidlib.h"
 #include "third_party/kiss_fft/kiss_fftr.h"
 
 

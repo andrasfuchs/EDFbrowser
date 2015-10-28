@@ -37,14 +37,6 @@
 
 UI_SpectrumDockWindow::UI_SpectrumDockWindow(QWidget *w_parent)
 {
-  char unit[600];
-
-  buf_samples = NULL;
-  buf_fft = NULL;
-  buf_fft_sqrt = NULL;
-  buf_fft_vlog = NULL;
-  buf_fft_sqrt_vlog = NULL;
-
   busy = 0;
 
   dashboard = 0;
@@ -84,63 +76,13 @@ UI_SpectrumDockWindow::UI_SpectrumDockWindow(QWidget *w_parent)
 
   curve1 = new SignalCurve;  
   curve1->setSignalColor(QColor(255,127,0));
-  curve1->setHorizontalRulerText("Frequency", "Hz");
 
-  if(mainwindow->spectrumdock_sqrt)
-  {
-    if(mainwindow->spectrumdock_vlog)
-    {
-      snprintf(unit, 512, "log10(%s)", physdimension);
-      curve1->setVerticalRulerText(NULL, unit);
-    }
-    else
-    {
-      curve1->setVerticalRulerText(NULL, physdimension);
-    }
-  }
-  else
-  {
-    if(mainwindow->spectrumdock_vlog)
-    {
-      snprintf(unit, 512, "log((%s)^2/Hz)", physdimension);
-    }
-    else
-    {
-      snprintf(unit, 512, "(%s)^2/Hz", physdimension);
-    }
-
-    curve1->setVerticalRulerText(NULL, unit);
-  }
   curve1->create_button("to Text");
 
   if(!dashboard)
   {
     dock->setWidget(curve1);
   }
-
-  flywheel1 = new UI_Flywheel;
-  flywheel1->setMinimumSize(20, 85);
-
-  amplitudeSlider = new QSlider;
-  amplitudeSlider->setOrientation(Qt::Vertical);
-  amplitudeSlider->setMinimum(1);
-  amplitudeSlider->setMaximum(2000);
-  amplitudeSlider->setValue(1000);
-  amplitudeSlider->setInvertedAppearance(true);
-  amplitudeSlider->setMinimumSize(15, 110);
-
-  log_minslider = new QSlider;
-  log_minslider->setOrientation(Qt::Vertical);
-  log_minslider->setMinimum(1);
-  log_minslider->setMaximum(2000);
-  log_minslider->setValue(1000);
-  log_minslider->setInvertedAppearance(false);
-  log_minslider->setMinimumSize(15, 110);
-
-  amplitudeLabel = new QLabel;
-  amplitudeLabel->setText("Amplitude");
-  amplitudeLabel->setMinimumSize(100, 15);
-  amplitudeLabel->setAlignment(Qt::AlignHCenter);
 
   sqrtButton = new QCheckBox;
   sqrtButton->setMinimumSize(50, 20);
@@ -162,14 +104,10 @@ UI_SpectrumDockWindow::UI_SpectrumDockWindow(QWidget *w_parent)
   if(mainwindow->spectrumdock_vlog)
   {
     vlogButton->setChecked(true);
-
-    log_minslider->setVisible(true);
   }
   else
   {
     vlogButton->setChecked(false);
-
-    log_minslider->setVisible(false);
   }
 
   colorBarButton = new QCheckBox;
@@ -179,49 +117,20 @@ UI_SpectrumDockWindow::UI_SpectrumDockWindow(QWidget *w_parent)
 
   vlayout3 = new QVBoxLayout;
   vlayout3->addStretch(100);
-  vlayout3->addWidget(flywheel1, 100);
   vlayout3->addStretch(100);
 
   hlayout4 = new QHBoxLayout;
   hlayout4->addStretch(100);
   hlayout4->addLayout(vlayout3, 100);
   hlayout4->addStretch(100);
-  hlayout4->addWidget(amplitudeSlider, 300);
-  hlayout4->addWidget(log_minslider, 300);
 
   vlayout2 = new QVBoxLayout;
   vlayout2->setSpacing(10);
   vlayout2->addStretch(100);
-  vlayout2->addWidget(amplitudeLabel, 0, Qt::AlignHCenter);
   vlayout2->addLayout(hlayout4, 200);
-//  vlayout2->addWidget(amplitudeSlider, 0, Qt::AlignHCenter);
   vlayout2->addWidget(sqrtButton);
   vlayout2->addWidget(vlogButton);
-  vlayout2->addWidget(colorBarButton);
-
-  spanSlider = new QSlider;
-  spanSlider->setOrientation(Qt::Horizontal);
-  spanSlider->setMinimum(10);
-  spanSlider->setMaximum(1000);
-  spanSlider->setValue(1000);
-  spanSlider->setMinimumSize(500, 15);
-
-  spanLabel = new QLabel;
-  spanLabel->setText("Span");
-  spanLabel->setMinimumSize(100, 15);
-  spanLabel->setAlignment(Qt::AlignHCenter);
-
-  centerSlider = new QSlider;
-  centerSlider->setOrientation(Qt::Horizontal);
-  centerSlider->setMinimum(0);
-  centerSlider->setMaximum(1000);
-  centerSlider->setValue(0);
-  centerSlider->setMinimumSize(500, 15);
-
-  centerLabel = new QLabel;
-  centerLabel->setText("Center");
-  centerLabel->setMinimumSize(100, 15);
-  centerLabel->setAlignment(Qt::AlignHCenter);
+  vlayout2->addWidget(colorBarButton);  
 
   hlayout1 = new QHBoxLayout;
   hlayout1->setSpacing(20);
@@ -233,14 +142,10 @@ UI_SpectrumDockWindow::UI_SpectrumDockWindow(QWidget *w_parent)
 
   hlayout2 = new QHBoxLayout;
   hlayout2->setSpacing(20);
-  hlayout2->addWidget(spanLabel);
-  hlayout2->addWidget(spanSlider);
   hlayout2->addStretch(100);
 
   hlayout3 = new QHBoxLayout;
   hlayout3->setSpacing(20);
-  hlayout3->addWidget(centerLabel);
-  hlayout3->addWidget(centerSlider);
   hlayout3->addStretch(100);
 
   vlayout1 = new QVBoxLayout;
@@ -255,16 +160,11 @@ UI_SpectrumDockWindow::UI_SpectrumDockWindow(QWidget *w_parent)
   t1->setSingleShot(true);
 
   QObject::connect(t1,              SIGNAL(timeout()),              this, SLOT(update_curve()));
-  QObject::connect(amplitudeSlider, SIGNAL(valueChanged(int)),      this, SLOT(sliderMoved(int)));
-  QObject::connect(log_minslider,   SIGNAL(valueChanged(int)),      this, SLOT(sliderMoved(int)));
-  QObject::connect(spanSlider,      SIGNAL(valueChanged(int)),      this, SLOT(sliderMoved(int)));
-  QObject::connect(centerSlider,    SIGNAL(valueChanged(int)),      this, SLOT(sliderMoved(int)));
   QObject::connect(sqrtButton,      SIGNAL(toggled(bool)),          this, SLOT(sqrtButtonClicked(bool)));
   QObject::connect(vlogButton,      SIGNAL(toggled(bool)),          this, SLOT(vlogButtonClicked(bool)));
   QObject::connect(colorBarButton,  SIGNAL(toggled(bool)),          this, SLOT(colorBarButtonClicked(bool)));
   QObject::connect(curve1,          SIGNAL(extra_button_clicked()), this, SLOT(print_to_txt()));
   QObject::connect(curve1,          SIGNAL(dashBoardClicked()),     this, SLOT(setdashboard()));
-  QObject::connect(flywheel1,       SIGNAL(dialMoved(int)),         this, SLOT(update_flywheel(int)));
 }
 
 
@@ -279,16 +179,6 @@ void UI_SpectrumDockWindow::setsettings(struct spectrumdocksettings sett)
 void UI_SpectrumDockWindow::getsettings(struct spectrumdocksettings *sett)
 {
   sett->signalnr = signal_nr;
-
-  sett->amp = amplitudeSlider->value();
-
-  sett->log_min_sl = log_minslider->value();
-
-  sett->wheel = flywheel_value;
-
-  sett->span = spanSlider->value();
-
-  sett->center = centerSlider->value();
 
   if(sqrtButton->isChecked() == true)
   {
@@ -330,23 +220,6 @@ void UI_SpectrumDockWindow::getsettings(struct spectrumdocksettings *sett)
   sett->minvalue_sqrt_vlog = minvalue_sqrt_vlog;
 }
 
-
-void UI_SpectrumDockWindow::update_flywheel(int new_value)
-{
-  flywheel_value += new_value;
-
-  if(flywheel_value < 10)
-  {
-    flywheel_value = 10;
-  }
-
-  if(flywheel_value > 100000)
-  {
-    flywheel_value = 100000;
-  }
-
-  sliderMoved(0);
-}
 
 
 void UI_SpectrumDockWindow::setdashboard()
@@ -401,21 +274,21 @@ void UI_SpectrumDockWindow::print_to_txt()
     return;
   }
 
-  sprintf(str, "FFT Power Spectral Density (Power/%fHz)\n", freqstep);
+  sprintf(str, "FFT Power Spectral Density (Power/%fHz)\n", 1.0 / fft->GetHorizontalDensity());
   remove_trailing_zeros(str);
   fprintf(outputfile, "%s", str);
   fprintf(outputfile, "Signal: %s\n", signalcomp->signallabel);
   sprintf(str, "FFT blocksize: %i\n", mainwindow->maxdftblocksize);
-  sprintf(str + strlen(str), "FFT resolution: %f Hz\n", freqstep);
-  sprintf(str + strlen(str), "Data Samples: %i\n", samples);
-  sprintf(str + strlen(str), "Power Samples: %i\n", steps);
+  sprintf(str + strlen(str), "FFT resolution: %f Hz\n", 1.0 / fft->GetHorizontalDensity());
+  sprintf(str + strlen(str), "Data Samples: %i\n", base_samples->GetValues().count());
+  sprintf(str + strlen(str), "Power Samples: %i\n", fft->GetValues().count());
   sprintf(str + strlen(str), "Samplefrequency: %f Hz\n", (double)signalcomp->edfhdr->edfparam[signalcomp->edfsignal[0]].smp_per_record / ((double)signalcomp->edfhdr->long_data_record_duration / TIME_DIMENSION));
   remove_trailing_zeros(str);
   fprintf(outputfile, "%s", str);
 
-  for(i=0; i<steps; i++)
+  for(i=0; i<fft->GetValues().count(); i++)
   {
-    fprintf(outputfile, "%.16f\t%.16f\n", freqstep * i, buf_fft[i]);
+    fprintf(outputfile, "%.16f\t%.16f\n", (1.0 / fft->GetHorizontalDensity()) * i, fft->GetValues()[i]);
   }
 
   fclose (outputfile);
@@ -437,148 +310,69 @@ void UI_SpectrumDockWindow::colorBarButtonClicked(bool value)
 
 void UI_SpectrumDockWindow::sqrtButtonClicked(bool value)
 {
-  char unit[600];
-
   if(value == false)
   {
     mainwindow->spectrumdock_sqrt = 0;
-
-    sprintf(unit, "Power Spectrum %s", signallabel);
-    dock->setWindowTitle(unit);
-
-    if(mainwindow->spectrumdock_vlog)
-    {
-      sprintf(unit, "log10((%s)^2/Hz)", physdimension);
-    }
-    else
-    {
-      sprintf(unit, "(%s)^2/Hz", physdimension);
-    }
-
-    curve1->setVerticalRulerText("Intensity", unit);
   }
   else
   {
     mainwindow->spectrumdock_sqrt = 1;
-
-    sprintf(unit, "Amplitude Spectrum %s", signallabel);
-    dock->setWindowTitle(unit);
-
-    if(mainwindow->spectrumdock_vlog)
-    {
-      sprintf(unit, "log(%s)", physdimension);
-    }
-    else
-    {
-      sprintf(unit, "%s", physdimension);
-    }
-
-    curve1->setVerticalRulerText("Amplitude", unit);
   }
 
-  curve1->clearSignal();
-  sliderMoved(0);
+  changeSignals();
 }
 
 
 void UI_SpectrumDockWindow::vlogButtonClicked(bool value)
 {
-  char unit[600];
-
   if(value == false)
   {
     mainwindow->spectrumdock_vlog = 0;
-
-    if(mainwindow->spectrumdock_sqrt)
-    {
-      sprintf(unit, "%s", physdimension);
-    }
-    else
-    {
-      sprintf(unit, "(%s)^2/Hz", physdimension);
-    }
-
-    curve1->setVerticalRulerText(NULL, unit);
-
-    log_minslider->setVisible(false);
   }
   else
   {
     mainwindow->spectrumdock_vlog = 1;
-
-    if(mainwindow->spectrumdock_sqrt)
-    {
-      sprintf(unit, "log10(%s)", physdimension);
-    }
-    else
-    {
-      sprintf(unit, "log10((%s)^2/Hz)", physdimension);
-    }
-
-    curve1->setVerticalRulerText(NULL, unit);
-
-    log_minslider->setVisible(true);
   }
 
-
-  curve1->clearSignal();
-  sliderMoved(0);
+  changeSignals();
 }
 
 
-void UI_SpectrumDockWindow::sliderMoved(int)
+void UI_SpectrumDockWindow::changeSignals()
 {
-  int startstep,
-      stopstep,
-      spanstep;
-
-  spanstep = spanSlider->value() * steps / 1000;
-
-  startstep = centerSlider->value() * (steps - spanstep) / 1000;
-
-  stopstep = startstep + spanstep;
-
-  if(sqrtButton->checkState() == Qt::Checked)
-  {
-    mainwindow->spectrumdock_sqrt = 1;
-
-    if(vlogButton->checkState() == Qt::Checked)
-    {
-      mainwindow->spectrumdock_vlog = 1;
-
-      curve1->drawCurve(buf_fft_sqrt_vlog, startstep, stopstep - startstep, (maxvalue_sqrt_vlog * 1.05 * (((double)flywheel_value / 1000.0) * (double)amplitudeSlider->value())) / 1000.0, minvalue_sqrt_vlog * (double)log_minslider->value() / 1000.0);
-    }
-    else
-    {
-      mainwindow->spectrumdock_vlog = 0;
-
-      curve1->drawCurve(buf_fft_sqrt, startstep, stopstep - startstep, (maxvalue_sqrt * 1.05 * (((double)flywheel_value / 1000.0) * (double)amplitudeSlider->value())) / 1000.0, 0.0);
-    }
-  }
-  else
+  if ((sqrtButton->checkState() != Qt::Checked) && (vlogButton->checkState() != Qt::Checked))
   {
     mainwindow->spectrumdock_sqrt = 0;
+    mainwindow->spectrumdock_vlog = 0;
 
-    if(vlogButton->checkState() == Qt::Checked)
-    {
-      mainwindow->spectrumdock_vlog = 1;
+    curve1->addSignal(fft);
+  }
+  else if ((sqrtButton->checkState() == Qt::Checked) && (vlogButton->checkState() != Qt::Checked))
+  {
+    mainwindow->spectrumdock_sqrt = 1;
+    mainwindow->spectrumdock_vlog = 0;
 
-      curve1->drawCurve(buf_fft_vlog, startstep, stopstep - startstep, (maxvalue_vlog * 1.05 * (((double)flywheel_value / 1000.0) * (double)amplitudeSlider->value())) / 1000.0, minvalue_vlog * (double)log_minslider->value() / 1000.0);
-    }
-    else
-    {
-      mainwindow->spectrumdock_vlog = 0;
+    curve1->addSignal(fft_sqrt);
+  }
+  else if ((sqrtButton->checkState() != Qt::Checked) && (vlogButton->checkState() == Qt::Checked))
+  {
+    mainwindow->spectrumdock_sqrt = 0;
+    mainwindow->spectrumdock_vlog = 1;
 
-      curve1->drawCurve(buf_fft, startstep, stopstep - startstep, (maxvalue * 1.05 * (((double)flywheel_value / 1000.0) * (double)amplitudeSlider->value())) / 1000.0, 0.0);
-    }
+    curve1->addSignal(fft_vlog);
+  }
+  else if ((sqrtButton->checkState() == Qt::Checked) && (vlogButton->checkState() == Qt::Checked))
+  {
+    mainwindow->spectrumdock_sqrt = 1;
+    mainwindow->spectrumdock_vlog = 1;
+
+    curve1->addSignal(fft_sqrt_vlog);
   }
 }
 
 
 void UI_SpectrumDockWindow::init(int signal_num)
 {
-  char unit[600];
-
   init_maxvalue = 1;
 
 
@@ -594,53 +388,21 @@ void UI_SpectrumDockWindow::init(int signal_num)
 
     signalcomp = mainwindow->signalcomp[signal_num];
 
+    QString base_unit = signalcomp->physdimension;
+    QString signal_name = signalcomp->signallabel;
+    QString signal_alias = signalcomp->alias;
+
+    base_samples = new Signal("ADC", signal_name, signal_alias, QVector<double>(), "Time", "seconds", (double)signalcomp->edfhdr->edfparam[signalcomp->edfsignal[0]].smp_per_record / ((double)signalcomp->edfhdr->long_data_record_duration / TIME_DIMENSION), "Voltage", base_unit, 1.0);
+    base_samples->SetColor(QColor(signalcomp->color));
+
+    fft = new Signal("FFT", signal_name + "-FFT", signal_alias + "-FFT", QVector<double>(), "Frequency", "Hz", 1.0, "Amplitude", base_unit, 1.0);
+    fft_vlog = new Signal("FFT-VLOG", signal_name + "-FFT-VLOG", signal_alias + "-FFT-VLOG", QVector<double>(), "Frequency", "Hz", 1.0, "Amplitude", "log10("+base_unit+")", 1.0);
+    fft_sqrt = new Signal("FFT-SQRT", signal_name + "-FFT-SQRT", signal_alias + "-FFT-SQRT", QVector<double>(), "Frequency", "Hz", 1.0, "Intensity", "("+base_unit+")^2/Hz", 1.0);
+    fft_sqrt_vlog = new Signal("FFT-SQRT-VLOG", signal_name + "-FFT-SQRT-VLOG", signal_alias + "-FFT-SQRT-VLOG", QVector<double>(), "Frequency", "Hz", 1.0, "Intensity", "log(("+base_unit+")^2/Hz)", 1.0);
+
     viewbuf = mainwindow->viewbuf;
 
-    strcpy(signallabel, signalcomp->signallabel);
-
-    strcpy(physdimension, signalcomp->physdimension);
-
-    if(mainwindow->spectrumdock_sqrt)
-    {
-      sqrtButton->setChecked(true);
-
-      if(mainwindow->spectrumdock_vlog)
-      {
-        vlogButton->setChecked(true);
-
-        snprintf(unit, 512, "log10(%s)", physdimension);
-        curve1->setVerticalRulerText(NULL, unit);
-      }
-      else
-      {
-        vlogButton->setChecked(false);
-
-        curve1->setVerticalRulerText("Amplitude", physdimension);
-      }
-    }
-    else
-    {
-      sqrtButton->setChecked(false);
-
-      if(mainwindow->spectrumdock_vlog)
-      {
-        vlogButton->setChecked(true);
-
-        snprintf(unit, 512, "log((%s)^2/Hz)", physdimension);
-      }
-      else
-      {
-        vlogButton->setChecked(false);
-
-        snprintf(unit, 512, "(%s)^2/Hz", physdimension);
-      }
-
-      curve1->setVerticalRulerText("Intensity", unit);
-    }
-
-//    amplitudeSlider->setValue(1000);
-
-//    log_minslider->setValue(1000);
+    changeSignals();
 
     dock->show();
 
@@ -665,35 +427,6 @@ void UI_SpectrumDockWindow::clear()
 
   viewbuf = NULL;
 
-  if(buf_samples != NULL)
-  {
-    free(buf_samples);
-    buf_samples = NULL;
-  }
-
-  if(buf_fft != NULL)
-  {
-    free(buf_fft);
-    buf_fft = NULL;
-  }
-
-  if(buf_fft_sqrt != NULL)
-  {
-    free(buf_fft_sqrt);
-    buf_fft_sqrt = NULL;
-  }
-
-  if(buf_fft_vlog != NULL)
-  {
-    free(buf_fft_vlog);
-    buf_fft_vlog = NULL;
-  }
-
-  if(buf_fft_sqrt_vlog != NULL)
-  {
-    free(buf_fft_sqrt_vlog);
-    buf_fft_sqrt_vlog = NULL;
-  }
 
   if(spectrum_color != NULL)
   {
@@ -711,26 +444,13 @@ void UI_SpectrumDockWindow::clear()
 
 void UI_SpectrumDockWindow::update_curve()
 {
-  int i, j, k, n,
+  int i, j, n,
       dftblocksize,
       dftblocks,
-      samplesleft,
       fft_outputbufsize;
-
-  long long s, s2;
 
   char str[512];
 
-  double dig_value=0.0,
-         f_tmp=0.0;
-
-  union {
-          unsigned int one;
-          signed int one_signed;
-          unsigned short two[2];
-          signed short two_signed[2];
-          unsigned char four[4];
-        } var;
 
   if(signalcomp == NULL)
   {
@@ -753,16 +473,17 @@ void UI_SpectrumDockWindow::update_curve()
 
   curve1->setUpdatesEnabled(false);
 
-  samples = signalcomp->samples_on_screen;
+  {
+  long long buf_samples_count = signalcomp->samples_on_screen;
 
   if(signalcomp->samples_on_screen > signalcomp->sample_stop)
   {
-    samples = signalcomp->sample_stop;
+    buf_samples_count = signalcomp->sample_stop;
   }
 
-  samples -= signalcomp->sample_start;
+  buf_samples_count -= signalcomp->sample_start;
 
-  if((samples < 10) || (viewbuf == NULL))
+  if((buf_samples_count < 10) || (viewbuf == NULL))
   {
     curve1->setUpdatesEnabled(true);
 
@@ -780,128 +501,12 @@ void UI_SpectrumDockWindow::update_curve()
 
     return;
   }
-
-  if(buf_samples != NULL)
-  {
-    free(buf_samples);
-  }
-  buf_samples = (double *)malloc(sizeof(double) * signalcomp->samples_on_screen);
-  if(buf_samples == NULL)
-  {
-    QMessageBox messagewindow(QMessageBox::Critical, "Error", "The system was not able to provide enough resources (memory) to perform the requested action.\n"
-                                  "Decrease the timescale and try again.");
-    messagewindow.exec();
-    return;
   }
 
-  samples = 0;
 
-  for(s=signalcomp->sample_start; s<signalcomp->samples_on_screen; s++)
-  {
-    if(s>signalcomp->sample_stop)  break;
+  // ---------- get the FFT input data from the original samples
+  QVector<double> buffer_of_samples = getFFTInputData(signalcomp);
 
-    dig_value = 0.0;
-    s2 = s + signalcomp->sample_timeoffset - signalcomp->sample_start;
-
-    for(j=0; j<signalcomp->num_of_signals; j++)
-    {
-      if(signalcomp->edfhdr->bdf)
-      {
-        var.two[0] = *((unsigned short *)(
-          viewbuf
-          + signalcomp->viewbufoffset
-          + (signalcomp->edfhdr->recordsize * (s2 / signalcomp->edfhdr->edfparam[signalcomp->edfsignal[j]].smp_per_record))
-          + signalcomp->edfhdr->edfparam[signalcomp->edfsignal[j]].buf_offset
-          + ((s2 % signalcomp->edfhdr->edfparam[signalcomp->edfsignal[j]].smp_per_record) * 3)));
-
-        var.four[2] = *((unsigned char *)(
-          viewbuf
-          + signalcomp->viewbufoffset
-          + (signalcomp->edfhdr->recordsize * (s2 / signalcomp->edfhdr->edfparam[signalcomp->edfsignal[j]].smp_per_record))
-          + signalcomp->edfhdr->edfparam[signalcomp->edfsignal[j]].buf_offset
-          + ((s2 % signalcomp->edfhdr->edfparam[signalcomp->edfsignal[j]].smp_per_record) * 3)
-          + 2));
-
-        if(var.four[2]&0x80)
-        {
-          var.four[3] = 0xff;
-        }
-        else
-        {
-          var.four[3] = 0x00;
-        }
-
-        f_tmp = var.one_signed;
-      }
-
-      if(signalcomp->edfhdr->edf)
-      {
-        f_tmp = *(((short *)(
-          viewbuf
-          + signalcomp->viewbufoffset
-          + (signalcomp->edfhdr->recordsize * (s2 / signalcomp->edfhdr->edfparam[signalcomp->edfsignal[j]].smp_per_record))
-          + signalcomp->edfhdr->edfparam[signalcomp->edfsignal[j]].buf_offset))
-          + (s2 % signalcomp->edfhdr->edfparam[signalcomp->edfsignal[j]].smp_per_record));
-      }
-
-      f_tmp += signalcomp->edfhdr->edfparam[signalcomp->edfsignal[j]].offset;
-      f_tmp *= signalcomp->factor[j];
-
-      dig_value += f_tmp;
-    }
-
-    if(signalcomp->spike_filter)
-    {
-      if(s==signalcomp->sample_start)
-      {
-        spike_filter_restore_buf(signalcomp->spike_filter);
-      }
-
-      dig_value = run_spike_filter(dig_value, signalcomp->spike_filter);
-    }
-
-    for(k=0; k<signalcomp->filter_cnt; k++)
-    {
-      dig_value = first_order_filter(dig_value, signalcomp->filter[k]);
-    }
-
-    for(k=0; k<signalcomp->ravg_filter_cnt; k++)
-    {
-      if(s==signalcomp->sample_start)
-      {
-        ravg_filter_restore_buf(signalcomp->ravg_filter[k]);
-      }
-
-      dig_value = run_ravg_filter(dig_value, signalcomp->ravg_filter[k]);
-    }
-
-    for(k=0; k<signalcomp->fidfilter_cnt; k++)
-    {
-      if(s==signalcomp->sample_start)
-      {
-        memcpy(signalcomp->fidbuf[k], signalcomp->fidbuf2[k], fid_run_bufsize(signalcomp->fid_run[k]));
-      }
-
-      dig_value = signalcomp->fidfuncp[k](signalcomp->fidbuf[k], dig_value);
-    }
-
-    if(signalcomp->ecg_filter != NULL)
-    {
-      if(s==signalcomp->sample_start)
-      {
-        ecg_filter_restore_buf(signalcomp->ecg_filter);
-      }
-
-      dig_value = run_ecg_filter(dig_value, signalcomp->ecg_filter);
-    }
-
-    if(s>=signalcomp->sample_start)
-    {
-      buf_samples[samples++] = dig_value * signalcomp->edfhdr->edfparam[signalcomp->edfsignal[0]].bitvalue;
-    }
-  }
-
-  samplefreq = (double)signalcomp->edfhdr->edfparam[signalcomp->edfsignal[0]].smp_per_record / ((double)signalcomp->edfhdr->long_data_record_duration / TIME_DIMENSION);
 
   dftblocksize = mainwindow->maxdftblocksize;
 
@@ -912,13 +517,13 @@ void UI_SpectrumDockWindow::update_curve()
 
   dftblocks = 1;
 
-  if(dftblocksize < samples)
+  if(dftblocksize < buffer_of_samples.count())
   {
-    dftblocks = samples / dftblocksize;
+    dftblocks = buffer_of_samples.count() / dftblocksize;
   }
   else
   {
-    dftblocksize = samples;
+    dftblocksize = buffer_of_samples.count();
   }
 
   if(dftblocksize & 1)
@@ -926,91 +531,11 @@ void UI_SpectrumDockWindow::update_curve()
     dftblocksize--;
   }
 
-  samplesleft = samples % dftblocksize;
-
-  if(samplesleft & 1)
-  {
-    samplesleft--;
-  }
-
-  freqstep = samplefreq / (double)dftblocksize;
+  double samplefreq = (double)signalcomp->edfhdr->edfparam[signalcomp->edfsignal[0]].smp_per_record / ((double)signalcomp->edfhdr->long_data_record_duration / TIME_DIMENSION);
+  double freqstep = samplefreq / (double)dftblocksize;
 
   fft_outputbufsize = dftblocksize / 2;
 
-  if (steps != fft_outputbufsize)
-  {
-    steps = fft_outputbufsize;
-    curve1->clearSignal();
-  }
-
-  // allocate memory for the FFT buffers
-  if(buf_fft != NULL)
-  {
-    free(buf_fft);
-  }
-  buf_fft = (double *)calloc(1, sizeof(double) * fft_outputbufsize);
-  if(buf_fft == NULL)
-  {
-    QMessageBox messagewindow(QMessageBox::Critical, "Error", "The system was not able to provide enough resources (memory) to perform the requested action.");
-    messagewindow.exec();
-    free(buf_samples);
-    buf_samples = NULL;
-    return;
-  }
-
-  if(buf_fft_sqrt != NULL)
-  {
-    free(buf_fft_sqrt);
-  }
-  buf_fft_sqrt = (double *)malloc(sizeof(double) * fft_outputbufsize);
-  if(buf_fft_sqrt == NULL)
-  {
-    QMessageBox messagewindow(QMessageBox::Critical, "Error", "The system was not able to provide enough resources (memory) to perform the requested action.");
-    messagewindow.exec();
-    free(buf_samples);
-    free(buf_fft);
-    buf_samples = NULL;
-    buf_fft = NULL;
-    return;
-  }
-
-  if(buf_fft_vlog != NULL)
-  {
-    free(buf_fft_vlog);
-  }
-  buf_fft_vlog = (double *)malloc(sizeof(double) * fft_outputbufsize);
-  if(buf_fft_vlog == NULL)
-  {
-    QMessageBox messagewindow(QMessageBox::Critical, "Error", "The system was not able to provide enough resources (memory) to perform the requested action.");
-    messagewindow.exec();
-    free(buf_samples);
-    free(buf_fft);
-    free(buf_fft_sqrt);
-    buf_samples = NULL;
-    buf_fft = NULL;
-    buf_fft_sqrt = NULL;
-    return;
-  }
-
-  if(buf_fft_sqrt_vlog != NULL)
-  {
-    free(buf_fft_sqrt_vlog);
-  }
-  buf_fft_sqrt_vlog = (double *)malloc(sizeof(double) * fft_outputbufsize);
-  if(buf_fft_sqrt_vlog == NULL)
-  {
-    QMessageBox messagewindow(QMessageBox::Critical, "Error", "The system was not able to provide enough resources (memory) to perform the requested action.");
-    messagewindow.exec();
-    free(buf_samples);
-    free(buf_fft);
-    free(buf_fft_sqrt);
-    free(buf_fft_vlog);
-    buf_samples = NULL;
-    buf_fft = NULL;
-    buf_fft_sqrt = NULL;
-    buf_fft_vlog = NULL;
-    return;
-  }
 
   // set up the limits
   if(init_maxvalue && !set_settings)
@@ -1033,134 +558,85 @@ void UI_SpectrumDockWindow::update_curve()
     minvalue_sqrt_vlog = settings.minvalue_sqrt_vlog;
   }
 
-
-  // calculate FFT
-  kiss_fftr_cfg cfg;
-
-  kiss_fft_cpx *kiss_fftbuf;
-
-  kiss_fftbuf = (kiss_fft_cpx *)malloc((fft_outputbufsize + 1) * sizeof(kiss_fft_cpx));
-  if(kiss_fftbuf == NULL)
-  {
-    QMessageBox messagewindow(QMessageBox::Critical, "Error", "The system was not able to provide enough resources (memory) to perform the requested action.");
-    messagewindow.exec();
-    free(buf_samples);
-    free(buf_fft);
-    free(buf_fft_sqrt);
-    free(buf_fft_vlog);
-    free(buf_fft_sqrt_vlog);
-    buf_samples = NULL;
-    buf_fft = NULL;
-    buf_fft_sqrt = NULL;
-    buf_fft_vlog = NULL;
-    buf_fft_sqrt_vlog = NULL;
-    return;
-  }
-
-  cfg = kiss_fftr_alloc(dftblocksize, 0, NULL, NULL);
-
-  for(j=0; j<dftblocks; j++)
-  {
-    kiss_fftr(cfg, buf_samples + (j * dftblocksize), kiss_fftbuf);
-
-    for(i=0; i<fft_outputbufsize; i++)
-    {
-      buf_fft[i] += (((kiss_fftbuf[i].r * kiss_fftbuf[i].r) + (kiss_fftbuf[i].i * kiss_fftbuf[i].i)) / fft_outputbufsize);
-    }
-  }
-
-  if(samplesleft)
-  {
-    kiss_fftr(cfg, buf_samples + (((j-1) * dftblocksize) + samplesleft), kiss_fftbuf);
-
-    for(i=0; i<fft_outputbufsize; i++)
-    {
-      buf_fft[i] += (((kiss_fftbuf[i].r * kiss_fftbuf[i].r) + (kiss_fftbuf[i].i * kiss_fftbuf[i].i)) / fft_outputbufsize);
-
-      buf_fft[i] /= (dftblocks + 1);
-    }
-  }
-  else
-  {
-    for(i=0; i<fft_outputbufsize; i++)
-    {
-      buf_fft[i] /= dftblocks;
-    }
-  }
+  // ---------- FFT CALCULATION
+  QVector<double> fft_values = calculateFFT(buffer_of_samples, fft_outputbufsize, dftblocksize, &dftblocks);
+  QVector<double> fft_sqrt_values = QVector<double>(fft_values.count());
+  QVector<double> fft_vlog_values = QVector<double>(fft_values.count());
+  QVector<double> fft_sqrt_vlog_values = QVector<double>(fft_values.count());
 
   if(signalcomp->ecg_filter == NULL)
   {
-    buf_fft[0] /= 2.0;  // DC!
+    fft_values[0] /= 2.0;  // DC!
   }
   else
   {
-    buf_fft[0] = 0.0;  // Remove DC because heart rate is always a positive value
+    fft_values[0] = 0.0;  // Remove DC because heart rate is always a positive value
   }
 
-  free(cfg);
 
-  free(kiss_fftbuf);
-
-  for(i=0; i<fft_outputbufsize; i++)
+  for(i=0; i<fft_values.count(); i++)
   {
-    buf_fft[i] /= samplefreq;
+      fft_values[i] /= samplefreq;
 
-    buf_fft_sqrt[i] = sqrt(buf_fft[i] * freqstep);
+      double fft_value = fft_values[i];
+      double fft_sqrt_value = sqrt(fft_value * freqstep);
+      fft_sqrt_values[i] = fft_sqrt_value;
 
-    if(buf_fft[i] <= SPECT_LOG_MINIMUM)
-    {
-      buf_fft_vlog[i] = log10(SPECT_LOG_MINIMUM);
-    }
-    else
-    {
-      buf_fft_vlog[i] = log10(buf_fft[i]);
-    }
+      fft_vlog_values[i] = (fft_value > SPECT_LOG_MINIMUM ? log10(fft_value) : log10(SPECT_LOG_MINIMUM));
 
-    if(buf_fft_sqrt[i] <= SPECT_LOG_MINIMUM)
-    {
-      buf_fft_sqrt_vlog[i] = log10(SPECT_LOG_MINIMUM);
-    }
-    else
-    {
-      buf_fft_sqrt_vlog[i] = log10(buf_fft_sqrt[i]);
-    }
+      fft_sqrt_vlog_values[i] = (fft_sqrt_value > SPECT_LOG_MINIMUM ? log10(fft_sqrt_value) : log10(SPECT_LOG_MINIMUM));
+
+
 
     if(init_maxvalue && !set_settings)
     {
       if(i)  // don't use the dc-bin for the autogain of the screen
       {
-        if(buf_fft[i] > maxvalue)
+        if(fft_values[i] > maxvalue)
         {
-          maxvalue = buf_fft[i];
+          maxvalue = fft_values[i];
         }
 
-        if(buf_fft_sqrt[i] > maxvalue_sqrt)
+        if(fft_sqrt_values[i] > maxvalue_sqrt)
         {
-          maxvalue_sqrt = buf_fft_sqrt[i];
+          maxvalue_sqrt = fft_sqrt_values[i];
         }
 
-        if(buf_fft_vlog[i] > maxvalue_vlog)
+        if(fft_vlog_values[i] > maxvalue_vlog)
         {
-          maxvalue_vlog = buf_fft_vlog[i];
+          maxvalue_vlog = fft_vlog_values[i];
         }
 
-        if(buf_fft_sqrt_vlog[i] > maxvalue_sqrt_vlog)
+        if(fft_sqrt_vlog_values[i] > maxvalue_sqrt_vlog)
         {
-          maxvalue_sqrt_vlog = buf_fft_sqrt_vlog[i];
+          maxvalue_sqrt_vlog = fft_sqrt_vlog_values[i];
         }
 
-        if((buf_fft_vlog[i] < minvalue_vlog) && (buf_fft_vlog[i] >= SPECT_LOG_MINIMUM_LOG))
+        if((fft_vlog_values[i] < minvalue_vlog) && (fft_vlog_values[i] >= SPECT_LOG_MINIMUM_LOG))
         {
-          minvalue_vlog = buf_fft_vlog[i];
+          minvalue_vlog = fft_vlog_values[i];
         }
 
-        if((buf_fft_sqrt_vlog[i] < minvalue_sqrt_vlog) && (buf_fft_sqrt_vlog[i] >= SPECT_LOG_MINIMUM_LOG))
+        if((fft_sqrt_vlog_values[i] < minvalue_sqrt_vlog) && (fft_sqrt_vlog_values[i] >= SPECT_LOG_MINIMUM_LOG))
         {
-          minvalue_sqrt_vlog = buf_fft_sqrt_vlog[i];
+          minvalue_sqrt_vlog = fft_sqrt_vlog_values[i];
         }
       }
     }
   }
+
+  fft->SetHorizontalDensity(1.0/freqstep);
+  fft->SetValues(fft_values);
+
+  fft_sqrt->SetHorizontalDensity(1.0/freqstep);
+  fft_sqrt->SetValues(fft_sqrt_values);
+
+  fft_vlog->SetHorizontalDensity(1.0/freqstep);
+  fft_vlog->SetValues(fft_vlog_values);
+
+  fft_sqrt_vlog->SetHorizontalDensity(1.0/freqstep);
+  fft_sqrt_vlog->SetValues(fft_sqrt_vlog_values);
+
 
   if(init_maxvalue)
   {
@@ -1171,25 +647,11 @@ void UI_SpectrumDockWindow::update_curve()
       minvalue_sqrt_vlog = SPECT_LOG_MINIMUM_LOG;
   }
 
-  if(samplesleft)
-  {
-    dftblocks++;
-  }
-
-  if(buf_samples != NULL)
-  {
-    free(buf_samples);
-
-    buf_samples = NULL;
-  }
-
   sprintf(str, "FFT resolution: %f Hz   %i blocks of %i samples", freqstep, dftblocks, dftblocksize);
 
   remove_trailing_zeros(str);
 
   curve1->setHeaderText(str);
-
-  curve1->setSubheaderText(signallabel);
 
   if(spectrum_color != NULL)
   {
@@ -1199,26 +661,26 @@ void UI_SpectrumDockWindow::update_curve()
 
       n = 0;
 
-      for(j=0; j<steps; j++)
+      for(j=0; j<fft_values.count(); j++)
       {
         if(((freqstep * j) + (freqstep * 0.5)) < spectrum_color->freq[0])
         {
           if(spectrum_color->method == 0)  // sum
           {
-            spectrum_color->value[0] += buf_fft[j];
+            spectrum_color->value[0] += fft_values[j];
           }
 
           if(spectrum_color->method == 1)  // peak
           {
-            if(spectrum_color->value[0] < buf_fft[j])
+            if(spectrum_color->value[0] < fft_values[j])
             {
-              spectrum_color->value[0] = buf_fft[j];
+              spectrum_color->value[0] = fft_values[j];
             }
           }
 
           if(spectrum_color->method == 2)  // average
           {
-            spectrum_color->value[0] += buf_fft[j];
+            spectrum_color->value[0] += fft_values[j];
 
             n++;
           }
@@ -1240,26 +702,26 @@ void UI_SpectrumDockWindow::update_curve()
 
       n = 0;
 
-      for(j=0; j<steps; j++)
+      for(j=0; j<fft_values.count(); j++)
       {
         if((((freqstep * j) + (freqstep * 0.5)) > spectrum_color->freq[i-1]) && (((freqstep * j) + (freqstep * 0.5)) < spectrum_color->freq[i]))
         {
           if(spectrum_color->method == 0)  // sum
           {
-            spectrum_color->value[i] += buf_fft[j];
+            spectrum_color->value[i] += fft_values[j];
           }
 
           if(spectrum_color->method == 1)  // peak
           {
-            if(spectrum_color->value[i] < buf_fft[j])
+            if(spectrum_color->value[i] < fft_values[j])
             {
-              spectrum_color->value[i] = buf_fft[j];
+              spectrum_color->value[i] = fft_values[j];
             }
           }
 
           if(spectrum_color->method == 2)  // average
           {
-            spectrum_color->value[i] += buf_fft[j];
+            spectrum_color->value[i] += fft_values[j];
 
             n++;
           }
@@ -1278,38 +740,17 @@ void UI_SpectrumDockWindow::update_curve()
 
   if(mainwindow->spectrumdock_sqrt)
   {
-    snprintf(str, 512, "Amplitude Spectrum %s", signallabel);
+    dock->setWindowTitle("Amplitude Spectrum of " + base_samples->GetAlias());
   }
   else
   {
-    snprintf(str, 512, "Power Spectrum %s", signallabel);
+    dock->setWindowTitle("Power Spectrum of " + base_samples->GetAlias());
   }
 
-  dock->setWindowTitle(str);
 
   if(set_settings)
   {
     set_settings = 0;
-
-    if((settings.amp >= 1) && (settings.amp <= 2000))
-    {
-      amplitudeSlider->setValue(settings.amp);
-    }
-
-    if((settings.log_min_sl >= 1) && (settings.log_min_sl <= 2000))
-    {
-      log_minslider->setValue(settings.log_min_sl);
-    }
-
-    if((settings.span >= 10) && (settings.span <= 1000))
-    {
-      spanSlider->setValue(settings.span);
-    }
-
-    if((settings.center >= 0) && (settings.center <= 1000))
-    {
-      centerSlider->setValue(settings.center);
-    }
 
     if(settings.sqrt > 0)
     {
@@ -1323,14 +764,10 @@ void UI_SpectrumDockWindow::update_curve()
     if(settings.log > 0)
     {
       vlogButton->setChecked(true);
-
-      log_minslider->setVisible(true);
     }
     else
     {
       vlogButton->setChecked(false);
-
-      log_minslider->setVisible(false);
     }
 
     if(settings.colorbar > 0)
@@ -1348,8 +785,6 @@ void UI_SpectrumDockWindow::update_curve()
     }
   }
 
-  sliderMoved(0);
-
   curve1->setUpdatesEnabled(true);
 
   busy = 0;
@@ -1357,29 +792,194 @@ void UI_SpectrumDockWindow::update_curve()
   init_maxvalue = 0;
 }
 
+QVector<double> UI_SpectrumDockWindow::getFFTInputData(signalcompblock *signalcomp)
+{
+    union {
+            unsigned int one;
+            signed int one_signed;
+            unsigned short two[2];
+            signed short two_signed[2];
+            unsigned char four[4];
+          } var;
 
+
+    QVector<double> result = QVector<double>();
+
+    for(long long s=signalcomp->sample_start; s<signalcomp->samples_on_screen; s++)
+    {
+      if(s>signalcomp->sample_stop)  break;
+
+      double dig_value = 0.0;
+      long long s2 = s + signalcomp->sample_timeoffset - signalcomp->sample_start;
+
+
+      double f_tmp = 0.0;
+
+      for(int j=0; j<signalcomp->num_of_signals; j++)
+      {
+        if(signalcomp->edfhdr->bdf)
+        {
+          var.two[0] = *((unsigned short *)(
+            viewbuf
+            + signalcomp->viewbufoffset
+            + (signalcomp->edfhdr->recordsize * (s2 / signalcomp->edfhdr->edfparam[signalcomp->edfsignal[j]].smp_per_record))
+            + signalcomp->edfhdr->edfparam[signalcomp->edfsignal[j]].buf_offset
+            + ((s2 % signalcomp->edfhdr->edfparam[signalcomp->edfsignal[j]].smp_per_record) * 3)));
+
+          var.four[2] = *((unsigned char *)(
+            viewbuf
+            + signalcomp->viewbufoffset
+            + (signalcomp->edfhdr->recordsize * (s2 / signalcomp->edfhdr->edfparam[signalcomp->edfsignal[j]].smp_per_record))
+            + signalcomp->edfhdr->edfparam[signalcomp->edfsignal[j]].buf_offset
+            + ((s2 % signalcomp->edfhdr->edfparam[signalcomp->edfsignal[j]].smp_per_record) * 3)
+            + 2));
+
+          if(var.four[2]&0x80)
+          {
+            var.four[3] = 0xff;
+          }
+          else
+          {
+            var.four[3] = 0x00;
+          }
+
+          f_tmp = var.one_signed;
+        }
+
+        if(signalcomp->edfhdr->edf)
+        {
+          f_tmp = *(((short *)(
+            viewbuf
+            + signalcomp->viewbufoffset
+            + (signalcomp->edfhdr->recordsize * (s2 / signalcomp->edfhdr->edfparam[signalcomp->edfsignal[j]].smp_per_record))
+            + signalcomp->edfhdr->edfparam[signalcomp->edfsignal[j]].buf_offset))
+            + (s2 % signalcomp->edfhdr->edfparam[signalcomp->edfsignal[j]].smp_per_record));
+        }
+
+        f_tmp += signalcomp->edfhdr->edfparam[signalcomp->edfsignal[j]].offset;
+        f_tmp *= signalcomp->factor[j];
+
+        dig_value += f_tmp;
+      }
+
+      // apply the filters
+      if(signalcomp->spike_filter)
+      {
+        if(s==signalcomp->sample_start)
+        {
+          spike_filter_restore_buf(signalcomp->spike_filter);
+        }
+
+        dig_value = run_spike_filter(dig_value, signalcomp->spike_filter);
+      }
+
+      for(int k=0; k<signalcomp->filter_cnt; k++)
+      {
+        dig_value = first_order_filter(dig_value, signalcomp->filter[k]);
+      }
+
+      for(int k=0; k<signalcomp->ravg_filter_cnt; k++)
+      {
+        if(s==signalcomp->sample_start)
+        {
+          ravg_filter_restore_buf(signalcomp->ravg_filter[k]);
+        }
+
+        dig_value = run_ravg_filter(dig_value, signalcomp->ravg_filter[k]);
+      }
+
+      for(int k=0; k<signalcomp->fidfilter_cnt; k++)
+      {
+        if(s==signalcomp->sample_start)
+        {
+          memcpy(signalcomp->fidbuf[k], signalcomp->fidbuf2[k], fid_run_bufsize(signalcomp->fid_run[k]));
+        }
+
+        dig_value = signalcomp->fidfuncp[k](signalcomp->fidbuf[k], dig_value);
+      }
+
+      if(signalcomp->ecg_filter != NULL)
+      {
+        if(s==signalcomp->sample_start)
+        {
+          ecg_filter_restore_buf(signalcomp->ecg_filter);
+        }
+
+        dig_value = run_ecg_filter(dig_value, signalcomp->ecg_filter);
+      }
+
+      result.append(dig_value * signalcomp->edfhdr->edfparam[signalcomp->edfsignal[0]].bitvalue);
+    }
+
+    return result;
+}
+
+QVector<double> UI_SpectrumDockWindow::calculateFFT(QVector<double> buf_samples, int fft_outputbufsize, int dftblocksize, int *dftblocks)
+{
+    kiss_fftr_cfg cfg;
+    kiss_fft_cpx *kiss_fftbuf;
+    QVector<double> result = QVector<double>(fft_outputbufsize);
+
+
+    kiss_fftbuf = (kiss_fft_cpx *)malloc((fft_outputbufsize + 1) * sizeof(kiss_fft_cpx));
+    if(kiss_fftbuf == NULL)
+    {
+      throw ("Error", "The system was not able to provide enough resources (memory) to perform the requested action.");
+    }
+
+    cfg = kiss_fftr_alloc(dftblocksize, 0, NULL, NULL);
+
+
+    for(int j=0; j<(*dftblocks); j++)
+    {
+      kiss_fftr(cfg, buf_samples.data() + (j * dftblocksize), kiss_fftbuf);
+
+      for(int i=0; i<fft_outputbufsize; i++)
+      {
+        result[i] += (((kiss_fftbuf[i].r * kiss_fftbuf[i].r) + (kiss_fftbuf[i].i * kiss_fftbuf[i].i)) / fft_outputbufsize);
+      }
+    }
+
+    int samplesleft = buf_samples.count() % dftblocksize;
+    if(samplesleft & 1)
+    {
+      samplesleft--;
+    }
+
+    if(samplesleft)
+    {
+        // we need an extra FFT block to process all samples
+      kiss_fftr(cfg, buf_samples.data() + ((((*dftblocks)-1) * dftblocksize) + samplesleft), kiss_fftbuf);
+
+      for(int i=0; i<fft_outputbufsize; i++)
+      {
+        result[i] += (((kiss_fftbuf[i].r * kiss_fftbuf[i].r) + (kiss_fftbuf[i].i * kiss_fftbuf[i].i)) / fft_outputbufsize);
+
+        result[i] /= ((*dftblocks) + 1);
+      }
+    }
+    else
+    {
+      for(int i=0; i<fft_outputbufsize; i++)
+      {
+        result[i] /= (*dftblocks);
+      }
+    }
+
+    if(samplesleft)
+    {
+      (*dftblocks)++;
+    }
+
+
+    free(cfg);
+    free(kiss_fftbuf);
+
+
+    return result;
+}
 
 UI_SpectrumDockWindow::~UI_SpectrumDockWindow()
 {
-  if(buf_fft != NULL)
-  {
-    free(buf_fft);
-  }
-
-  if(buf_fft_sqrt != NULL)
-  {
-    free(buf_fft_sqrt);
-  }
-
-  if(buf_fft_vlog != NULL)
-  {
-    free(buf_fft_vlog);
-  }
-
-  if(buf_fft_sqrt_vlog != NULL)
-  {
-    free(buf_fft_sqrt_vlog);
-  }
-
   delete SpectrumDialog;
 }

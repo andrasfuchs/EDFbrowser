@@ -59,6 +59,8 @@
 #include "utils.h"
 #include "spectrum_dock.h"
 
+#include "models/signalcompblock.h"
+
 #include "third_party/fidlib/fidlib.h"
 
 

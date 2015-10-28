@@ -50,6 +50,8 @@
 #include "filter.h"
 #include "utc_date_time.h"
 
+#include "models/signalcompblock.h"
+
 #include "third_party/fidlib/fidlib.h"
 
 

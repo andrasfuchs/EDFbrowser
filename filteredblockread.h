@@ -43,6 +43,8 @@
 #include "spike_filter.h"
 #include "ravg_filter.h"
 
+#include "models/signalcompblock.h"
+
 #include "third_party/fidlib/fidlib.h"
 
 

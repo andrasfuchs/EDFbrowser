@@ -73,6 +73,8 @@
 #include "z_score_dialog.h"
 #include "z_ratio_filter.h"
 
+#include "models/signalcompblock.h"
+
 #include "third_party/fidlib/fidlib.h"
 
 

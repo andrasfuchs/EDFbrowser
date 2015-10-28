@@ -61,8 +61,10 @@
 #include "ravg_filter.h"
 #include "flywheel.h"
 
-#include "third_party/fidlib/fidlib.h"
+#include "models/signal.h"
+#include "models/signalcompblock.h"
 
+#include "third_party/fidlib/fidlib.h"
 #include "third_party/kiss_fft/kiss_fftr.h"
 
 
@@ -116,6 +118,9 @@ void clear();
 void getsettings(struct spectrumdocksettings *);
 void setsettings(struct spectrumdocksettings);
 
+private:
+QVector<double> calculateFFT(QVector<double> buf_samples, int fft_outputbufsize, int dftblocksize, int *dftblocks);
+QVector<double> getFFTInputData(signalcompblock *signalcomp);
 
 private:
 
@@ -134,24 +139,11 @@ private:
 
   QTimer *t1;
 
-  QSlider *amplitudeSlider,
-          *spanSlider,
-          *centerSlider,
-          *log_minslider;
-
-  QLabel *spanLabel,
-         *centerLabel,
-         *amplitudeLabel;
-
   QCheckBox *sqrtButton,
             *vlogButton,
             *colorBarButton;
 
-  UI_Flywheel *flywheel1;
-
-  int samples,
-      steps,
-      spectrumdock_sqrt,
+  int spectrumdock_sqrt,
       spectrumdock_vlog,
       dashboard,
       flywheel_value,
@@ -161,23 +153,20 @@ private:
 
   volatile int busy;
 
-  double samplefreq,
-         freqstep,
-         maxvalue,
+  double maxvalue,
          maxvalue_sqrt,
          maxvalue_vlog,
          maxvalue_sqrt_vlog,
          minvalue_vlog,
-         minvalue_sqrt_vlog,
-         *buf_samples,
-         *buf_fft,
-         *buf_fft_sqrt,
-         *buf_fft_vlog,
-         *buf_fft_sqrt_vlog;
+         minvalue_sqrt_vlog;
 
-  char *viewbuf,
-       signallabel[512],
-       physdimension[9];
+  Signal    *base_samples,
+            *fft,
+            *fft_sqrt,
+            *fft_vlog,
+            *fft_sqrt_vlog;
+
+  char *viewbuf;
 
   struct spectrumdocksettings settings;
 
@@ -186,13 +175,12 @@ private:
 private slots:
 
 void update_curve();
-void sliderMoved(int);
+void changeSignals();
 void sqrtButtonClicked(bool);
 void vlogButtonClicked(bool);
 void colorBarButtonClicked(bool);
 void print_to_txt();
 void setdashboard();
-void update_flywheel(int);
 
 };
 

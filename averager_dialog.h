@@ -58,7 +58,7 @@
 #include "averager_curve_wnd.h"
 #include "utils.h"
 
-
+#include "models/signalcompblock.h"
 
 class UI_Mainwindow;
 

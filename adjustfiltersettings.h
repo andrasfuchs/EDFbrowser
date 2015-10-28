@@ -50,6 +50,8 @@
 #include "ravg_filter.h"
 #include "utils.h"
 
+#include "models/signalcompblock.h"
+
 #include "third_party/fidlib/fidlib.h"
 
 

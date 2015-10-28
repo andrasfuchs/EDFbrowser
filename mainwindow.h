@@ -133,7 +133,6 @@
 #include "export_annotations.h"
 #include "edit_predefined_mtg.h"
 #include "spectrum_dock.h"
-#include "signalcurve.h"
 #include "edf_annot_list.h"
 #include "reduce_signals.h"
 #include "header_editor.h"
@@ -158,6 +157,8 @@
 #include "spike_filter_dialog.h"
 #include "mit2edf.h"
 #include "biox2edf.h"
+
+#include "models/signalcompblock.h"
 
 #include "third_party/fidlib/fidlib.h"
 

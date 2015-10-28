@@ -96,14 +96,14 @@ public:
   void setRasterColor(QColor);
   void setBorderColor(QColor);
   void setTextColor(QColor);
-  void setH_RulerValues(double, double);
-  void setHorizontalRulerText(const char *name, const char *unit);
-  void setVerticalRulerText(const char *name, const char *unit);
+  void setH_RulerValues(double, double);        // DEPRECATED
+  void setHorizontalRulerText(const char *name, const char *unit);  // DEPRECATED
+  void setVerticalRulerText(const char *name, const char *unit);    // DEPRECATED
   void setHeaderText(const char *);
-  void setSubheaderText(const char *);
   void setLowerLabel(const char *);
-  void drawCurve(double *sample_buffer, int start_index, int buffer_size, double h_max_value, double h_min_value);
-  void drawCurve(Signal *signal, double h_min_value, double h_max_value, double v_min_value, double v_max_value);
+  void drawCurve(double *sample_buffer, int start_index, int buffer_size, double h_max_value, double h_min_value);      // DEPRECATED: use the Signal object and the AddSignal method instead
+  void drawCurve(Signal *signal, double h_min_value, double h_max_value, double v_min_value, double v_max_value);       // DEPRECATED: use the Signal object and the AddSignal method instead
+  void addSignal(Signal *signal);
   void drawLine(int, double, int, double, QColor);
   void setLineEnabled(bool);
   void create_button(const char *);
@@ -143,7 +143,7 @@ signals:
   void markerHasMoved();
 
 private:
-  void drawTheCurve(QPainter *painter, int curve_w, int curve_h);
+  void drawSignalCurve(QPainter *painter, int curve_w, int curve_h);
   void drawTextOnRuler(QPainter *painter, QRect area, int position, double value, int precision, bool is_vertical, bool is_upsidedown = false);
   void calculateRulerParameters(int length, double start_value, double end_value, int *multiplier, int *normalized_start_value, int *normalized_end_value, int *range, double *pixels_per_unit, int *divisor, int *precision);
   void resetRulers();
@@ -160,6 +160,8 @@ private slots:
   void send_button_event();
 
   void updateWidget();
+
+  void signalValueChanged(QVector<double>);
 
 private:
   QDialog     *sidemenu;
@@ -215,10 +217,10 @@ private:
   double signal_display_start,  // the index where we should display the values from
          signal_display_length, // the number of values we should display
 
-         v_ruler_min_value,     // the minimum value on the vertical ruler
-         v_ruler_max_value,     // the maximum value on the vertical ruler
-         h_ruler_min_value,     // the minimum value on the horizontal ruler
-         h_ruler_max_value;     // the maximum value on the horizontal ruler
+         v_ruler_min_value = DBL_MAX,   // the minimum value on the vertical ruler
+         v_ruler_max_value = DBL_MIN,   // the maximum value on the vertical ruler
+         h_ruler_min_value = DBL_MAX,   // the minimum value on the horizontal ruler
+         h_ruler_max_value = DBL_MIN;   // the maximum value on the horizontal ruler
 
   QPen signal_pen;              // pen of the signal
 

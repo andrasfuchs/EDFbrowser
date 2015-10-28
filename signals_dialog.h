@@ -60,6 +60,8 @@
 #include "special_button.h"
 #include "utils.h"
 
+#include "models/signalcompblock.h"
+
 
 
 class UI_Mainwindow;

@@ -1040,7 +1040,7 @@ void UI_FreqSpectrumWindow::update_curve()
 
   curve1->setHeaderText(str);
 
-  curve1->setSubheaderText(signallabel);
+  //curve1->setSubheaderText(signallabel);
 
   sliderMoved(0);
 
