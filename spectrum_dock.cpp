@@ -379,8 +379,6 @@ void UI_SpectrumDockWindow::init(int signal_num)
   if(signal_num < 0)
   {
     signalcomp = NULL;
-
-    viewbuf = NULL;
   }
   else
   {
@@ -399,8 +397,6 @@ void UI_SpectrumDockWindow::init(int signal_num)
     fft_vlog = new Signal("FFT-VLOG", signal_name + "-FFT-VLOG", signal_alias + "-FFT-VLOG", QVector<double>(), "Frequency", "Hz", 1.0, "Amplitude", "log10("+base_unit+")", 1.0);
     fft_sqrt = new Signal("FFT-SQRT", signal_name + "-FFT-SQRT", signal_alias + "-FFT-SQRT", QVector<double>(), "Frequency", "Hz", 1.0, "Intensity", "("+base_unit+")^2/Hz", 1.0);
     fft_sqrt_vlog = new Signal("FFT-SQRT-VLOG", signal_name + "-FFT-SQRT-VLOG", signal_alias + "-FFT-SQRT-VLOG", QVector<double>(), "Frequency", "Hz", 1.0, "Intensity", "log(("+base_unit+")^2/Hz)", 1.0);
-
-    viewbuf = mainwindow->viewbuf;
 
     changeSignals();
 
@@ -424,8 +420,6 @@ void UI_SpectrumDockWindow::clear()
   init_maxvalue = 1;
 
   signalcomp = NULL;
-
-  viewbuf = NULL;
 
 
   if(spectrum_color != NULL)
@@ -462,13 +456,6 @@ void UI_SpectrumDockWindow::update_curve()
     return;
   }
 
-  viewbuf = mainwindow->viewbuf;
-
-  if(viewbuf == NULL)
-  {
-    return;
-  }
-
   busy = 1;
 
   curve1->setUpdatesEnabled(false);
@@ -483,7 +470,7 @@ void UI_SpectrumDockWindow::update_curve()
 
   buf_samples_count -= signalcomp->sample_start;
 
-  if((buf_samples_count < 10) || (viewbuf == NULL))
+  if((buf_samples_count < 10) || (mainwindow->viewbuf == NULL))
   {
     curve1->setUpdatesEnabled(true);
 
@@ -505,7 +492,8 @@ void UI_SpectrumDockWindow::update_curve()
 
 
   // ---------- get the FFT input data from the original samples
-  QVector<double> buffer_of_samples = getFFTInputData(signalcomp);
+  base_samples->SetValues(compileSignalFromRawData(signalcomp, mainwindow->viewbuf));
+  QVector<double> buffer_of_samples = base_samples->GetValues();
 
 
   dftblocksize = mainwindow->maxdftblocksize;
@@ -813,7 +801,7 @@ void UI_SpectrumDockWindow::update_curve()
   init_maxvalue = 0;
 }
 
-QVector<double> UI_SpectrumDockWindow::getFFTInputData(signalcompblock *signalcomp)
+QVector<double> UI_SpectrumDockWindow::compileSignalFromRawData(signalcompblock *signalcomp, char *viewbuf)
 {
     union {
             unsigned int one;

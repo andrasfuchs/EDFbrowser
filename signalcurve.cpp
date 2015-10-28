@@ -231,6 +231,7 @@ void SignalCurve::mouseDoubleClickEvent(QMouseEvent *)
 
 void SignalCurve::resetRulers()
 {
+    if (signals_.count() == 0)
     {
         return;
     }
@@ -265,9 +266,11 @@ void SignalCurve::resetRulers()
         }
     }
 
-    v_ruler_min_value *= (v_ruler_min_value > 0 ? 0.9 : 1.1);
-    v_ruler_max_value *= (v_ruler_max_value > 0 ? 1.1 : 0.9);
-
+    if ((v_ruler_min_value != DBL_MAX) && (v_ruler_max_value != DBL_MIN))
+    {
+        v_ruler_min_value *= (v_ruler_min_value > 0 ? 0.9 : 1.1);
+        v_ruler_max_value *= (v_ruler_max_value > 0 ? 1.1 : 0.9);
+    }
 
     signal_display_start = 0;
     signal_display_length = h_ruler_max_value * signals_[0]->GetHorizontalDensity();
@@ -901,8 +904,7 @@ void SignalCurve::drawWidget(QPainter *painter, int curve_w, int curve_h, bool i
          sum_colorbar_value,
          p_pixels_per_unit;
 
-  char str[128];
-
+  char str[128];  
 
   painter->setFont(QFont("Arial", 8));
   painter->fillRect(0, 0, curve_w, curve_h, BorderColor);
@@ -927,6 +929,13 @@ void SignalCurve::drawWidget(QPainter *painter, int curve_w, int curve_h, bool i
     painter->drawLine(0, 0, curve_w, 0);
     painter->drawLine(curve_w, curve_h, curve_w, 0);
     painter->drawLine(curve_w, curve_h, 0, curve_h);
+  }
+
+
+  if (((v_ruler_min_value == DBL_MAX) || (v_ruler_max_value == DBL_MIN) || (v_ruler_min_value == v_ruler_max_value))
+      || ((h_ruler_min_value == DBL_MAX) || (h_ruler_max_value == DBL_MIN) || (h_ruler_min_value == h_ruler_max_value)))
+  {
+      return;
   }
 
 /////////////////////////////////// draw the horizontal ruler ///////////////////////////////////////////
@@ -1332,6 +1341,7 @@ void SignalCurve::calculateRulerParameters(int length, double start_value, doubl
 
       if(*multiplier > 10000000)
       {
+        throw ("multiplier overflow in calculateRulerParameters");
         break;
       }
     }
@@ -1653,7 +1663,7 @@ void SignalCurve::removeSignal(QString signalId)
 
 void SignalCurve::signalValueChanged(QVector<double>)
 {
-    if (v_ruler_min_value == DBL_MAX)
+    if ((v_ruler_min_value == DBL_MAX) || (v_ruler_max_value == DBL_MIN))
     {
         // rulers were not initialized yer
         resetRulers();

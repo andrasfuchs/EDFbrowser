@@ -120,7 +120,7 @@ void setsettings(struct spectrumdocksettings);
 
 private:
 QVector<double> calculateFFT(QVector<double> buf_samples, int fft_outputbufsize, int dftblocksize, int *dftblocks);
-QVector<double> getFFTInputData(signalcompblock *signalcomp);
+QVector<double> compileSignalFromRawData(signalcompblock *signalcomp, char *viewbuf);
 
 private:
 
@@ -165,8 +165,6 @@ private:
             *fft_sqrt,
             *fft_vlog,
             *fft_sqrt_vlog;
-
-  char *viewbuf;
 
   struct spectrumdocksettings settings;
 
