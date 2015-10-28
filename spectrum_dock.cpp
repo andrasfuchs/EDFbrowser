@@ -573,9 +573,30 @@ void UI_SpectrumDockWindow::update_curve()
     fft_values[0] = 0.0;  // Remove DC because heart rate is always a positive value
   }
 
+  // there are two limitations to the FFT algorithm
+  // A, we can't meassure the intensity of a signal with a higher frequency then the half of the sample rate
+  // TODO: invalidate values above that frequency
+
+  // B, the meassurement of the signals with wavelength less than the sample will be inaccurate
+  double samples_length_in_seconds = (double)buffer_of_samples.count() / samplefreq;
+  double freq_band = 0.0;
+  for (int i=0; freq_band<(1/samples_length_in_seconds); i++)
+  {
+      fft_values[i] = fft->SIGNAL_NA_VALUE;
+      freq_band += freqstep;
+  }
 
   for(i=0; i<fft_values.count(); i++)
   {
+      if (fft_values[i] == fft->SIGNAL_NA_VALUE)
+      {
+          fft_sqrt_values[i] = fft_sqrt->SIGNAL_NA_VALUE;
+          fft_vlog_values[i] = fft_vlog->SIGNAL_NA_VALUE;
+          fft_sqrt_vlog_values[i] = fft_sqrt_vlog->SIGNAL_NA_VALUE;
+          continue;
+      }
+
+
       fft_values[i] /= samplefreq;
 
       double fft_value = fft_values[i];

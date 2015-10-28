@@ -104,6 +104,7 @@ public:
   void drawCurve(double *sample_buffer, int start_index, int buffer_size, double h_max_value, double h_min_value);      // DEPRECATED: use the Signal object and the AddSignal method instead
   void drawCurve(Signal *signal, double h_min_value, double h_max_value, double v_min_value, double v_max_value);       // DEPRECATED: use the Signal object and the AddSignal method instead
   void addSignal(Signal *signal);
+  void removeSignal(QString signalId = "");
   void drawLine(int, double, int, double, QColor);
   void setLineEnabled(bool);
   void create_button(const char *);
@@ -143,7 +144,7 @@ signals:
   void markerHasMoved();
 
 private:
-  void drawSignalCurve(QPainter *painter, int curve_w, int curve_h);
+  void drawSignalCurve(QPainter *painter, int curve_w, int curve_h, Signal *signal);
   void drawTextOnRuler(QPainter *painter, QRect area, int position, double value, int precision, bool is_vertical, bool is_upsidedown = false);
   void calculateRulerParameters(int length, double start_value, double end_value, int *multiplier, int *normalized_start_value, int *normalized_end_value, int *range, double *pixels_per_unit, int *divisor, int *precision);
   void resetRulers();
@@ -196,7 +197,7 @@ private:
   QPen Marker1Pen,
        Marker2Pen;
 
-  QList<Signal*> signal;        // the list of signals to display
+  QList<Signal*> signals_;        // the list of signals to display
 
 private:
   // VIEW RELATED

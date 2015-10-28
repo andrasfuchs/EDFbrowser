@@ -101,12 +101,12 @@ void SignalCurve::updateWidget()
 
 void SignalCurve::clearSignal()
 {
-  signal.clear();
+  signals_.clear();
 }
 
 void SignalCurve::clear()
 {
-  signal.clear();
+  signals_.clear();
 
   use_move_events = 0;
   crosshair_1_active = 0;
@@ -231,7 +231,6 @@ void SignalCurve::mouseDoubleClickEvent(QMouseEvent *)
 
 void SignalCurve::resetRulers()
 {
-    if ((signal.count() == 0) || (signal[0]->GetValues().count() == 0))
     {
         return;
     }
@@ -246,19 +245,24 @@ void SignalCurve::resetRulers()
     v_ruler_min_value = DBL_MAX;
     v_ruler_max_value = DBL_MIN;
 
-    for(int i = 0; i < signal[0]->GetValues().count(); i++)
+    for (int j=0; j < signals_.count(); j++)
     {
-      double value = (signal[0]->GetValues()[i]);
+        for(int i=0; i < signals_[j]->GetValues().count(); i++)
+        {
+          double value = (signals_[j]->GetValues()[i]);
 
-      if (value < v_ruler_min_value)
-      {
-          v_ruler_min_value = value;
-      }
+          if (value == signals_[j]->SIGNAL_NA_VALUE) continue;
 
-      if (value > v_ruler_max_value)
-      {
-          v_ruler_max_value = value;
-      }
+          if (value < v_ruler_min_value)
+          {
+              v_ruler_min_value = value;
+          }
+
+          if (value > v_ruler_max_value)
+          {
+              v_ruler_max_value = value;
+          }
+        }
     }
 
     v_ruler_min_value *= (v_ruler_min_value > 0 ? 0.9 : 1.1);
@@ -266,7 +270,7 @@ void SignalCurve::resetRulers()
 
 
     signal_display_start = 0;
-    signal_display_length = h_ruler_max_value * signal[0]->GetHorizontalDensity();
+    signal_display_length = h_ruler_max_value * signals_[0]->GetHorizontalDensity();
 }
 
 void SignalCurve::mouseMoveEvent(QMouseEvent *move_event)
@@ -352,9 +356,9 @@ void SignalCurve::mouseMoveEvent(QMouseEvent *move_event)
       // check if we are in the valid range
       double desired_signal_display_start = signal_display_start - (value_delta_x_pct * signal_display_length);
 
-      if (desired_signal_display_start + signal_display_length >= signal[0]->GetValues().count() - 1)
+      if (desired_signal_display_start + signal_display_length >= signals_[0]->GetValues().count() - 1)
       {
-          desired_signal_display_start = signal[0]->GetValues().count() - (int)signal_display_length - 1;
+          desired_signal_display_start = signals_[0]->GetValues().count() - (int)signal_display_length - 1;
           value_delta_x_pct = (signal_display_start - desired_signal_display_start) / signal_display_length;
       }
 
@@ -411,9 +415,9 @@ void SignalCurve::wheelEvent(QWheelEvent * event)
     // 1, horizontal scale
     double desired_signal_display_length = signal_display_length * zoom_y_pct * zoom_x_pct;
 
-    if (signal_display_start + desired_signal_display_length >= signal[0]->GetValues().count() - 1)
+    if (signal_display_start + desired_signal_display_length >= signals_[0]->GetValues().count() - 1)
     {
-        desired_signal_display_length = signal[0]->GetValues().count() - (int)signal_display_start - 1;
+        desired_signal_display_length = signals_[0]->GetValues().count() - (int)signal_display_start - 1;
         zoom_y_pct = desired_signal_display_length / signal_display_length;
     }
 
@@ -698,9 +702,9 @@ void SignalCurve::print_to_ascii()
     return;
   }
 
-  for(i=0; i<signal[0]->GetValues().count(); i++)
+  for(i=0; i<signals_[0]->GetValues().count(); i++)
   {
-    fprintf(outputfile, "%.8f\n", signal[0]->GetValues()[i]);
+    fprintf(outputfile, "%.8f\n", signals_[0]->GetValues()[i]);
   }
 
   fclose(outputfile);
@@ -1217,7 +1221,10 @@ void SignalCurve::drawWidget(QPainter *painter, int curve_w, int curve_h, bool i
 
 /////////////////////////////////// draw the curve ///////////////////////////////////////////
 
-drawSignalCurve(painter, curve_w, curve_h);
+  for (int j=0; j < signals_.count(); j++)
+  {
+    drawSignalCurve(painter, curve_w, curve_h, signals_[j]);
+  }
 
 /////////////////////////////////// draw the line ///////////////////////////////////////////
 
@@ -1261,7 +1268,7 @@ drawSignalCurve(painter, curve_w, curve_h);
     // constrant the information to be displayed
     painter->setFont(QFont("Arial", 10));
     QString value_at_crosshair = QString::number(crosshair_1_value, 'g', 5) + " " + v_ruler_unit;
-    QString range_at_crosshair = "@" + QString::number(crosshair_1_value_2, 'g', 4) + "-" + QString::number(crosshair_1_value_2 + (1 / signal[0]->GetHorizontalDensity()), 'g', 4) + " " + h_ruler_unit;
+    QString range_at_crosshair = "@" + QString::number(crosshair_1_value_2, 'g', 4) + "-" + QString::number(crosshair_1_value_2 + (1 / signals_[0]->GetHorizontalDensity()), 'g', 4) + " " + h_ruler_unit;
 
     fontMetrics = QFontMetrics(painter->font());
     QRect crosshairRect_value = fontMetrics.boundingRect(value_at_crosshair);
@@ -1420,21 +1427,20 @@ void SignalCurve::drawTextOnRuler(QPainter *painter, QRect area, int position, d
 }
 
 
-void SignalCurve::drawSignalCurve(QPainter *painter, int curve_w, int curve_h)
+void SignalCurve::drawSignalCurve(QPainter *painter, int curve_w, int curve_h, Signal *signal)
 {
     int i;
 
     double v_sens=0.0,
            offset=0.0,
-           h_step=0.0, /* horizontal step alias the width of one bar */
-           value;
+           h_step=0.0; /* horizontal step alias the width of one bar */;
 
 
       if(v_ruler_max_value <= v_ruler_min_value)  return;
 
       if(signal_display_length < 2)  return;
 
-      if (signal.count() == 0)  return;
+      if (signals_.count() == 0)  return;
 
       if(curveUpSideDown == true)
       {
@@ -1451,7 +1457,7 @@ void SignalCurve::drawSignalCurve(QPainter *painter, int curve_w, int curve_h)
 
       h_step = (double)curve_w / (double)signal_display_length; /// width of one bar = width of the area where we draw / number of bars
 
-      QPen linePen = QPen(signal_pen);
+      QPen linePen = QPen(signal->GetColor(), 1.0, Qt::SolidLine);
       QBrush fillBrush = QBrush(QColor(linePen.color().red(), linePen.color().green(), linePen.color().blue(), 31), Qt::SolidPattern);
 
       QPolygon curvePolygon = QPolygon();
@@ -1459,33 +1465,42 @@ void SignalCurve::drawSignalCurve(QPainter *painter, int curve_w, int curve_h)
 
       for(i = 0; i < signal_display_length; i++)
       {
-        double vertical_position = (signal[0]->GetValues()[i + (int)signal_display_start] + offset) * v_sens;
+          double value = signal->GetValues()[i + (int)signal_display_start];
+          double vertical_position = (value + offset) * v_sens;
 
-        if (i == 0)
-        {
-            // this is our first point
-            curvePolygon.append(QPoint(0, vertical_position));
-        }
+          if (value != signal->SIGNAL_NA_VALUE)
+          {
+              if (i == 0)
+              {
+                  // this is our first point
+                  curvePolygon.append(QPoint(0, vertical_position));
+              }
 
-        curvePolygon.append(QPoint((i * h_step) + (h_step/2), vertical_position));
+              curvePolygon.append(QPoint((i * h_step) + (h_step/2), vertical_position));
 
-        if (i == (int)signal_display_length-1)
-        {
-            // this is our last point
-            curvePolygon.append(QPoint(((int)signal_display_length * h_step), vertical_position));
-        }
+              if (i == (int)signal_display_length-1)
+              {
+                  // this is our last point
+                  curvePolygon.append(QPoint(((int)signal_display_length * h_step), vertical_position));
+              }
+          }
+          else
+          {
+              curvePolygon.append(QPoint((i * h_step), curve_h));
+              curvePolygon.append(QPoint(((i+1) * h_step), curve_h));
+          }
 
-      if(crosshair_1_active)
-      {
-        if(i==((int)(((double)crosshair_1_x_position) / h_step)))
-        {
-          crosshair_1_y_value = vertical_position;
-          crosshair_1_value = signal[0]->GetValues()[i + (int)signal_display_start];
-          value = (h_ruler_max_value - h_ruler_min_value) / signal_display_length;
-          crosshair_1_value_2 = (i * value) + h_ruler_min_value;
-        }
+          if(crosshair_1_active)
+          {
+              if(i==((int)(((double)crosshair_1_x_position) / h_step)))
+              {
+                  crosshair_1_y_value = vertical_position;
+                  crosshair_1_value = (value == signal->SIGNAL_NA_VALUE ? 0.0 : value);
+                  double v_value = (h_ruler_max_value - h_ruler_min_value) / signal_display_length;
+                  crosshair_1_value_2 = (i * v_value) + h_ruler_min_value;
+              }
+          }
       }
-    }
 
     curvePolygon.append(QPoint(curve_w, curve_h));
     curvePolygon.append(QPoint(0, curve_h));
@@ -1551,7 +1566,7 @@ void SignalCurve::drawCurve(double *sample_buffer, int start_index, int buffer_s
         values.append(sample_buffer[i]);
     }
 
-    if (signal.count() == 0)
+    if (signals_.count() == 0)
     {
         // this is a new signal
         Signal *newSignal = new Signal("ADC", "ADC-FFT", "Frontal lobe", values, "Frequency", "Hz", buffer_size / 256.0, "Intensity", "???", 1.0);
@@ -1560,7 +1575,7 @@ void SignalCurve::drawCurve(double *sample_buffer, int start_index, int buffer_s
         resetRulers();
     } else {
         // this is an old signal, so we don't need to calibrate the histogram
-        signal[0]->SetValues(values);
+        signals_[0]->SetValues(values);
 
         update_pending = true;
     }
@@ -1568,8 +1583,8 @@ void SignalCurve::drawCurve(double *sample_buffer, int start_index, int buffer_s
 
 void SignalCurve::drawCurve(Signal *signal, double h_min_value, double h_max_value, double v_min_value, double v_max_value)
 {
-  this->signal.clear();
-  this->signal.append(signal);
+  this->signals_.clear();
+  this->signals_.append(signal);
 
   h_ruler_name = signal->GetHorizontalName();
   h_ruler_unit = signal->GetHorizontalUnit();
@@ -1586,19 +1601,28 @@ void SignalCurve::drawCurve(Signal *signal, double h_min_value, double h_max_val
   resetRulers();
 
   signal_display_start = 0;
-  signal_display_length = (h_ruler_max_value - h_ruler_min_value) * this->signal[0]->GetHorizontalDensity();
+  signal_display_length = (h_ruler_max_value - h_ruler_min_value) * this->signals_[0]->GetHorizontalDensity();
 
   update_pending = true;
 }
 
 void SignalCurve::addSignal(Signal *signal)
 {
-    if ((this->signal.count() == 0) || (this->signal[0]->GetId() != signal->GetId()))
+    bool signalFound = false;
+    for (int j=0; j < signals_.count(); j++)
     {
-        this->signal.clear();
-        this->signal.append(signal);
+        if (signals_[j]->GetId() == signal->GetId())
+        {
+            signalFound = true;
+        }
+    }
 
-        QObject::connect(this->signal[this->signal.count()-1], SIGNAL(valuesChanged(QVector<double>)), this, SLOT(signalValueChanged(QVector<double>)));
+    if (!signalFound)
+    {
+        removeSignal();     // TODO: this is temporary until we use the multi-signal feature
+        this->signals_.append(signal);
+
+        QObject::connect(this->signals_[this->signals_.count()-1], SIGNAL(valuesChanged(QVector<double>)), this, SLOT(signalValueChanged(QVector<double>)));
 
         h_ruler_name = signal->GetHorizontalName();
         h_ruler_unit = signal->GetHorizontalUnit();
@@ -1606,12 +1630,24 @@ void SignalCurve::addSignal(Signal *signal)
         v_ruler_name = signal->GetVerticalName();
         v_ruler_unit = signal->GetVerticalUnit();
 
+        signal_display_start = 0;
+        signal_display_length = (h_ruler_max_value - h_ruler_min_value) * signal->GetHorizontalDensity();
+
         resetRulers();
 
-        signal_display_start = 0;
-        signal_display_length = (h_ruler_max_value - h_ruler_min_value) * this->signal[0]->GetHorizontalDensity();
-
         update_pending = true;
+    }
+}
+
+void SignalCurve::removeSignal(QString signalId)
+{
+    for (int j=0; j < signals_.count(); j++)
+    {
+        if ((signalId == "") || (signals_[j]->GetId() == signalId))
+        {
+            signals_.removeAt(j);
+            j--;
+        }
     }
 }
 

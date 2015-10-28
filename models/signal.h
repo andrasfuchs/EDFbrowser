@@ -45,6 +45,9 @@ class Signal : public QObject
       QString GetVerticalUnit();
       double GetVerticalDensity();
 
+
+      double SIGNAL_NA_VALUE = DBL_MIN;     // special value which represents the missing value
+
     signals:
       void aliasChanged(QString newAlias);
       void colorChanged(QColor newColor);
@@ -57,8 +60,7 @@ class Signal : public QObject
 
       double position = 0,                  // our position at the moment (index of values array)
              h_density = 1.0,               // the horizontal density of the signal (e.g. number of values per Hz by and FFT signal)
-             v_density = 1.0,               // the vertical density of the signal (e.g. number of values per Volt by and FFT amplitude signal)
-             SIGNAL_NA_VALUE = DBL_MIN;     // special value which represents the missing value
+             v_density = 1.0;               // the vertical density of the signal (e.g. number of values per Volt by and FFT amplitude signal)
 
       QString   id = "",
                 name = "",
