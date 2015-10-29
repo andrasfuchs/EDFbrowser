@@ -139,9 +139,7 @@ private:
 
   QTimer *t1;
 
-  QCheckBox *sqrtCheckBox,
-            *vlogCheckBox,
-            *colorBarCheckBox;
+  QCheckBox *colorBarCheckBox;
 
   QButtonGroup *scaleButtonGroup;
 
@@ -169,12 +167,11 @@ private:
 private slots:
 
 void update_curve();
-void changeSignals();
-void sqrtButtonClicked(bool);
-void vlogButtonClicked(bool);
+void changeSignals(Signal* signal, SignalType newMode);
 void colorBarButtonClicked(bool);
 void print_to_txt();
 void setdashboard();
+void scaleButtonClicked(bool checked);
 
 };
 

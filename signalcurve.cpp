@@ -1620,7 +1620,6 @@ void SignalCurve::addSignal(Signal *signal)
 
     if (!signalFound)
     {
-        //removeSignal();     // TODO: this is temporary until we use the multi-signal feature
         this->signals_.append(signal);
 
         QObject::connect(this->signals_[this->signals_.count()-1], SIGNAL(valuesChanged(QVector<double>)), this, SLOT(signalValueChanged(QVector<double>)));
