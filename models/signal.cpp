@@ -3,7 +3,7 @@
 
 #include "signal.h"
 
-Signal::Signal(QString id, QString name, QString alias, QVector<double> values, QString h_name, QString h_unit, double h_density, QString v_name, QString v_unit, double v_density)
+Signal::Signal(QString id, QString name, QString alias, QVector<double> values, QString h_name, QString h_unit, double h_density, QString v_name, QString v_unit, double v_density, SignalType type)
 {
   this->id = id;
   this->name = name;
@@ -18,6 +18,8 @@ Signal::Signal(QString id, QString name, QString alias, QVector<double> values, 
   this->v_name = v_name;
   this->v_unit = v_unit;
   this->v_density = v_density;
+
+  this->type = type;
 }
 
 QString Signal::GetId()
@@ -43,6 +45,11 @@ void Signal::SetAlias(QString alias)
 
     emit aliasChanged(this->alias);
   }
+}
+
+SignalType Signal::GetType()
+{
+  return this->type;
 }
 
 QVector<double> Signal::GetValues()
@@ -100,7 +107,7 @@ void Signal::SetPosition(double position)
   }
 }
 
-void Signal::GetSubSignal(SubSignalType type, double parameter)
+void Signal::GetSubSignal(SignalType type, double parameter)
 {
     // TODO: implement this method
   return;

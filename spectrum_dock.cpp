@@ -53,17 +53,15 @@ UI_SpectrumDockWindow::UI_SpectrumDockWindow(QWidget *w_parent)
 
   SpectrumDialog = new QDialog;
 
-  flywheel_value = 1050;
-
   init_maxvalue = 1;
 
   if(mainwindow->spectrumdock_sqrt)
   {
-    dock = new QDockWidget("Amplitude Spectrum", w_parent);
+    dock = new QDockWidget("Power Spectrum", w_parent);
   }
   else
   {
-    dock = new QDockWidget("Power Spectrum", w_parent);
+    dock = new QDockWidget("Amplitude Spectrum", w_parent);
   }
 
   dock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
@@ -74,96 +72,123 @@ UI_SpectrumDockWindow::UI_SpectrumDockWindow(QWidget *w_parent)
     dock->setWidget(SpectrumDialog);
   }
 
-  curve1 = new SignalCurve;  
+  histogramView = new SignalCurve;
 
-  curve1->create_button("to Text");
+  histogramView->create_button("to Text");
 
   if(!dashboard)
   {
-    dock->setWidget(curve1);
+    dock->setWidget(histogramView);
   }
 
-  sqrtButton = new QCheckBox;
-  sqrtButton->setMinimumSize(50, 20);
-  sqrtButton->setText("Amplitude");
-  sqrtButton->setTristate(false);
+
+  scaleButtonGroup = new QButtonGroup();
+  scaleButtonGroup->addButton(new QRadioButton("Linear Amplitude"), 1);
+  scaleButtonGroup->addButton(new QRadioButton("Logarithmic Amplitude"), 2);
+  scaleButtonGroup->addButton(new QRadioButton("Linear Intensity"), 3);
+  scaleButtonGroup->addButton(new QRadioButton("Logarithmic Intensity"), 4);
+
+
+  sqrtCheckBox = new QCheckBox;
+  sqrtCheckBox->setMinimumSize(50, 20);
+  sqrtCheckBox->setText("Intensity");
+  sqrtCheckBox->setTristate(false);
   if(mainwindow->spectrumdock_sqrt)
   {
-    sqrtButton->setChecked(true);
+    sqrtCheckBox->setChecked(true);
   }
   else
   {
-    sqrtButton->setChecked(false);
+    sqrtCheckBox->setChecked(false);
   }
 
-  vlogButton = new QCheckBox;
-  vlogButton->setMinimumSize(50, 20);
-  vlogButton->setText("Log");
-  vlogButton->setTristate(false);
+  vlogCheckBox = new QCheckBox;
+  vlogCheckBox->setMinimumSize(50, 20);
+  vlogCheckBox->setText("Log");
+  vlogCheckBox->setTristate(false);
   if(mainwindow->spectrumdock_vlog)
   {
-    vlogButton->setChecked(true);
+    vlogCheckBox->setChecked(true);
   }
   else
   {
-    vlogButton->setChecked(false);
+    vlogCheckBox->setChecked(false);
   }
 
-  colorBarButton = new QCheckBox;
-  colorBarButton->setMinimumSize(50, 20);
-  colorBarButton->setText("Colorbar");
-  colorBarButton->setTristate(false);
+  colorBarCheckBox = new QCheckBox;
+  colorBarCheckBox->setMinimumSize(50, 20);
+  colorBarCheckBox->setText("Show colorbars");
+  colorBarCheckBox->setTristate(false);
 
-  vlayout3 = new QVBoxLayout;
-  vlayout3->addStretch(100);
-  vlayout3->addStretch(100);
 
-  hlayout4 = new QHBoxLayout;
-  hlayout4->addStretch(100);
-  hlayout4->addLayout(vlayout3, 100);
-  hlayout4->addStretch(100);
-
-  vlayout2 = new QVBoxLayout;
+  vlayout2 = new QVBoxLayout();
   vlayout2->setSpacing(10);
   vlayout2->addStretch(100);
-  vlayout2->addLayout(hlayout4, 200);
-  vlayout2->addWidget(sqrtButton);
-  vlayout2->addWidget(vlogButton);
-  vlayout2->addWidget(colorBarButton);  
+  vlayout2->addWidget(sqrtCheckBox);
+  vlayout2->addWidget(vlogCheckBox);
+  vlayout2->addWidget(colorBarCheckBox);
 
-  hlayout1 = new QHBoxLayout;
+  QVBoxLayout *scaleButtonGroupLayout = new QVBoxLayout();
+  for (int i=0; i<scaleButtonGroup->buttons().count(); i++)
+  {
+    scaleButtonGroupLayout->addWidget(scaleButtonGroup->buttons()[i]);
+  }
+
+  QGroupBox *scaleGroupBox = new QGroupBox();
+  scaleGroupBox->setLayout(scaleButtonGroupLayout);
+  vlayout2->addWidget(scaleGroupBox);
+
+  QHBoxLayout *signalListLayout = new QHBoxLayout();
+  QCheckBox *signalNameCheckBox = new QCheckBox("ADC-Fp1");
+  signalNameCheckBox->setChecked(true);
+  //signalNameCheckBox->setStyleSheet("background-color: red;");
+  signalListLayout->addWidget(signalNameCheckBox);
+  signalListLayout->addWidget(new QCheckBox());
+  signalListLayout->addWidget(new QCheckBox());
+  signalListLayout->addWidget(new QCheckBox());
+  vlayout2->addLayout(signalListLayout);
+
+  signalListLayout = new QHBoxLayout();
+  signalNameCheckBox = new QCheckBox("ADC-F7");
+  signalNameCheckBox->setChecked(true);
+  //signalNameCheckBox->setStyleSheet("background-color: red;");
+  signalListLayout->addWidget(signalNameCheckBox);
+  signalListLayout->addWidget(new QCheckBox());
+  signalListLayout->addWidget(new QCheckBox());
+  signalListLayout->addWidget(new QCheckBox());
+  vlayout2->addLayout(signalListLayout);
+
+  signalListLayout = new QHBoxLayout();
+  signalNameCheckBox = new QCheckBox("ADC-P3");
+  signalNameCheckBox->setChecked(true);
+  //signalNameCheckBox->setStyleSheet("background-color: red;");
+  signalListLayout->addWidget(signalNameCheckBox);
+  signalListLayout->addWidget(new QCheckBox());
+  signalListLayout->addWidget(new QCheckBox());
+  signalListLayout->addWidget(new QCheckBox());
+  vlayout2->addLayout(signalListLayout);
+
+
+  hlayout1 = new QHBoxLayout();
   hlayout1->setSpacing(20);
   hlayout1->addLayout(vlayout2);
   if(dashboard)
   {
-    hlayout1->addWidget(curve1, 100);
+    hlayout1->addWidget(histogramView, 100);
   }
 
-  hlayout2 = new QHBoxLayout;
-  hlayout2->setSpacing(20);
-  hlayout2->addStretch(100);
 
-  hlayout3 = new QHBoxLayout;
-  hlayout3->setSpacing(20);
-  hlayout3->addStretch(100);
-
-  vlayout1 = new QVBoxLayout;
-  vlayout1->setSpacing(20);
-  vlayout1->addLayout(hlayout1);
-  vlayout1->addLayout(hlayout2);
-  vlayout1->addLayout(hlayout3);
-
-  SpectrumDialog->setLayout(vlayout1);
+  SpectrumDialog->setLayout(hlayout1);
 
   t1 = new QTimer(this);
   t1->setSingleShot(true);
 
   QObject::connect(t1,              SIGNAL(timeout()),              this, SLOT(update_curve()));
-  QObject::connect(sqrtButton,      SIGNAL(toggled(bool)),          this, SLOT(sqrtButtonClicked(bool)));
-  QObject::connect(vlogButton,      SIGNAL(toggled(bool)),          this, SLOT(vlogButtonClicked(bool)));
-  QObject::connect(colorBarButton,  SIGNAL(toggled(bool)),          this, SLOT(colorBarButtonClicked(bool)));
-  QObject::connect(curve1,          SIGNAL(extra_button_clicked()), this, SLOT(print_to_txt()));
-  QObject::connect(curve1,          SIGNAL(dashBoardClicked()),     this, SLOT(setdashboard()));
+  QObject::connect(sqrtCheckBox,      SIGNAL(toggled(bool)),          this, SLOT(sqrtButtonClicked(bool)));
+  QObject::connect(vlogCheckBox,      SIGNAL(toggled(bool)),          this, SLOT(vlogButtonClicked(bool)));
+  QObject::connect(colorBarCheckBox,  SIGNAL(toggled(bool)),          this, SLOT(colorBarButtonClicked(bool)));
+  QObject::connect(histogramView,          SIGNAL(extra_button_clicked()), this, SLOT(print_to_txt()));
+  QObject::connect(histogramView,          SIGNAL(dashBoardClicked()),     this, SLOT(setdashboard()));
 }
 
 
@@ -179,7 +204,7 @@ void UI_SpectrumDockWindow::getsettings(struct spectrumdocksettings *sett)
 {
   sett->signalnr = signal_nr;
 
-  if(sqrtButton->isChecked() == true)
+  if(sqrtCheckBox->isChecked() == true)
   {
     sett->sqrt = 1;
   }
@@ -188,7 +213,7 @@ void UI_SpectrumDockWindow::getsettings(struct spectrumdocksettings *sett)
     sett->sqrt = 0;
   }
 
-  if(vlogButton->isChecked() == true)
+  if(vlogCheckBox->isChecked() == true)
   {
     sett->log = 1;
   }
@@ -197,7 +222,7 @@ void UI_SpectrumDockWindow::getsettings(struct spectrumdocksettings *sett)
     sett->log = 0;
   }
 
-  if(colorBarButton->isChecked() == true)
+  if(colorBarCheckBox->isChecked() == true)
   {
     sett->colorbar = 1;
   }
@@ -207,16 +232,6 @@ void UI_SpectrumDockWindow::getsettings(struct spectrumdocksettings *sett)
   }
 
   sett->maxvalue = maxvalue;
-
-  sett->maxvalue_sqrt = maxvalue_sqrt;
-
-  sett->maxvalue_vlog = maxvalue_vlog;
-
-  sett->maxvalue_sqrt_vlog = maxvalue_sqrt_vlog;
-
-  sett->minvalue_vlog = minvalue_vlog;
-
-  sett->minvalue_sqrt_vlog = minvalue_sqrt_vlog;
 }
 
 
@@ -226,12 +241,12 @@ void UI_SpectrumDockWindow::setdashboard()
   if(dashboard)
   {
     dashboard = 0;
-    dock->setWidget(curve1);
+    dock->setWidget(histogramView);
   }
   else
   {
     dashboard = 1;
-    hlayout1->addWidget(curve1, 100);
+    hlayout1->addWidget(histogramView, 100);
     dock->setWidget(SpectrumDialog);
   }
 }
@@ -273,21 +288,21 @@ void UI_SpectrumDockWindow::print_to_txt()
     return;
   }
 
-  sprintf(str, "FFT Power Spectral Density (Power/%fHz)\n", 1.0 / fft->GetHorizontalDensity());
+  sprintf(str, "FFT Power Spectral Density (Power/%fHz)\n", 1.0 / fft_ts1->GetHorizontalDensity());
   remove_trailing_zeros(str);
   fprintf(outputfile, "%s", str);
   fprintf(outputfile, "Signal: %s\n", signalcomp->signallabel);
   sprintf(str, "FFT blocksize: %i\n", mainwindow->maxdftblocksize);
-  sprintf(str + strlen(str), "FFT resolution: %f Hz\n", 1.0 / fft->GetHorizontalDensity());
+  sprintf(str + strlen(str), "FFT resolution: %f Hz\n", 1.0 / fft_ts1->GetHorizontalDensity());
   sprintf(str + strlen(str), "Data Samples: %i\n", base_samples->GetValues().count());
-  sprintf(str + strlen(str), "Power Samples: %i\n", fft->GetValues().count());
+  sprintf(str + strlen(str), "Power Samples: %i\n", fft_ts1->GetValues().count());
   sprintf(str + strlen(str), "Samplefrequency: %f Hz\n", (double)signalcomp->edfhdr->edfparam[signalcomp->edfsignal[0]].smp_per_record / ((double)signalcomp->edfhdr->long_data_record_duration / TIME_DIMENSION));
   remove_trailing_zeros(str);
   fprintf(outputfile, "%s", str);
 
-  for(i=0; i<fft->GetValues().count(); i++)
+  for(i=0; i<fft_ts1->GetValues().count(); i++)
   {
-    fprintf(outputfile, "%.16f\t%.16f\n", (1.0 / fft->GetHorizontalDensity()) * i, fft->GetValues()[i]);
+    fprintf(outputfile, "%.16f\t%.16f\n", (1.0 / fft_ts1->GetHorizontalDensity()) * i, fft_ts1->GetValues()[i]);
   }
 
   fclose (outputfile);
@@ -298,11 +313,11 @@ void UI_SpectrumDockWindow::colorBarButtonClicked(bool value)
 {
   if(value == true)
   {
-    curve1->enableSpectrumColors(spectrum_color);
+    histogramView->enableSpectrumColors(spectrum_color);
   }
   else
   {
-    curve1->disableSpectrumColors();
+    histogramView->disableSpectrumColors();
   }
 }
 
@@ -339,40 +354,31 @@ void UI_SpectrumDockWindow::vlogButtonClicked(bool value)
 
 void UI_SpectrumDockWindow::changeSignals()
 {
-  if ((sqrtButton->checkState() != Qt::Checked) && (vlogButton->checkState() != Qt::Checked))
+  if ((sqrtCheckBox->checkState() != Qt::Checked) && (vlogCheckBox->checkState() != Qt::Checked))
   {
     mainwindow->spectrumdock_sqrt = 0;
     mainwindow->spectrumdock_vlog = 0;
-
-    curve1->removeSignal();
-    curve1->addSignal(fft);
-    curve1->addSignal(fft2);
-    curve1->addSignal(fft4);
   }
-  else if ((sqrtButton->checkState() == Qt::Checked) && (vlogButton->checkState() != Qt::Checked))
+  else if ((sqrtCheckBox->checkState() == Qt::Checked) && (vlogCheckBox->checkState() != Qt::Checked))
   {
     mainwindow->spectrumdock_sqrt = 1;
     mainwindow->spectrumdock_vlog = 0;
-
-    curve1->removeSignal();
-    curve1->addSignal(fft_sqrt);
   }
-  else if ((sqrtButton->checkState() != Qt::Checked) && (vlogButton->checkState() == Qt::Checked))
+  else if ((sqrtCheckBox->checkState() != Qt::Checked) && (vlogCheckBox->checkState() == Qt::Checked))
   {
     mainwindow->spectrumdock_sqrt = 0;
     mainwindow->spectrumdock_vlog = 1;
-
-    curve1->removeSignal();
-    curve1->addSignal(fft_vlog);
   }
-  else if ((sqrtButton->checkState() == Qt::Checked) && (vlogButton->checkState() == Qt::Checked))
+  else if ((sqrtCheckBox->checkState() == Qt::Checked) && (vlogCheckBox->checkState() == Qt::Checked))
   {
     mainwindow->spectrumdock_sqrt = 1;
     mainwindow->spectrumdock_vlog = 1;
-
-    curve1->removeSignal();
-    curve1->addSignal(fft_sqrt_vlog);
   }
+
+  histogramView->removeSignal();
+  histogramView->addSignal(fft_ts1);
+  histogramView->addSignal(fft_ts8);
+  histogramView->addSignal(fft_ts64);
 }
 
 
@@ -395,22 +401,21 @@ void UI_SpectrumDockWindow::init(int signal_num)
     QString signal_name = signalcomp->signallabel;
     QString signal_alias = signalcomp->alias;
 
-    base_samples = new Signal("ADC", signal_name, signal_alias, QVector<double>(), "Time", "seconds", (double)signalcomp->edfhdr->edfparam[signalcomp->edfsignal[0]].smp_per_record / ((double)signalcomp->edfhdr->long_data_record_duration / TIME_DIMENSION), "Voltage", base_unit, 1.0);
+    base_samples = new Signal("ADC", signal_name, signal_alias, QVector<double>(), "Time", "seconds", (double)signalcomp->edfhdr->edfparam[signalcomp->edfsignal[0]].smp_per_record / ((double)signalcomp->edfhdr->long_data_record_duration / TIME_DIMENSION), "Voltage", base_unit, 1.0, SignalType::ADC);
     base_samples->SetPen(QPen(static_cast<Qt::GlobalColor>(signalcomp->color)));
     QColor signalColor = base_samples->GetPen().color();
 
-    fft = new Signal("FFT", signal_name + "-FFT", signal_alias + "-FFT", QVector<double>(), "Frequency", "Hz", 1.0, "Amplitude", base_unit, 1.0);
-    fft->SetPen(QPen(QColor(signalColor.red(), signalColor.green(), signalColor.blue(), signalColor.alpha() / 4), 1.0, Qt::DotLine));
+    dock->setWindowTitle("Histogram of " + base_samples->GetAlias());
 
-    fft2 = new Signal("FFT2", signal_name + "-FFTp2", signal_alias + "-FFTp2", QVector<double>(), "Frequency", "Hz", 1.0, "Amplitude", base_unit, 1.0);
-    fft2->SetPen(QPen(QColor(signalColor.red(), signalColor.green(), signalColor.blue(), signalColor.alpha() / 2), 1.0, Qt::DashDotLine));
 
-    fft4 = new Signal("FFT4", signal_name + "-FFTp4", signal_alias + "-FFTp4", QVector<double>(), "Frequency", "Hz", 1.0, "Amplitude", base_unit, 1.0);
-    fft4->SetPen(QPen(QColor(signalColor.red(), signalColor.green(), signalColor.blue(), signalColor.alpha() / 1), 1.0, Qt::SolidLine));
+    fft_ts1 = changeMode(SignalType::FFT | SignalType::SquareRoot | SignalType::LogScale, signal_name, signal_alias, base_unit);
+    fft_ts1->SetPen(QPen(QColor(signalColor.red(), signalColor.green(), signalColor.blue(), signalColor.alpha() / 4), 1.0, Qt::DotLine));
 
-    fft_vlog = new Signal("FFT-VLOG", signal_name + "-FFT-VLOG", signal_alias + "-FFT-VLOG", QVector<double>(), "Frequency", "Hz", 1.0, "Amplitude", "log10("+base_unit+")", 1.0);
-    fft_sqrt = new Signal("FFT-SQRT", signal_name + "-FFT-SQRT", signal_alias + "-FFT-SQRT", QVector<double>(), "Frequency", "Hz", 1.0, "Intensity", "("+base_unit+")^2/Hz", 1.0);
-    fft_sqrt_vlog = new Signal("FFT-SQRT-VLOG", signal_name + "-FFT-SQRT-VLOG", signal_alias + "-FFT-SQRT-VLOG", QVector<double>(), "Frequency", "Hz", 1.0, "Intensity", "log(("+base_unit+")^2/Hz)", 1.0);
+    fft_ts8 = new Signal(fft_ts1->GetId() + "/8", fft_ts1->GetName() + "/8", fft_ts1->GetAlias() + "/8", QVector<double>(), fft_ts1->GetHorizontalName(), fft_ts1->GetHorizontalUnit(), fft_ts1->GetHorizontalDensity(), fft_ts1->GetVerticalName(), fft_ts1->GetVerticalUnit(), fft_ts1->GetVerticalDensity(), fft_ts1->GetType());
+    fft_ts8->SetPen(QPen(QColor(signalColor.red(), signalColor.green(), signalColor.blue(), signalColor.alpha() / 2), 1.0, Qt::DashDotLine));
+
+    fft_ts64 = new Signal(fft_ts1->GetId() + "/64", fft_ts1->GetName() + "/64", fft_ts1->GetAlias() + "/64", QVector<double>(), fft_ts1->GetHorizontalName(), fft_ts1->GetHorizontalUnit(), fft_ts1->GetHorizontalDensity(), fft_ts1->GetVerticalName(), fft_ts1->GetVerticalUnit(), fft_ts1->GetVerticalDensity(), fft_ts1->GetType());
+    fft_ts64->SetPen(QPen(QColor(signalColor.red(), signalColor.green(), signalColor.blue(), signalColor.alpha() / 1), 1.0, Qt::SolidLine));
 
     changeSignals();
 
@@ -444,7 +449,7 @@ void UI_SpectrumDockWindow::clear()
     }
   }
 
-  curve1->clear();
+  histogramView->clear();
 
   signal_nr = -1;
 }
@@ -472,7 +477,7 @@ void UI_SpectrumDockWindow::update_curve()
 
   busy = 1;
 
-  curve1->setUpdatesEnabled(false);
+  histogramView->setUpdatesEnabled(false);
 
   {
   long long buf_samples_count = signalcomp->samples_on_screen;
@@ -486,7 +491,7 @@ void UI_SpectrumDockWindow::update_curve()
 
   if((buf_samples_count < 10) || (mainwindow->viewbuf == NULL))
   {
-    curve1->setUpdatesEnabled(true);
+    histogramView->setUpdatesEnabled(true);
 
     busy = 0;
 
@@ -498,7 +503,7 @@ void UI_SpectrumDockWindow::update_curve()
       }
     }
 
-    curve1->clear();
+    histogramView->clear();
 
     return;
   }
@@ -543,35 +548,21 @@ void UI_SpectrumDockWindow::update_curve()
   if(init_maxvalue && !set_settings)
   {
     maxvalue = 0.000001;
-    maxvalue_sqrt = 0.000001;
-    maxvalue_vlog = 0.000001;
-    maxvalue_sqrt_vlog = 0.000001;
-    minvalue_vlog = 0.0;
-    minvalue_sqrt_vlog = 0.0;
   }
 
   if(set_settings)
   {
     maxvalue = settings.maxvalue;
-    maxvalue_sqrt = settings.maxvalue_sqrt;
-    maxvalue_vlog = settings.maxvalue_vlog;
-    maxvalue_sqrt_vlog = settings.maxvalue_sqrt_vlog;
-    minvalue_vlog = settings.minvalue_vlog;
-    minvalue_sqrt_vlog = settings.minvalue_sqrt_vlog;
   }
 
   // ---------- FFT CALCULATION  
-  QVector<double> fft_values = calculateFFT(buffer_of_samples, fft_outputbufsize, dftblocksize, &dftblocks, samplefreq, fft->SIGNAL_NA_VALUE);
+  QVector<double> fft_values_ts1 = calculateFFT(buffer_of_samples, fft_outputbufsize, dftblocksize, &dftblocks, samplefreq, fft_ts1->SIGNAL_NA_VALUE);
 
   buffer_of_samples.remove(0, 7 * (buffer_of_samples.count() / 8));
-  QVector<double> fft_values_p2 = calculateFFT(buffer_of_samples, fft_outputbufsize, dftblocksize, &dftblocks, samplefreq, fft2->SIGNAL_NA_VALUE);
+  QVector<double> fft_values_ts8 = calculateFFT(buffer_of_samples, fft_outputbufsize, dftblocksize, &dftblocks, samplefreq, fft_ts8->SIGNAL_NA_VALUE);
 
   buffer_of_samples.remove(0, 7 * (buffer_of_samples.count() / 8));
-  QVector<double> fft_values_p4 = calculateFFT(buffer_of_samples, fft_outputbufsize, dftblocksize, &dftblocks, samplefreq, fft4->SIGNAL_NA_VALUE);
-
-  QVector<double> fft_sqrt_values = QVector<double>(fft_values.count());
-  QVector<double> fft_vlog_values = QVector<double>(fft_values.count());
-  QVector<double> fft_sqrt_vlog_values = QVector<double>(fft_values.count());
+  QVector<double> fft_values_ts64 = calculateFFT(buffer_of_samples, fft_outputbufsize, dftblocksize, &dftblocks, samplefreq, fft_ts64->SIGNAL_NA_VALUE);
 
 
 // TODO: I couldn't figure out why is this here
@@ -585,103 +576,46 @@ void UI_SpectrumDockWindow::update_curve()
 //  }
 
 
-  for(i=0; i<fft_values.count(); i++)
+  for(i=0; i<fft_values_ts1.count(); i++)
   {
-      if (fft_values[i] == fft->SIGNAL_NA_VALUE)
-      {
-          fft_sqrt_values[i] = fft_sqrt->SIGNAL_NA_VALUE;
-          fft_vlog_values[i] = fft_vlog->SIGNAL_NA_VALUE;
-          fft_sqrt_vlog_values[i] = fft_sqrt_vlog->SIGNAL_NA_VALUE;
-          continue;
-      }
-  }
+      if (fft_values_ts1[i] == fft_ts1->SIGNAL_NA_VALUE) continue;
 
-
-  for(i=0; i<fft_values.count(); i++)
-  {
-      if (fft_values[i] == fft->SIGNAL_NA_VALUE) continue;
-
-      double fft_value = fft_values[i];
-      double fft_sqrt_value = sqrt(fft_value * freqstep);
-      fft_sqrt_values[i] = fft_sqrt_value;
-
-      fft_vlog_values[i] = (fft_value > SPECT_LOG_MINIMUM ? log10(fft_value) : log10(SPECT_LOG_MINIMUM));
-
-      fft_sqrt_vlog_values[i] = (fft_sqrt_value > SPECT_LOG_MINIMUM ? log10(fft_sqrt_value) : log10(SPECT_LOG_MINIMUM));
-
+      fft_values_ts1[i] = transformFFTValue(fft_values_ts1[i], fft_ts1->SIGNAL_NA_VALUE, freqstep);
 
 
     if(init_maxvalue && !set_settings)
     {
       if(i)  // don't use the dc-bin for the autogain of the screen
       {
-        if(fft_values[i] > maxvalue)
+        if(fft_values_ts1[i] > maxvalue)
         {
-          maxvalue = fft_values[i];
-        }
-
-        if(fft_sqrt_values[i] > maxvalue_sqrt)
-        {
-          maxvalue_sqrt = fft_sqrt_values[i];
-        }
-
-        if(fft_vlog_values[i] > maxvalue_vlog)
-        {
-          maxvalue_vlog = fft_vlog_values[i];
-        }
-
-        if(fft_sqrt_vlog_values[i] > maxvalue_sqrt_vlog)
-        {
-          maxvalue_sqrt_vlog = fft_sqrt_vlog_values[i];
-        }
-
-        if((fft_vlog_values[i] < minvalue_vlog) && (fft_vlog_values[i] >= SPECT_LOG_MINIMUM_LOG))
-        {
-          minvalue_vlog = fft_vlog_values[i];
-        }
-
-        if((fft_sqrt_vlog_values[i] < minvalue_sqrt_vlog) && (fft_sqrt_vlog_values[i] >= SPECT_LOG_MINIMUM_LOG))
-        {
-          minvalue_sqrt_vlog = fft_sqrt_vlog_values[i];
+          maxvalue = fft_values_ts1[i];
         }
       }
     }
   }
 
-  fft->SetHorizontalDensity(1.0/freqstep);
-  fft->SetValues(fft_values);
+  fft_ts1->SetHorizontalDensity(1.0/freqstep);
+  fft_ts1->SetValues(fft_values_ts1);
 
-  fft2->SetHorizontalDensity(1.0/freqstep);
-  fft2->SetValues(fft_values_p2);
+  fft_ts8->SetHorizontalDensity(1.0/freqstep);
+  fft_ts8->SetValues(fft_values_ts8);
 
-  fft4->SetHorizontalDensity(1.0/freqstep);
-  fft4->SetValues(fft_values_p4);
-
-  fft_sqrt->SetHorizontalDensity(1.0/freqstep);
-  fft_sqrt->SetValues(fft_sqrt_values);
-
-  fft_vlog->SetHorizontalDensity(1.0/freqstep);
-  fft_vlog->SetValues(fft_vlog_values);
-
-  fft_sqrt_vlog->SetHorizontalDensity(1.0/freqstep);
-  fft_sqrt_vlog->SetValues(fft_sqrt_vlog_values);
+  fft_ts64->SetHorizontalDensity(1.0/freqstep);
+  fft_ts64->SetValues(fft_values_ts64);
 
 
-  if(init_maxvalue)
-  {
-    if(minvalue_vlog < SPECT_LOG_MINIMUM_LOG)
-      minvalue_vlog = SPECT_LOG_MINIMUM_LOG;
 
-    if(minvalue_sqrt_vlog < SPECT_LOG_MINIMUM_LOG)
-      minvalue_sqrt_vlog = SPECT_LOG_MINIMUM_LOG;
-  }
-
+  // set the title of the histogram
   sprintf(str, "FFT resolution: %f Hz   %i blocks of %i samples", freqstep, dftblocks, dftblocksize);
 
   remove_trailing_zeros(str);
 
-  curve1->setHeaderText(str);
+  histogramView->setHeaderText(str);
 
+
+
+  // calculate the colorbar values
   if(spectrum_color != NULL)
   {
     if(spectrum_color->items > 0)
@@ -690,26 +624,26 @@ void UI_SpectrumDockWindow::update_curve()
 
       n = 0;
 
-      for(j=0; j<fft_values.count(); j++)
+      for(j=0; j<fft_values_ts1.count(); j++)
       {
         if(((freqstep * j) + (freqstep * 0.5)) < spectrum_color->freq[0])
         {
           if(spectrum_color->method == 0)  // sum
           {
-            spectrum_color->value[0] += fft_values[j];
+            spectrum_color->value[0] += fft_values_ts1[j];
           }
 
           if(spectrum_color->method == 1)  // peak
           {
-            if(spectrum_color->value[0] < fft_values[j])
+            if(spectrum_color->value[0] < fft_values_ts1[j])
             {
-              spectrum_color->value[0] = fft_values[j];
+              spectrum_color->value[0] = fft_values_ts1[j];
             }
           }
 
           if(spectrum_color->method == 2)  // average
           {
-            spectrum_color->value[0] += fft_values[j];
+            spectrum_color->value[0] += fft_values_ts1[j];
 
             n++;
           }
@@ -731,26 +665,26 @@ void UI_SpectrumDockWindow::update_curve()
 
       n = 0;
 
-      for(j=0; j<fft_values.count(); j++)
+      for(j=0; j<fft_values_ts1.count(); j++)
       {
         if((((freqstep * j) + (freqstep * 0.5)) > spectrum_color->freq[i-1]) && (((freqstep * j) + (freqstep * 0.5)) < spectrum_color->freq[i]))
         {
           if(spectrum_color->method == 0)  // sum
           {
-            spectrum_color->value[i] += fft_values[j];
+            spectrum_color->value[i] += fft_values_ts1[j];
           }
 
           if(spectrum_color->method == 1)  // peak
           {
-            if(spectrum_color->value[i] < fft_values[j])
+            if(spectrum_color->value[i] < fft_values_ts1[j])
             {
-              spectrum_color->value[i] = fft_values[j];
+              spectrum_color->value[i] = fft_values_ts1[j];
             }
           }
 
           if(spectrum_color->method == 2)  // average
           {
-            spectrum_color->value[i] += fft_values[j];
+            spectrum_color->value[i] += fft_values_ts1[j];
 
             n++;
           }
@@ -767,54 +701,41 @@ void UI_SpectrumDockWindow::update_curve()
     }
   }
 
-  if(mainwindow->spectrumdock_sqrt)
-  {
-    dock->setWindowTitle("Amplitude Spectrum of " + base_samples->GetAlias());
-  }
-  else
-  {
-    dock->setWindowTitle("Power Spectrum of " + base_samples->GetAlias());
-  }
 
-
+    // load the settings back from the montage
   if(set_settings)
   {
     set_settings = 0;
 
     if(settings.sqrt > 0)
     {
-      sqrtButton->setChecked(true);
+      sqrtCheckBox->setChecked(true);
     }
     else
     {
-      sqrtButton->setChecked(false);
+      sqrtCheckBox->setChecked(false);
     }
 
     if(settings.log > 0)
     {
-      vlogButton->setChecked(true);
+      vlogCheckBox->setChecked(true);
     }
     else
     {
-      vlogButton->setChecked(false);
+      vlogCheckBox->setChecked(false);
     }
 
     if(settings.colorbar > 0)
     {
-      colorBarButton->setChecked(true);
+      colorBarCheckBox->setChecked(true);
     }
     else
     {
-      colorBarButton->setChecked(false);
-    }
-
-    if((flywheel_value >= 10) && (flywheel_value <= 100000))
-    {
-      flywheel_value = settings.wheel;
+      colorBarCheckBox->setChecked(false);
     }
   }
 
-  curve1->setUpdatesEnabled(true);
+  histogramView->setUpdatesEnabled(true);
 
   busy = 0;
 
@@ -1028,7 +949,58 @@ QVector<double> UI_SpectrumDockWindow::calculateFFT(QVector<double> buf_samples,
     return result;
 }
 
+Signal* UI_SpectrumDockWindow::changeMode(SignalType historgramMode, QString signalName, QString signalAlias, QString baseUnit)
+{
+    Signal *result;
+
+    this->historgramMode = historgramMode;
+
+    QString verticalRulerName = "";
+
+    if ((historgramMode & SignalType::FFT) != SignalType::FFT) return result;
+
+    signalName += "-FFT";
+
+    if ((historgramMode & SignalType::SquareRoot) == SignalType::SquareRoot)
+    {
+        signalName += "-SQRT";
+        verticalRulerName = "Power";
+        baseUnit = "(" + baseUnit + ")^2/Hz";
+    } else {
+        verticalRulerName = "Amplitude";
+    }
+
+    if ((historgramMode & SignalType::LogScale) == SignalType::LogScale)
+    {
+        signalName += "-VLOG";
+        baseUnit = "log(" + baseUnit + ")";
+    }
+
+    result = new Signal("FFT", signalName, signalAlias, QVector<double>(), "Frequency", "Hz", 1.0, verticalRulerName, baseUnit, 1.0, SignalType::FFT | historgramMode);
+
+    return result;
+}
+
+double UI_SpectrumDockWindow::transformFFTValue(double value, double SIGNAL_NA_VALUE, double freqstep)
+{
+    if (value == SIGNAL_NA_VALUE) return value;
+
+    if ((historgramMode & SignalType::SquareRoot) == SignalType::SquareRoot)
+    {
+        value = sqrt(value * freqstep);
+    }
+
+    if ((historgramMode & SignalType::LogScale) == SignalType::LogScale)
+    {
+        value = (value > SPECT_LOG_MINIMUM ? log10(value) : log10(SPECT_LOG_MINIMUM));
+    }
+
+    return value;
+}
+
+
 UI_SpectrumDockWindow::~UI_SpectrumDockWindow()
 {
   delete SpectrumDialog;
 }
+

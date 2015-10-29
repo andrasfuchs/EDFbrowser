@@ -46,6 +46,8 @@
 #include <QString>
 #include <QStringList>
 #include <QMessageBox>
+#include <QButtonGroup>
+#include <QRadioButton>
 
 #include <stdio.h>
 #include <string.h>
@@ -63,6 +65,7 @@
 
 #include "models/signal.h"
 #include "models/signalcompblock.h"
+#include "models/signaltype.h"
 
 #include "third_party/fidlib/fidlib.h"
 #include "third_party/kiss_fft/kiss_fftr.h"
@@ -121,56 +124,47 @@ void setsettings(struct spectrumdocksettings);
 private:
 QVector<double> calculateFFT(QVector<double> buf_samples, int fft_outputbufsize, int dftblocksize, int *dftblocks, double samplefreq, double SIGNAL_NA_VALUE);
 QVector<double> compileSignalFromRawData(signalcompblock *signalcomp, char *viewbuf);
+Signal* changeMode(SignalType historgramMode, QString signalName, QString signalAlias, QString baseUnit);
+double transformFFTValue(double value, double SIGNAL_NA_VALUE, double freqstep);
 
 private:
 
   QWidget *parentwindow;
 
-  QHBoxLayout *hlayout1,
-              *hlayout2,
-              *hlayout3,
-              *hlayout4;
+  QHBoxLayout *hlayout1;
 
-  QVBoxLayout *vlayout1,
-              *vlayout2,
-              *vlayout3;
+  QVBoxLayout *vlayout2;
 
-  SignalCurve *curve1;
+  SignalCurve *histogramView;
 
   QTimer *t1;
 
-  QCheckBox *sqrtButton,
-            *vlogButton,
-            *colorBarButton;
+  QCheckBox *sqrtCheckBox,
+            *vlogCheckBox,
+            *colorBarCheckBox;
+
+  QButtonGroup *scaleButtonGroup;
+
 
   int spectrumdock_sqrt,
       spectrumdock_vlog,
       dashboard,
-      flywheel_value,
       init_maxvalue,
       signal_nr,
       set_settings;
 
   volatile int busy;
 
-  double maxvalue,
-         maxvalue_sqrt,
-         maxvalue_vlog,
-         maxvalue_sqrt_vlog,
-         minvalue_vlog,
-         minvalue_sqrt_vlog;
+  double maxvalue;
 
   Signal    *base_samples,
-            *fft,
-            *fft2,
-            *fft4,
-            *fft_sqrt,
-            *fft_vlog,
-            *fft_sqrt_vlog;
+            *fft_ts1,
+            *fft_ts8,
+            *fft_ts64;
 
   struct spectrumdocksettings settings;
 
-
+  SignalType historgramMode = SignalType::FFT | SignalType::LogScale | SignalType::SquareRoot;
 
 private slots:
 

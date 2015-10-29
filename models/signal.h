@@ -8,7 +8,7 @@
 #include <QPen>
 #include <QVector>
 
-enum class SubSignalType { Unknown = 0, LogScale = 1, SquareRoot = 2, FFT = 4, ZScore = 8, BMP = 16, Average = 32 };
+#include "models/signaltype.h"
 
 class Signal : public QObject
 {
@@ -17,7 +17,7 @@ class Signal : public QObject
     public:
       Signal();
 
-      Signal(QString id, QString name, QString alias, QVector<double> values, QString h_name, QString h_unit, double h_density, QString v_name, QString v_unit, double v_density);
+      Signal(QString id, QString name, QString alias, QVector<double> values, QString h_name, QString h_unit, double h_density, QString v_name, QString v_unit, double v_density, SignalType type);
 
       QString GetId();
 
@@ -25,6 +25,8 @@ class Signal : public QObject
 
       QString GetAlias();
       void SetAlias(QString alias);
+
+      SignalType GetType();
 
       QVector<double> GetValues();
       void SetValues(QVector<double> values);
@@ -35,7 +37,7 @@ class Signal : public QObject
       double GetPosition();
       void SetPosition(double position);
 
-      void GetSubSignal(SubSignalType type, double parameter);
+      void GetSubSignal(SignalType type, double parameter);
 
       QString GetHorizontalName();
       QString GetHorizontalUnit();
@@ -57,6 +59,8 @@ class Signal : public QObject
       void horizontalDensityChanged(double density);
 
     private:
+      SignalType type;
+
       QVector<double> values;               // signal values
 
       double position = 0,                  // our position at the moment (index of values array)

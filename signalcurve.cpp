@@ -1570,7 +1570,7 @@ void SignalCurve::drawCurve(double *sample_buffer, int start_index, int buffer_s
     if (signals_.count() == 0)
     {
         // this is a new signal
-        Signal *newSignal = new Signal("ADC", "ADC-FFT", "Frontal lobe", values, "Frequency", "Hz", buffer_size / 256.0, "Intensity", "???", 1.0);
+        Signal *newSignal = new Signal("ADC", "ADC-FFT", "Frontal lobe", values, "Frequency", "Hz", buffer_size / 256.0, "Intensity", "???", 1.0, SignalType::FFT);
 
         drawCurve(newSignal, 0.0, chartArea.width() / 20.0, h_min_value, h_max_value);
         resetRulers();

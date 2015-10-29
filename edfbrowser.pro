@@ -40,7 +40,8 @@ MOC_DIR = ./moc
 HEADERS += global.h \
     multitargetsupport.h \
     models/signal.h \
-    models/signalcompblock.h
+    models/signalcompblock.h \
+    models/signaltype.h
 HEADERS += mainwindow.h
 HEADERS += viewcurve.h
 HEADERS += popup_messagewindow.h
