@@ -52,6 +52,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <thread>
 
 #include "global.h"
 #include "mainwindow.h"
@@ -93,7 +94,14 @@ struct spectrumdocksettings{
                              double minvalue_sqrt_vlog;
                            };
 
-
+struct histogramSignalGroup {
+  Signal *base;                     // the signal that all others are based on
+  QCheckBox enabled;
+  QLabel nameLabel;
+  QList<double> *length_in_seconds; // lengths of the different timescales in seconds
+  QList<Signal*> *fft;              // FFT signals on different timescales
+  QList<QCheckBox> *fft_enabled;    // is the signal enabled
+};
 
 
 class UI_SpectrumDockWindow : public QObject
@@ -122,10 +130,12 @@ void getsettings(struct spectrumdocksettings *);
 void setsettings(struct spectrumdocksettings);
 
 private:
-QVector<double> calculateFFT(QVector<double> buf_samples, int fft_outputbufsize, int dftblocksize, int *dftblocks, double samplefreq, double SIGNAL_NA_VALUE);
+QVector<double> calculateFFT(QVector<double> buf_samples, int fft_outputbufsize, int dftblocksize, double samplefreq, double SIGNAL_NA_VALUE);
 QVector<double> compileSignalFromRawData(signalcompblock *signalcomp, char *viewbuf);
 Signal* changeMode(SignalType historgramMode, QString signalName, QString signalAlias, QString baseUnit);
 double transformFFTValue(double value, double SIGNAL_NA_VALUE, double freqstep);
+QVector<double> transformFFTValues(QVector<double> fft_values, double SIGNAL_NA_VALUE, double freqstep);
+void kiss_fftr_thread_func(kiss_fftr_cfg st, const kiss_fft_scalar *timedata, QVector<double> *result);
 
 private:
 
@@ -143,17 +153,16 @@ private:
 
   QButtonGroup *scaleButtonGroup;
 
+  QList<histogramSignalGroup> *signalMatrix = new QList<histogramSignalGroup>();
+
 
   int spectrumdock_sqrt,
       spectrumdock_vlog,
       dashboard,
-      init_maxvalue,
       signal_nr,
       set_settings;
 
   volatile int busy;
-
-  double maxvalue;
 
   Signal    *base_samples,
             *fft_ts1,

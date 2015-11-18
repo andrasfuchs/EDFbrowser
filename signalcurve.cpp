@@ -1336,7 +1336,7 @@ void SignalCurve::calculateRulerParameters(int length, double start_value, doubl
 
       if(*multiplier > 10000000)
       {
-        throw ("multiplier overflow in calculateRulerParameters");
+        throw std::runtime_error(std::string("multiplier overflow in calculateRulerParameters"));
         break;
       }
     }
@@ -1467,9 +1467,10 @@ void SignalCurve::drawSignalCurve(QPainter *painter, int curve_w, int curve_h, S
 
       QPolygon curvePolygon = QPolygon();
 
+      int signalValueCount = signal->GetValues().count();
       for(i = 0; i < signal_display_length; i++)
       {
-          double value = signal->GetValues()[i + (int)signal_display_start];
+          double value = (i < signalValueCount ? signal->GetValues()[i + (int)signal_display_start] : signal->SIGNAL_NA_VALUE);
           double vertical_position = (value + offset) * v_sens;
 
           if (value != signal->SIGNAL_NA_VALUE)

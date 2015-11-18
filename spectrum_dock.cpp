@@ -53,8 +53,6 @@ UI_SpectrumDockWindow::UI_SpectrumDockWindow(QWidget *w_parent)
 
   SpectrumDialog = new QDialog;
 
-  init_maxvalue = 1;
-
   if(mainwindow->spectrumdock_sqrt)
   {
     dock = new QDockWidget("Power Spectrum", w_parent);
@@ -219,7 +217,7 @@ void UI_SpectrumDockWindow::getsettings(struct spectrumdocksettings *sett)
     sett->colorbar = 0;
   }
 
-  sett->maxvalue = maxvalue;
+  sett->maxvalue = 0; //maxvalue;
 }
 
 
@@ -320,20 +318,20 @@ void UI_SpectrumDockWindow::changeSignals(Signal* signal, SignalType newMode)
 
   // generate the new fft signals
   fft_ts1 = changeMode(newMode, signal->GetName(), signal->GetAlias(), signal->GetVerticalUnit());
-  fft_ts1->SetPen(QPen(QColor(signalColor.red(), signalColor.green(), signalColor.blue(), signalColor.alpha() / 4), 1.0, Qt::DotLine));
+  fft_ts1->SetPen(QPen(QColor(signalColor.red(), signalColor.green(), signalColor.blue(), signalColor.alpha() * 0.6), 1.0, Qt::DotLine));
 
   fft_ts8 = new Signal(fft_ts1->GetId() + "/8", fft_ts1->GetName() + "/8", fft_ts1->GetAlias() + "/8", QVector<double>(), fft_ts1->GetHorizontalName(), fft_ts1->GetHorizontalUnit(), fft_ts1->GetHorizontalDensity(), fft_ts1->GetVerticalName(), fft_ts1->GetVerticalUnit(), fft_ts1->GetVerticalDensity(), fft_ts1->GetType());
-  fft_ts8->SetPen(QPen(QColor(signalColor.red(), signalColor.green(), signalColor.blue(), signalColor.alpha() / 2), 1.0, Qt::DashDotLine));
+  fft_ts8->SetPen(QPen(QColor(signalColor.red(), signalColor.green(), signalColor.blue(), signalColor.alpha() * 0.8), 1.0, Qt::DashDotLine));
 
   fft_ts64 = new Signal(fft_ts1->GetId() + "/64", fft_ts1->GetName() + "/64", fft_ts1->GetAlias() + "/64", QVector<double>(), fft_ts1->GetHorizontalName(), fft_ts1->GetHorizontalUnit(), fft_ts1->GetHorizontalDensity(), fft_ts1->GetVerticalName(), fft_ts1->GetVerticalUnit(), fft_ts1->GetVerticalDensity(), fft_ts1->GetType());
-  fft_ts64->SetPen(QPen(QColor(signalColor.red(), signalColor.green(), signalColor.blue(), signalColor.alpha() / 1), 1.0, Qt::SolidLine));
+  fft_ts64->SetPen(QPen(QColor(signalColor.red(), signalColor.green(), signalColor.blue(), signalColor.alpha() * 1.0), 1.0, Qt::SolidLine));
 
 
   // add signals to the histogram
   histogramView->removeSignal();
-  histogramView->addSignal(fft_ts1);
-  histogramView->addSignal(fft_ts8);
   histogramView->addSignal(fft_ts64);
+  histogramView->addSignal(fft_ts8);
+  histogramView->addSignal(fft_ts1);
 
   this->rescan();
 }
@@ -341,8 +339,6 @@ void UI_SpectrumDockWindow::changeSignals(Signal* signal, SignalType newMode)
 
 void UI_SpectrumDockWindow::init(int signal_num)
 {
-  init_maxvalue = 1;
-
 
   if(signal_num < 0)
   {
@@ -380,8 +376,6 @@ void UI_SpectrumDockWindow::clear()
 {
   int i;
 
-  init_maxvalue = 1;
-
   signalcomp = NULL;
 
 
@@ -403,7 +397,6 @@ void UI_SpectrumDockWindow::update_curve()
 {
   int i, j, n,
       dftblocksize,
-      dftblocks,
       fft_outputbufsize;
 
   char str[512];
@@ -461,18 +454,7 @@ void UI_SpectrumDockWindow::update_curve()
 
   dftblocksize = mainwindow->maxdftblocksize;
 
-  if(dftblocksize & 1)
-  {
-    dftblocksize--;
-  }
-
-  dftblocks = 1;
-
-  if(dftblocksize < buffer_of_samples.count())
-  {
-    dftblocks = buffer_of_samples.count() / dftblocksize;
-  }
-  else
+  if(dftblocksize > buffer_of_samples.count())
   {
     dftblocksize = buffer_of_samples.count();
   }
@@ -488,29 +470,15 @@ void UI_SpectrumDockWindow::update_curve()
   fft_outputbufsize = dftblocksize / 2;
 
 
-  // set up the limits
-  if(init_maxvalue && !set_settings)
-  {
-    maxvalue = 0.000001;
-  }
-
-  if(set_settings)
-  {
-    maxvalue = settings.maxvalue;
-  }
 
   // ---------- FFT CALCULATION  
-  QVector<double> fft_values_ts1 = calculateFFT(buffer_of_samples, fft_outputbufsize, dftblocksize, &dftblocks, samplefreq, fft_ts1->SIGNAL_NA_VALUE);
+  QVector<double> fft_values_ts1 = calculateFFT(buffer_of_samples, fft_outputbufsize, dftblocksize, samplefreq, fft_ts1->SIGNAL_NA_VALUE);
 
   buffer_of_samples.remove(0, 7 * (buffer_of_samples.count() / 8));
-  dftblocks /= 8;
-  dftblocks = (dftblocks == 0 ? 1 : dftblocks);
-  QVector<double> fft_values_ts8 = calculateFFT(buffer_of_samples, fft_outputbufsize, dftblocksize, &dftblocks, samplefreq, fft_ts8->SIGNAL_NA_VALUE);
+  QVector<double> fft_values_ts8 = calculateFFT(buffer_of_samples, fft_outputbufsize, dftblocksize, samplefreq, fft_ts8->SIGNAL_NA_VALUE);
 
   buffer_of_samples.remove(0, 7 * (buffer_of_samples.count() / 8));
-  dftblocks /= 8;
-  dftblocks = (dftblocks == 0 ? 1 : dftblocks);
-  QVector<double> fft_values_ts64 = calculateFFT(buffer_of_samples, fft_outputbufsize, dftblocksize, &dftblocks, samplefreq, fft_ts64->SIGNAL_NA_VALUE);
+  QVector<double> fft_values_ts64 = calculateFFT(buffer_of_samples, fft_outputbufsize, dftblocksize, samplefreq, fft_ts64->SIGNAL_NA_VALUE);
 
 
 // TODO: I couldn't figure out why is this here
@@ -523,25 +491,12 @@ void UI_SpectrumDockWindow::update_curve()
 //    fft_values[0] = 0.0;  // Remove DC because heart rate is always a positive value
 //  }
 
-
-  for(i=0; i<fft_values_ts1.count(); i++)
-  {
-      if (fft_values_ts1[i] == fft_ts1->SIGNAL_NA_VALUE) continue;
-
-      fft_values_ts1[i] = transformFFTValue(fft_values_ts1[i], fft_ts1->SIGNAL_NA_VALUE, freqstep);
+  // we need to transform the values if they are logarithmic and/or power values
+  fft_values_ts1 = transformFFTValues(fft_values_ts1, fft_ts1->SIGNAL_NA_VALUE, freqstep);
+  fft_values_ts8 = transformFFTValues(fft_values_ts8, fft_ts8->SIGNAL_NA_VALUE, freqstep);
+  fft_values_ts64 = transformFFTValues(fft_values_ts64, fft_ts64->SIGNAL_NA_VALUE, freqstep);
 
 
-    if(init_maxvalue && !set_settings)
-    {
-      if(i)  // don't use the dc-bin for the autogain of the screen
-      {
-        if(fft_values_ts1[i] > maxvalue)
-        {
-          maxvalue = fft_values_ts1[i];
-        }
-      }
-    }
-  }
 
   fft_ts1->SetHorizontalDensity(1.0/freqstep);
   fft_ts1->SetValues(fft_values_ts1);
@@ -555,7 +510,7 @@ void UI_SpectrumDockWindow::update_curve()
 
 
   // set the title of the histogram
-  sprintf(str, "FFT resolution: %f Hz   %i blocks of %i samples", freqstep, dftblocks, dftblocksize);
+  sprintf(str, "FFT resolution: %f Hz   %i samples", freqstep, dftblocksize);
 
   remove_trailing_zeros(str);
 
@@ -668,8 +623,6 @@ void UI_SpectrumDockWindow::update_curve()
   histogramView->setUpdatesEnabled(true);
 
   busy = 0;
-
-  init_maxvalue = 0;
 }
 
 QVector<double> UI_SpectrumDockWindow::compileSignalFromRawData(signalcompblock *signalcomp, char *viewbuf)
@@ -794,72 +747,45 @@ QVector<double> UI_SpectrumDockWindow::compileSignalFromRawData(signalcompblock 
     return result;
 }
 
-QVector<double> UI_SpectrumDockWindow::calculateFFT(QVector<double> buf_samples, int fft_outputbufsize, int dftblocksize, int *dftblocks, double samplefreq, double SIGNAL_NA_VALUE)
+QVector<double> UI_SpectrumDockWindow::calculateFFT(QVector<double> buf_samples, int fft_outputbufsize, int dftblocksize, double samplefreq, double SIGNAL_NA_VALUE)
 {
     kiss_fftr_cfg cfg;
-    kiss_fft_cpx *kiss_fftbuf;
     QVector<double> result = QVector<double>(fft_outputbufsize);
 
 
-    kiss_fftbuf = (kiss_fft_cpx *)malloc((fft_outputbufsize + 1) * sizeof(kiss_fft_cpx));
-    if(kiss_fftbuf == NULL)
-    {
-      throw ("Error", "The system was not able to provide enough resources (memory) to perform the requested action.");
-    }
-
     cfg = kiss_fftr_alloc(dftblocksize, 0, NULL, NULL);
 
-
-    for(int j=0; j<(*dftblocks); j++)
+    int dftblocks = 0;
+    int start_offset = buf_samples.count();
+    while (start_offset - dftblocksize >= 0)
     {
-      kiss_fftr(cfg, buf_samples.data() + (j * dftblocksize), kiss_fftbuf);
+        start_offset -= dftblocksize;
+        dftblocks++;
 
-      for(int i=0; i<fft_outputbufsize; i++)
-      {
-        result[i] += (((kiss_fftbuf[i].r * kiss_fftbuf[i].r) + (kiss_fftbuf[i].i * kiss_fftbuf[i].i)) / fft_outputbufsize);
-      }
+        kiss_fftr_thread_func(cfg, buf_samples.data() + start_offset, &result);
+
+        // TODO: multithread support
+        // std::thread t(&UI_SpectrumDockWindow::kiss_fftr_thread_func, this, cfg, buf_samples.data() + start_offset, &result);
+        // t.join();
     }
 
-    int samplesleft = buf_samples.count() % dftblocksize;
-    if(samplesleft & 1)
-    {
-      samplesleft--;
-    }
 
-    if(samplesleft)
+    for(int i=0; i<result.count(); i++)
     {
-        // we need an extra FFT block to process all samples
-      kiss_fftr(cfg, buf_samples.data() + ((((*dftblocks)-1) * dftblocksize) + samplesleft), kiss_fftbuf);
-
-      for(int i=0; i<fft_outputbufsize; i++)
-      {
-        result[i] += (((kiss_fftbuf[i].r * kiss_fftbuf[i].r) + (kiss_fftbuf[i].i * kiss_fftbuf[i].i)) / fft_outputbufsize);
-
-        result[i] /= ((*dftblocks) + 1);
-      }
-    }
-    else
-    {
-      for(int i=0; i<fft_outputbufsize; i++)
-      {
-        result[i] /= (*dftblocks);
-      }
-    }
-
-    if(samplesleft)
-    {
-      (*dftblocks)++;
+        if (dftblocks > 0)
+        {
+          result[i] /= (dftblocks);
+          result[i] /= samplefreq;
+        }
+        else
+        {
+          result[i] = SIGNAL_NA_VALUE;
+        }
     }
 
 
     free(cfg);
-    free(kiss_fftbuf);
 
-
-    for (int i=0; i<result.count(); i++)
-    {
-        result[i] /= samplefreq;
-    }
 
     double samples_length_in_seconds = (double)buf_samples.count() / samplefreq;
 
@@ -877,6 +803,25 @@ QVector<double> UI_SpectrumDockWindow::calculateFFT(QVector<double> buf_samples,
     }
 
     return result;
+}
+
+void UI_SpectrumDockWindow::kiss_fftr_thread_func(kiss_fftr_cfg st, const kiss_fft_scalar *timedata, QVector<double> *result)
+{
+  kiss_fft_cpx *kiss_fftbuf;
+
+  kiss_fftbuf = (kiss_fft_cpx *)malloc((result->count() + 1) * sizeof(kiss_fft_cpx));
+  if(kiss_fftbuf == NULL)
+  {
+    throw std::runtime_error(std::string("The system was not able to provide enough resources (memory) to perform the requested action."));
+  }
+
+  kiss_fftr(st, timedata, kiss_fftbuf);
+  for(int i=0; i<result->count(); i++)
+  {
+    (*result)[i] += (((kiss_fftbuf[i].r * kiss_fftbuf[i].r) + (kiss_fftbuf[i].i * kiss_fftbuf[i].i)) / result->count());
+  }
+
+  free(kiss_fftbuf);
 }
 
 Signal* UI_SpectrumDockWindow::changeMode(SignalType historgramMode, QString signalName, QString signalAlias, QString baseUnit)
@@ -927,6 +872,24 @@ double UI_SpectrumDockWindow::transformFFTValue(double value, double SIGNAL_NA_V
 
     return value;
 }
+
+QVector<double> UI_SpectrumDockWindow::transformFFTValues(QVector<double> fft_values, double SIGNAL_NA_VALUE, double freqstep)
+{
+  QVector<double> result = QVector<double>();
+
+  for(int i=0; i<fft_values.count(); i++)
+  {
+      if (fft_values[i] == SIGNAL_NA_VALUE)
+      {
+        result.append(SIGNAL_NA_VALUE);
+      } else {
+        result.append(transformFFTValue(fft_values[i], SIGNAL_NA_VALUE, freqstep));
+      }
+  }
+
+  return result;
+}
+
 
 
 UI_SpectrumDockWindow::~UI_SpectrumDockWindow()
