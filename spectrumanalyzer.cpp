@@ -424,7 +424,6 @@ void UI_FreqSpectrumWindow::sliderMoved(int)
 {
   int startstep,
       stopstep,
-      precision,
       spanstep;
 
   double max_freq,
@@ -545,31 +544,19 @@ void UI_FreqSpectrumWindow::sliderMoved(int)
 
   max_freq = ((double)samplefreq / 2.0) * stopstep / steps;
 
-  precision = 0;
-  if(max_freq < 10.0)
-  {
-    precision = 1;
-  }
-  if(max_freq < 1.0)
-  {
-    precision = 2;
-  }
-  if(max_freq < 0.1)
-  {
-    precision = 3;
-  }
-  if(max_freq < 0.01)
-  {
-    precision = 4;
-  }
-
   start_freq = ((double)samplefreq / 2.0) * startstep / steps;
 
   curve1->setH_RulerValues(start_freq, max_freq);
 
-  centerLabel->setText(QString::number(start_freq + ((max_freq - start_freq) / 2.0), 'f', precision).append(" Hz").prepend("Center "));
+  strcpy(str, "Center ");
+  convert_to_metric_suffix(str + strlen(str), start_freq + ((max_freq - start_freq) / 2.0), 3);
+  strcat(str, "Hz");
+  centerLabel->setText(str);
 
-  spanLabel->setText(QString::number(max_freq - start_freq, 'f', precision).append(" Hz").prepend("Span "));
+  strcpy(str, "Span ");
+  convert_to_metric_suffix(str + strlen(str), max_freq - start_freq, 3);
+  strcat(str, "Hz");
+  spanLabel->setText(str);
 }
 
 

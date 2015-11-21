@@ -4710,7 +4710,7 @@ void UI_Mainwindow::setup_viewbuf()
       }
       else
       {
-        convert_to_metric_suffix(pagetime_string, (double)pagetime / TIME_DIMENSION);
+        convert_to_metric_suffix(pagetime_string, (double)pagetime / TIME_DIMENSION, 3);
 
         strcat(pagetime_string, "S");
       }
@@ -5757,13 +5757,17 @@ void UI_Mainwindow::read_general_settings()
       return;
     }
 
-    if(atoi(result) < 10)
+    maxdftblocksize = atoi(result);
+
+    if(maxdftblocksize > (32768 * 512))
     {
-      xml_close(xml_hdl);
-      return;
+      maxdftblocksize = 32768 * 512;
     }
 
-    maxdftblocksize = atoi(result);
+    if(maxdftblocksize < 10)
+    {
+      maxdftblocksize = 1000;
+    }
   }
 
   xml_go_up(xml_hdl);

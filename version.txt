@@ -1,10 +1,15 @@
 
- version 1.57
+ version 1.57      release date to be defined
  --------------
 
  - Update annotation markers when switching between real and relative time.
 
  - Added an EDF converter for the Biox CB-1305-C 3-channel ambulatory ECG recorder/holter.
+
+ - Spectrumanalyzer: make numbers like frequency more "human readable"
+   by using suffix like K(ilo), M(ega), etc.
+
+ - Increase the maximum DFT blocksize to 16777216 samples.
 
 
 

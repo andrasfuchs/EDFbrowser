@@ -1599,86 +1599,6 @@ void hextobin(char *dest, const char *str)
 }
 
 
-int convert_to_metric_suffix(char *buf, double value)
-{
-  double ltmp;
-
-  char suffix=' ';
-
-  if(value < 0)
-  {
-      ltmp = value * -1;
-  }
-  else
-  {
-      ltmp = value;
-  }
-
-  if(ltmp >= 1e12 && ltmp < 1e15)
-  {
-      ltmp = ltmp / 1e12;
-
-      suffix = 'T';
-  }
-  else if(ltmp >= 1e9 && ltmp < 1e12)
-    {
-        ltmp = ltmp / 1e9;
-
-        suffix = 'G';
-    }
-    else if(ltmp >= 1e6 && ltmp < 1e9)
-      {
-          ltmp = ltmp / 1e6;
-
-          suffix = 'M';
-      }
-      else if(ltmp >= 1e3 && ltmp < 1e6)
-        {
-          ltmp /= 1e3;
-
-          suffix = 'K';
-        }
-        else if(ltmp >= 1e-3 && ltmp < 1)
-          {
-            ltmp *= 1e3;
-
-            suffix = 'm';
-          }
-          else if( ltmp >= 1e-6 && ltmp < 1e-3)
-            {
-              ltmp *= 1e6;
-
-              suffix = 'u';
-            }
-            else if(ltmp >= 1e-9 && ltmp < 1e-6)
-              {
-                ltmp *= 1e9;
-
-                suffix = 'n';
-              }
-              else if(ltmp >= 1e-12 && ltmp < 1e-9)
-                {
-                  ltmp *= 1e12;
-
-                  suffix = 'p';
-                }
-
-  if(value >= 0)
-  {
-    return sprintf(buf, "%.3f%c", ltmp, suffix);
-  }
-
-  if(value < 0)
-  {
-    return sprintf(buf, "%.3f%c", ltmp * -1, suffix);
-  }
-
-  strcpy(buf, "0");
-
-  return 1;
-}
-
-
 double round_up_step125(double val)
 {
   int i, exp=0;
@@ -1778,6 +1698,114 @@ double round_down_step125(double val)
   }
 
   return ltmp;
+}
+
+
+int convert_to_metric_suffix(char *buf, double value, int decimals)
+{
+  double ltmp;
+
+  char suffix=' ';
+
+  if(value < 0)
+  {
+      ltmp = value * -1;
+  }
+  else
+  {
+      ltmp = value;
+  }
+
+  if(ltmp >= 1e12 && ltmp < 1e15)
+  {
+      ltmp = ltmp / 1e12;
+
+      suffix = 'T';
+  }
+  else if(ltmp >= 1e9 && ltmp < 1e12)
+    {
+        ltmp = ltmp / 1e9;
+
+        suffix = 'G';
+    }
+    else if(ltmp >= 1e6 && ltmp < 1e9)
+      {
+          ltmp = ltmp / 1e6;
+
+          suffix = 'M';
+      }
+      else if(ltmp >= 1e3 && ltmp < 1e6)
+        {
+          ltmp /= 1e3;
+
+          suffix = 'K';
+        }
+        else if(ltmp >= 1e-3 && ltmp < 1)
+          {
+            ltmp *= 1e3;
+
+            suffix = 'm';
+          }
+          else if( ltmp >= 1e-6 && ltmp < 1e-3)
+            {
+              ltmp *= 1e6;
+
+              suffix = 'u';
+            }
+            else if(ltmp >= 1e-9 && ltmp < 1e-6)
+              {
+                ltmp *= 1e9;
+
+                suffix = 'n';
+              }
+              else if(ltmp >= 1e-12 && ltmp < 1e-9)
+                {
+                  ltmp *= 1e12;
+
+                  suffix = 'p';
+                }
+
+  if(value >= 0)
+  {
+    switch(decimals)
+    {
+      case 0: return sprintf(buf, "%.0f%c", ltmp, suffix);
+              break;
+      case 1: return sprintf(buf, "%.1f%c", ltmp, suffix);
+              break;
+      case 2: return sprintf(buf, "%.2f%c", ltmp, suffix);
+              break;
+      case 3: return sprintf(buf, "%.3f%c", ltmp, suffix);
+              break;
+      case 4: return sprintf(buf, "%.4f%c", ltmp, suffix);
+              break;
+      case 5: return sprintf(buf, "%.5f%c", ltmp, suffix);
+              break;
+      case 6: return sprintf(buf, "%.6f%c", ltmp, suffix);
+              break;
+      default: return sprintf(buf, "%.3f%c", ltmp, suffix);
+              break;
+    }
+  }
+
+  if(value < 0)
+  {
+    switch(decimals)
+    {
+      case 0: return sprintf(buf, "%.0f%c", ltmp * -1, suffix);
+              break;
+      case 1: return sprintf(buf, "%.1f%c", ltmp * -1, suffix);
+              break;
+      case 2: return sprintf(buf, "%.2f%c", ltmp * -1, suffix);
+              break;
+      default: return sprintf(buf, "%.3f%c", ltmp * -1, suffix);
+              break;
+    }
+  }
+
+  strcpy(buf, "0");
+
+  return 1;
 }
 
 

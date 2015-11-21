@@ -418,7 +418,7 @@ UI_OptionsDialog::UI_OptionsDialog(QWidget *w_parent)
   spinbox3_1->setGeometry(QRect(140, 552, 140, 20));
   spinbox3_1->setSuffix(" samples");
   spinbox3_1->setMinimum(10);
-  spinbox3_1->setMaximum(32768);
+  spinbox3_1->setMaximum(32768 * 512);
   spinbox3_1->setSingleStep(2);
   spinbox3_1->setValue(mainwindow->maxdftblocksize);
 
