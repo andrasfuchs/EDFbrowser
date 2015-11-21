@@ -67,6 +67,7 @@
 #include "models/signal.h"
 #include "models/signalcompblock.h"
 #include "models/signaltype.h"
+#include "models/histogramsignalgroup.h"
 
 #include "third_party/fidlib/fidlib.h"
 #include "third_party/kiss_fft/kiss_fftr.h"
@@ -93,15 +94,6 @@ struct spectrumdocksettings{
                              double minvalue_vlog;
                              double minvalue_sqrt_vlog;
                            };
-
-struct histogramSignalGroup {
-  Signal *base;                     // the signal that all others are based on
-  QCheckBox enabled;
-  QLabel nameLabel;
-  QList<double> *length_in_seconds; // lengths of the different timescales in seconds
-  QList<Signal*> *fft;              // FFT signals on different timescales
-  QList<QCheckBox> *fft_enabled;    // is the signal enabled
-};
 
 
 class UI_SpectrumDockWindow : public QObject
@@ -153,7 +145,7 @@ private:
 
   QButtonGroup *scaleButtonGroup;
 
-  QList<histogramSignalGroup> *signalMatrix = new QList<histogramSignalGroup>();
+  QList<HistogramSignalGroup*> signalMatrix = QList<HistogramSignalGroup*>();
 
 
   int spectrumdock_sqrt,
@@ -164,14 +156,14 @@ private:
 
   volatile int busy;
 
-  Signal    *base_samples,
-            *fft_ts1,
-            *fft_ts8,
-            *fft_ts64;
+  Signal    *base_samples;
 
   struct spectrumdocksettings settings;
 
   SignalType historgramMode = SignalType::FFT | SignalType::LogScale | SignalType::SquareRoot;
+
+
+  void addSignalWidgets(QBoxLayout *parentLayout, int histogramSignalGroupIndex);
 
 private slots:
 
@@ -181,6 +173,8 @@ void colorBarButtonClicked(bool);
 void print_to_txt();
 void setdashboard();
 void scaleButtonClicked(bool checked);
+void signalGroupEnabledCheckBoxStateChanged(int state);
+void signalGroupFFTEnabledCheckBoxStateChanged(int state);
 
 };
 

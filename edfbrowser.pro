@@ -41,7 +41,8 @@ HEADERS += global.h \
     multitargetsupport.h \
     models/signal.h \
     models/signalcompblock.h \
-    models/signaltype.h
+    models/signaltype.h \
+    models/histogramsignalgroup.h
 HEADERS += mainwindow.h
 HEADERS += viewcurve.h
 HEADERS += popup_messagewindow.h
@@ -130,7 +131,8 @@ HEADERS += third_party/kiss_fft/kiss_fftr.h
 
 SOURCES += main.cpp \
     multitargetsupport.cpp \
-    models/signal.cpp
+    models/signal.cpp \
+    models/histogramsignalgroup.cpp
 SOURCES += mainwindow.cpp
 SOURCES += viewcurve.cpp
 SOURCES += popup_messagewindow.cpp

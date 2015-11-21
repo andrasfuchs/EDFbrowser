@@ -7,6 +7,7 @@
 #include <QColor>
 #include <QPen>
 #include <QVector>
+#include <QString>
 
 #include "models/signaltype.h"
 
@@ -25,6 +26,8 @@ class Signal : public QObject
 
       QString GetAlias();
       void SetAlias(QString alias);
+
+      QString GetDisplayName();
 
       SignalType GetType();
 

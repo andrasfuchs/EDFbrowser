@@ -1,6 +1,3 @@
-#include <QString>
-#include <QColor>
-
 #include "signal.h"
 
 Signal::Signal(QString id, QString name, QString alias, QVector<double> values, QString h_name, QString h_unit, double h_density, QString v_name, QString v_unit, double v_density, SignalType type)
@@ -46,6 +43,17 @@ void Signal::SetAlias(QString alias)
     emit aliasChanged(this->alias);
   }
 }
+
+QString Signal::GetDisplayName()
+{
+    if (this->GetAlias() != "")
+    {
+      return this->GetAlias();
+    } else {
+      return this->GetName();
+    }
+}
+
 
 SignalType Signal::GetType()
 {

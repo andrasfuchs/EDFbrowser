@@ -1,11 +1,11 @@
 /*
 ***************************************************************************
 *
-* Author: Teunis van Beelen
+* Author: Teunis van Beelen, Andras Fuchs
 *
 * Copyright (C) 2010, 2011, 2012, 2013, 2014, 2015 Teunis van Beelen
 *
-* Email: teuniz@gmail.com
+* Email: teuniz@gmail.com, andras.fuchs@gmail.com
 *
 ***************************************************************************
 *
@@ -84,7 +84,9 @@ UI_SpectrumDockWindow::UI_SpectrumDockWindow(QWidget *w_parent)
   scaleButtonGroup->addButton(new QRadioButton("Linear Amplitude"), 0);
   scaleButtonGroup->addButton(new QRadioButton("Logarithmic Amplitude"), 1);
   scaleButtonGroup->addButton(new QRadioButton("Linear Power"), 2);
-  scaleButtonGroup->addButton(new QRadioButton("Logarithmic Power"), 3);
+  QRadioButton *rb = new QRadioButton("Logarithmic Power");
+  rb->setChecked(true);
+  scaleButtonGroup->addButton(rb, 3);
 
   for(QAbstractButton *btn : scaleButtonGroup->buttons())
   {
@@ -113,36 +115,6 @@ UI_SpectrumDockWindow::UI_SpectrumDockWindow(QWidget *w_parent)
   scaleGroupBox->setLayout(scaleButtonGroupLayout);
   vlayout2->addWidget(scaleGroupBox);
 
-  QHBoxLayout *signalListLayout = new QHBoxLayout();
-  QCheckBox *signalNameCheckBox = new QCheckBox("ADC-Fp1");
-  signalNameCheckBox->setChecked(true);
-  //signalNameCheckBox->setStyleSheet("background-color: red;");
-  signalListLayout->addWidget(signalNameCheckBox);
-  signalListLayout->addWidget(new QCheckBox());
-  signalListLayout->addWidget(new QCheckBox());
-  signalListLayout->addWidget(new QCheckBox());
-  vlayout2->addLayout(signalListLayout);
-
-  signalListLayout = new QHBoxLayout();
-  signalNameCheckBox = new QCheckBox("ADC-F7");
-  signalNameCheckBox->setChecked(true);
-  //signalNameCheckBox->setStyleSheet("background-color: red;");
-  signalListLayout->addWidget(signalNameCheckBox);
-  signalListLayout->addWidget(new QCheckBox());
-  signalListLayout->addWidget(new QCheckBox());
-  signalListLayout->addWidget(new QCheckBox());
-  vlayout2->addLayout(signalListLayout);
-
-  signalListLayout = new QHBoxLayout();
-  signalNameCheckBox = new QCheckBox("ADC-P3");
-  signalNameCheckBox->setChecked(true);
-  //signalNameCheckBox->setStyleSheet("background-color: red;");
-  signalListLayout->addWidget(signalNameCheckBox);
-  signalListLayout->addWidget(new QCheckBox());
-  signalListLayout->addWidget(new QCheckBox());
-  signalListLayout->addWidget(new QCheckBox());
-  vlayout2->addLayout(signalListLayout);
-
 
   hlayout1 = new QHBoxLayout();
   hlayout1->setSpacing(20);
@@ -162,6 +134,80 @@ UI_SpectrumDockWindow::UI_SpectrumDockWindow(QWidget *w_parent)
   QObject::connect(colorBarCheckBox,  SIGNAL(toggled(bool)),          this, SLOT(colorBarButtonClicked(bool)));
   QObject::connect(histogramView,          SIGNAL(extra_button_clicked()), this, SLOT(print_to_txt()));
   QObject::connect(histogramView,          SIGNAL(dashBoardClicked()),     this, SLOT(setdashboard()));
+}
+
+void UI_SpectrumDockWindow::addSignalWidgets(QBoxLayout *parentLayout, int histogramSignalGroupIndex)
+{    
+  HistogramSignalGroup *signalGroup = signalMatrix[histogramSignalGroupIndex];
+
+  QString signalListLayoutName = "sllayout" + QString::number(histogramSignalGroupIndex);
+
+  // TODO: this is temporary, because I couldn't delete the old widget
+  QHBoxLayout* oldLayout = parentLayout->findChild<QHBoxLayout*>(signalListLayoutName);
+  if (oldLayout)
+  {
+    return;
+  }
+
+  QHBoxLayout *signalListLayout = new QHBoxLayout();
+  signalListLayout->setObjectName(signalListLayoutName);
+
+  QCheckBox *chk = new QCheckBox();
+  chk->setObjectName("chk" + QString::number(histogramSignalGroupIndex * 100));
+  chk->setMinimumWidth(150);
+  chk->setMaximumWidth(150);
+  chk->setChecked(signalGroup->enabled);
+  chk->setText(signalGroup->base->GetDisplayName());
+  //chk->setStyleSheet("background-color: red;");
+  signalListLayout->addWidget(chk);
+
+  connect(chk, SIGNAL(stateChanged(int)), this, SLOT(signalGroupEnabledCheckBoxStateChanged(int)));
+
+
+
+  for (int i=0; i<signalGroup->fft.count(); ++i) {
+    QCheckBox* cb = new QCheckBox();
+    cb->setObjectName("chk" + QString::number(histogramSignalGroupIndex * 100 + i));
+    cb->setMinimumWidth(50);
+    cb->setMaximumWidth(50);
+    cb->setChecked(signalGroup->fft_enabled[i]);
+    cb->setToolTip(signalGroup->fft[i]->GetDisplayName());
+    signalListLayout->addWidget(cb);
+
+    connect(cb, SIGNAL(stateChanged(int)), this, SLOT(signalGroupFFTEnabledCheckBoxStateChanged(int)));
+  }
+
+  if (oldLayout)
+  {
+    oldLayout->setEnabled(false);
+    parentLayout->removeItem(oldLayout);
+    delete oldLayout;
+  }
+
+  parentLayout->addLayout(signalListLayout);
+}
+
+void UI_SpectrumDockWindow::signalGroupEnabledCheckBoxStateChanged(int state)
+{
+  QCheckBox* chk = dynamic_cast<QCheckBox*>(sender());
+  int histogramSignalGroupIndex = chk->objectName().remove(0,3).toInt() / 100;
+
+  HistogramSignalGroup *signalGroup = signalMatrix[histogramSignalGroupIndex];
+  signalGroup->enabled = (state == 2);
+
+  update_curve();
+}
+
+void UI_SpectrumDockWindow::signalGroupFFTEnabledCheckBoxStateChanged(int state)
+{
+  QCheckBox* chk = dynamic_cast<QCheckBox*>(sender());
+  int histogramSignalGroupIndex = chk->objectName().remove(0,3).toInt() / 100;
+  int fftIndex = chk->objectName().remove(0,3).toInt() % 100;
+
+  HistogramSignalGroup *signalGroup = signalMatrix[histogramSignalGroupIndex];
+  signalGroup->fft_enabled[fftIndex] = (state == 2);
+
+  update_curve();
 }
 
 void UI_SpectrumDockWindow::scaleButtonClicked(bool checked)
@@ -240,6 +286,9 @@ void UI_SpectrumDockWindow::setdashboard()
 
 void UI_SpectrumDockWindow::print_to_txt()
 {
+  // TODO: rewrite TXT printer
+
+  /*
   int i;
 
   char str[1024],
@@ -292,6 +341,7 @@ void UI_SpectrumDockWindow::print_to_txt()
   }
 
   fclose (outputfile);
+  */
 }
 
 
@@ -317,21 +367,34 @@ void UI_SpectrumDockWindow::changeSignals(Signal* signal, SignalType newMode)
   QColor signalColor = base_samples->GetPen().color();
 
   // generate the new fft signals
-  fft_ts1 = changeMode(newMode, signal->GetName(), signal->GetAlias(), signal->GetVerticalUnit());
+  Signal *fft_ts1 = changeMode(newMode, signal->GetName(), signal->GetAlias(), signal->GetVerticalUnit());
   fft_ts1->SetPen(QPen(QColor(signalColor.red(), signalColor.green(), signalColor.blue(), signalColor.alpha() * 0.6), 1.0, Qt::DotLine));
 
-  fft_ts8 = new Signal(fft_ts1->GetId() + "/8", fft_ts1->GetName() + "/8", fft_ts1->GetAlias() + "/8", QVector<double>(), fft_ts1->GetHorizontalName(), fft_ts1->GetHorizontalUnit(), fft_ts1->GetHorizontalDensity(), fft_ts1->GetVerticalName(), fft_ts1->GetVerticalUnit(), fft_ts1->GetVerticalDensity(), fft_ts1->GetType());
+  Signal *fft_ts8 = new Signal(fft_ts1->GetId() + "/8", fft_ts1->GetName() + "/8", fft_ts1->GetAlias() + "/8", QVector<double>(), fft_ts1->GetHorizontalName(), fft_ts1->GetHorizontalUnit(), fft_ts1->GetHorizontalDensity(), fft_ts1->GetVerticalName(), fft_ts1->GetVerticalUnit(), fft_ts1->GetVerticalDensity(), fft_ts1->GetType());
   fft_ts8->SetPen(QPen(QColor(signalColor.red(), signalColor.green(), signalColor.blue(), signalColor.alpha() * 0.8), 1.0, Qt::DashDotLine));
 
-  fft_ts64 = new Signal(fft_ts1->GetId() + "/64", fft_ts1->GetName() + "/64", fft_ts1->GetAlias() + "/64", QVector<double>(), fft_ts1->GetHorizontalName(), fft_ts1->GetHorizontalUnit(), fft_ts1->GetHorizontalDensity(), fft_ts1->GetVerticalName(), fft_ts1->GetVerticalUnit(), fft_ts1->GetVerticalDensity(), fft_ts1->GetType());
+  Signal *fft_ts64 = new Signal(fft_ts1->GetId() + "/64", fft_ts1->GetName() + "/64", fft_ts1->GetAlias() + "/64", QVector<double>(), fft_ts1->GetHorizontalName(), fft_ts1->GetHorizontalUnit(), fft_ts1->GetHorizontalDensity(), fft_ts1->GetVerticalName(), fft_ts1->GetVerticalUnit(), fft_ts1->GetVerticalDensity(), fft_ts1->GetType());
   fft_ts64->SetPen(QPen(QColor(signalColor.red(), signalColor.green(), signalColor.blue(), signalColor.alpha() * 1.0), 1.0, Qt::SolidLine));
 
+  signalMatrix[0]->length_in_seconds.append(1.0);
+  signalMatrix[0]->fft_enabled.append(true);
+  signalMatrix[0]->fft.append(fft_ts1);
+
+  signalMatrix[0]->length_in_seconds.append(8.0);
+  signalMatrix[0]->fft_enabled.append(true);
+  signalMatrix[0]->fft.append(fft_ts8);
+
+  signalMatrix[0]->length_in_seconds.append(64.0);
+  signalMatrix[0]->fft_enabled.append(true);
+  signalMatrix[0]->fft.append(fft_ts64);
+
+  addSignalWidgets(vlayout2, 0);
 
   // add signals to the histogram
   histogramView->removeSignal();
-  histogramView->addSignal(fft_ts64);
-  histogramView->addSignal(fft_ts8);
-  histogramView->addSignal(fft_ts1);
+  histogramView->addSignal(signalMatrix[0]->fft[0]);
+  histogramView->addSignal(signalMatrix[0]->fft[1]);
+  histogramView->addSignal(signalMatrix[0]->fft[2]);
 
   this->rescan();
 }
@@ -357,7 +420,11 @@ void UI_SpectrumDockWindow::init(int signal_num)
     base_samples = new Signal("ADC", signal_name, signal_alias, QVector<double>(), "Time", "seconds", (double)signalcomp->edfhdr->edfparam[signalcomp->edfsignal[0]].smp_per_record / ((double)signalcomp->edfhdr->long_data_record_duration / TIME_DIMENSION), "Voltage", base_unit, 1.0, SignalType::ADC);
     base_samples->SetPen(QPen(static_cast<Qt::GlobalColor>(signalcomp->color)));
 
-    dock->setWindowTitle("Histogram of " + base_samples->GetAlias());
+    signalMatrix.clear();
+    HistogramSignalGroup *hsg = new HistogramSignalGroup(base_samples);
+    signalMatrix.append(hsg);
+
+    dock->setWindowTitle("Histogram of " + base_samples->GetDisplayName());
 
     changeSignals(base_samples, SignalType::FFT | SignalType::SquareRoot | SignalType::LogScale);
 
@@ -471,15 +538,27 @@ void UI_SpectrumDockWindow::update_curve()
 
 
 
-  // ---------- FFT CALCULATION  
-  QVector<double> fft_values_ts1 = calculateFFT(buffer_of_samples, fft_outputbufsize, dftblocksize, samplefreq, fft_ts1->SIGNAL_NA_VALUE);
+  // ---------- FFT CALCULATION
+  for (int j=0; j<signalMatrix.count(); j++)
+    {
+      for (int i=0; i<signalMatrix[j]->fft.count(); i++)
+      {
+          QVector<double> fft_values;
+          if (signalMatrix[j]->enabled && signalMatrix[j]->fft_enabled[i])
+            {
+              fft_values = calculateFFT(buffer_of_samples, fft_outputbufsize, dftblocksize, samplefreq, signalMatrix[j]->fft[i]->SIGNAL_NA_VALUE);
 
-  buffer_of_samples.remove(0, 7 * (buffer_of_samples.count() / 8));
-  QVector<double> fft_values_ts8 = calculateFFT(buffer_of_samples, fft_outputbufsize, dftblocksize, samplefreq, fft_ts8->SIGNAL_NA_VALUE);
+              // we need to transform the values if they are logarithmic and/or power values
+              fft_values = transformFFTValues(fft_values, signalMatrix[j]->fft[i]->SIGNAL_NA_VALUE, freqstep);
+            } else {
+              fft_values = QVector<double>(fft_outputbufsize, signalMatrix[j]->fft[i]->SIGNAL_NA_VALUE);
+            }
+          signalMatrix[j]->fft[i]->SetHorizontalDensity(1.0/freqstep);
+          signalMatrix[j]->fft[i]->SetValues(fft_values);
 
-  buffer_of_samples.remove(0, 7 * (buffer_of_samples.count() / 8));
-  QVector<double> fft_values_ts64 = calculateFFT(buffer_of_samples, fft_outputbufsize, dftblocksize, samplefreq, fft_ts64->SIGNAL_NA_VALUE);
-
+          buffer_of_samples.remove(0, 3 * (buffer_of_samples.count() / 4));
+      }
+    }
 
 // TODO: I couldn't figure out why is this here
 //  if(signalcomp->ecg_filter == NULL)
@@ -491,23 +570,6 @@ void UI_SpectrumDockWindow::update_curve()
 //    fft_values[0] = 0.0;  // Remove DC because heart rate is always a positive value
 //  }
 
-  // we need to transform the values if they are logarithmic and/or power values
-  fft_values_ts1 = transformFFTValues(fft_values_ts1, fft_ts1->SIGNAL_NA_VALUE, freqstep);
-  fft_values_ts8 = transformFFTValues(fft_values_ts8, fft_ts8->SIGNAL_NA_VALUE, freqstep);
-  fft_values_ts64 = transformFFTValues(fft_values_ts64, fft_ts64->SIGNAL_NA_VALUE, freqstep);
-
-
-
-  fft_ts1->SetHorizontalDensity(1.0/freqstep);
-  fft_ts1->SetValues(fft_values_ts1);
-
-  fft_ts8->SetHorizontalDensity(1.0/freqstep);
-  fft_ts8->SetValues(fft_values_ts8);
-
-  fft_ts64->SetHorizontalDensity(1.0/freqstep);
-  fft_ts64->SetValues(fft_values_ts64);
-
-
 
   // set the title of the histogram
   sprintf(str, "FFT resolution: %f Hz   %i samples", freqstep, dftblocksize);
@@ -517,6 +579,7 @@ void UI_SpectrumDockWindow::update_curve()
   histogramView->setHeaderText(str);
 
 
+  QVector<double> main_signal_values = signalMatrix[0]->fft[0]->GetValues();
 
   // calculate the colorbar values
   if(spectrum_color != NULL)
@@ -527,26 +590,26 @@ void UI_SpectrumDockWindow::update_curve()
 
       n = 0;
 
-      for(j=0; j<fft_values_ts1.count(); j++)
+      for(j=0; j<main_signal_values.count(); j++)
       {
         if(((freqstep * j) + (freqstep * 0.5)) < spectrum_color->freq[0])
         {
           if(spectrum_color->method == 0)  // sum
           {
-            spectrum_color->value[0] += fft_values_ts1[j];
+            spectrum_color->value[0] += main_signal_values[j];
           }
 
           if(spectrum_color->method == 1)  // peak
           {
-            if(spectrum_color->value[0] < fft_values_ts1[j])
+            if(spectrum_color->value[0] < main_signal_values[j])
             {
-              spectrum_color->value[0] = fft_values_ts1[j];
+              spectrum_color->value[0] = main_signal_values[j];
             }
           }
 
           if(spectrum_color->method == 2)  // average
           {
-            spectrum_color->value[0] += fft_values_ts1[j];
+            spectrum_color->value[0] += main_signal_values[j];
 
             n++;
           }
@@ -568,26 +631,26 @@ void UI_SpectrumDockWindow::update_curve()
 
       n = 0;
 
-      for(j=0; j<fft_values_ts1.count(); j++)
+      for(j=0; j<main_signal_values.count(); j++)
       {
         if((((freqstep * j) + (freqstep * 0.5)) > spectrum_color->freq[i-1]) && (((freqstep * j) + (freqstep * 0.5)) < spectrum_color->freq[i]))
         {
           if(spectrum_color->method == 0)  // sum
           {
-            spectrum_color->value[i] += fft_values_ts1[j];
+            spectrum_color->value[i] += main_signal_values[j];
           }
 
           if(spectrum_color->method == 1)  // peak
           {
-            if(spectrum_color->value[i] < fft_values_ts1[j])
+            if(spectrum_color->value[i] < main_signal_values[j])
             {
-              spectrum_color->value[i] = fft_values_ts1[j];
+              spectrum_color->value[i] = main_signal_values[j];
             }
           }
 
           if(spectrum_color->method == 2)  // average
           {
-            spectrum_color->value[i] += fft_values_ts1[j];
+            spectrum_color->value[i] += main_signal_values[j];
 
             n++;
           }
