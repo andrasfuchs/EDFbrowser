@@ -547,6 +547,18 @@ void UI_FreqSpectrumWindow::sliderMoved(int)
   start_freq = ((double)samplefreq / 2.0) * startstep / steps;
 
   curve1->setH_RulerValues(start_freq, max_freq);
+
+  char str[256];
+
+  strcpy(str, "Center ");
+  convert_to_metric_suffix(str + strlen(str), start_freq + ((max_freq - start_freq) / 2.0), 3);
+  strcat(str, "Hz");
+  centerLabel->setText(str);
+
+  strcpy(str, "Span ");
+  convert_to_metric_suffix(str + strlen(str), max_freq - start_freq, 3);
+  strcat(str, "Hz");
+  spanLabel->setText(str);
 }
 
 

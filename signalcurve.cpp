@@ -1330,7 +1330,9 @@ void SignalCurve::calculateRulerParameters(int length, double start_value, doubl
 {
     *multiplier = 1;
 
-    while((end_value * *multiplier) < 10000.0)
+    double original_range = end_value - start_value;
+
+    while((original_range * *multiplier) < 10000.0)
     {
       *multiplier *= 10;
 

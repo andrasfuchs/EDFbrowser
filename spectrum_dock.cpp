@@ -859,7 +859,7 @@ QVector<double> UI_SpectrumDockWindow::calculateFFT(QVector<double> buf_samples,
     // B, the meassurement of the signals with wavelength less than the sample will be inaccurate
     double freqstep = samplefreq / (double)dftblocksize;
     double freq_band = 0.0;
-    for (int i=0; freq_band<(1/samples_length_in_seconds); i++)
+    for (int i=0; (freq_band<(1/samples_length_in_seconds)) && (i<result.count()); i++)
     {
         result[i] = SIGNAL_NA_VALUE;
         freq_band += freqstep;
