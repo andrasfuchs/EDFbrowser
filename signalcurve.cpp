@@ -1803,9 +1803,12 @@ void SignalCurve::setH_RulerValues(double start, double end)
 
 void SignalCurve::setSignalColor(QColor newColor)
 {
-  QPen pen = signals_[0]->GetPen();
-  pen.setColor(newColor);
-  signals_[0]->SetPen(pen);
+  if (signals_.count() > 0)
+  {
+    QPen pen = signals_[0]->GetPen();
+    pen.setColor(newColor);
+    signals_[0]->SetPen(pen);
+  }
 
   update_pending = true;
 }
@@ -1821,11 +1824,14 @@ void SignalCurve::setCrosshairColor(QColor newColor)
 
 void SignalCurve::setTraceWidth(int tr_width)
 {
+  if (signals_.count() > 0)
+  {
     QPen pen = signals_[0]->GetPen();
     pen.setWidth(tr_width);
     signals_[0]->SetPen(pen);
+  }
 
-    update_pending = true;
+  update_pending = true;
 }
 
 
