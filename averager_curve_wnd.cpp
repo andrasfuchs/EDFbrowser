@@ -79,7 +79,7 @@ UI_AverageCurveWindow::UI_AverageCurveWindow(struct signalcompblock *signal_comp
 
   averager_curve_dialog = new QDialog;
   averager_curve_dialog->setAttribute(Qt::WA_DeleteOnClose, true);
-  averager_curve_dialog->setMinimumSize(QSize(650, 480));
+  averager_curve_dialog->setMinimumSize(650, 480);
   averager_curve_dialog->setSizeGripEnabled(true);
   averager_curve_dialog->setModal(false);
   averager_curve_dialog->setWindowFlags(Qt::Window | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);

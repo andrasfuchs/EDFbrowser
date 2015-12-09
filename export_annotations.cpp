@@ -30,7 +30,10 @@
 #include "export_annotations.h"
 
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> refs/remotes/Teuniz/master
 UI_ExportAnnotationswindow::UI_ExportAnnotationswindow(QWidget *w_parent)
 {
   int i;
@@ -39,14 +42,14 @@ UI_ExportAnnotationswindow::UI_ExportAnnotationswindow(QWidget *w_parent)
 
   ExportAnnotsDialog = new QDialog;
 
-  ExportAnnotsDialog->setMinimumSize(QSize(800, 570));
-  ExportAnnotsDialog->setMaximumSize(QSize(800, 570));
+  ExportAnnotsDialog->setMinimumSize(800, 570);
+  ExportAnnotsDialog->setMaximumSize(800, 570);
   ExportAnnotsDialog->setWindowTitle("Export annotations");
   ExportAnnotsDialog->setModal(true);
   ExportAnnotsDialog->setAttribute(Qt::WA_DeleteOnClose, true);
 
   filelist = new QListWidget(ExportAnnotsDialog);
-  filelist->setGeometry(QRect(10, 10, 780, 75));
+  filelist->setGeometry(10, 10, 780, 75);
   filelist->setSelectionBehavior(QAbstractItemView::SelectRows);
   filelist->setSelectionMode(QAbstractItemView::SingleSelection);
   for(i=0; i<mainwindow->files_open; i++)
@@ -122,11 +125,11 @@ UI_ExportAnnotationswindow::UI_ExportAnnotationswindow(QWidget *w_parent)
   asciiSettingsGroupBox->setLayout(asciiSettingsVBoxLayout);
 
   ExportButton = new QPushButton(ExportAnnotsDialog);
-  ExportButton->setGeometry(QRect(500, 530, 100, 25));
+  ExportButton->setGeometry(500, 530, 100, 25);
   ExportButton->setText("Export");
 
   CloseButton = new QPushButton(ExportAnnotsDialog);
-  CloseButton->setGeometry(QRect(690, 530, 100, 25));
+  CloseButton->setGeometry(690, 530, 100, 25);
   CloseButton->setText("Close");
 
   separatorBox->setCurrentIndex(mainwindow->export_annotations_var->separator);
@@ -184,7 +187,6 @@ UI_ExportAnnotationswindow::UI_ExportAnnotationswindow(QWidget *w_parent)
 
   ExportAnnotsDialog->exec();
 }
-
 
 
 void UI_ExportAnnotationswindow::outputformatRadioButtonClicked(bool checked)

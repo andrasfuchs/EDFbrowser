@@ -38,7 +38,7 @@ UI_Messagewindow::UI_Messagewindow(const char *title, const char *str, const cha
       len,
       max=0,
       labelwidth = 0,
-      labelheight = 20;
+      labelheight = 25;
 
   len = strlen(str);
 
@@ -46,7 +46,7 @@ UI_Messagewindow::UI_Messagewindow(const char *title, const char *str, const cha
   {
     if(str[i]=='\n')
     {
-      labelheight += 18;
+      labelheight += 20;
       if(max>labelwidth) labelwidth = max;
       max = 0;
     }
@@ -64,19 +64,19 @@ UI_Messagewindow::UI_Messagewindow(const char *title, const char *str, const cha
 
   MessageDialog = new QDialog;
 
-  MessageDialog->setMinimumSize(QSize(labelwidth + 40, labelheight + 85));
-  MessageDialog->setMaximumSize(QSize(labelwidth + 40, labelheight + 85));
+  MessageDialog->setMinimumSize(labelwidth + 40, labelheight + 85);
+  MessageDialog->setMaximumSize(labelwidth + 40, labelheight + 85);
   MessageDialog->setWindowTitle(title);
   MessageDialog->setModal(true);
   MessageDialog->setAttribute(Qt::WA_DeleteOnClose, true);
 
   Label1 = new QLabel(MessageDialog);
-  Label1->setGeometry(QRect(20, 20, labelwidth, labelheight));
+  Label1->setGeometry(20, 20, labelwidth, labelheight);
   Label1->setAlignment(Qt::AlignLeft | Qt::AlignTop);
   Label1->setText(str);
 
   pushButton1 = new QPushButton(MessageDialog);
-  pushButton1->setGeometry(QRect(labelwidth - 80, labelheight + 40, 100, 25));
+  pushButton1->setGeometry(labelwidth - 80, labelheight + 40, 100, 25);
   if(buttontxt == NULL)
   {
     pushButton1->setText("&Close");

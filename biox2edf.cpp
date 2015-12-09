@@ -63,11 +63,11 @@ UI_BIOX2EDFwindow::UI_BIOX2EDFwindow(char *recent_dir, char *save_dir)
   myobjectDialog->setAttribute(Qt::WA_DeleteOnClose, true);
 
   pushButton1 = new QPushButton(myobjectDialog);
-  pushButton1->setGeometry(20, 430, 100, 26);
+  pushButton1->setGeometry(20, 430, 100, 25);
   pushButton1->setText("Select File");
 
   pushButton2 = new QPushButton(myobjectDialog);
-  pushButton2->setGeometry(480, 430, 100, 26);
+  pushButton2->setGeometry(480, 430, 100, 25);
   pushButton2->setText("Close");
 
   textEdit1 = new QTextEdit(myobjectDialog);

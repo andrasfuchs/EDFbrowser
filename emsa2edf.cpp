@@ -31,7 +31,10 @@
 #include "emsa2edf.h"
 
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> refs/remotes/Teuniz/master
 UI_EMSA2EDFwindow::UI_EMSA2EDFwindow(char *recent_dir, char *save_dir)
 {
   char txt_string[2048];
@@ -41,22 +44,22 @@ UI_EMSA2EDFwindow::UI_EMSA2EDFwindow(char *recent_dir, char *save_dir)
 
   myobjectDialog = new QDialog;
 
-  myobjectDialog->setMinimumSize(QSize(600, 480));
-  myobjectDialog->setMaximumSize(QSize(600, 480));
+  myobjectDialog->setMinimumSize(600, 480);
+  myobjectDialog->setMaximumSize(600, 480);
   myobjectDialog->setWindowTitle("Emsa to EDF+ converter");
   myobjectDialog->setModal(true);
   myobjectDialog->setAttribute(Qt::WA_DeleteOnClose, true);
 
   pushButton1 = new QPushButton(myobjectDialog);
-  pushButton1->setGeometry(QRect(20, 430, 100, 26));
+  pushButton1->setGeometry(20, 430, 100, 25);
   pushButton1->setText("Select File");
 
   pushButton2 = new QPushButton(myobjectDialog);
-  pushButton2->setGeometry(QRect(480, 430, 100, 26));
+  pushButton2->setGeometry(480, 430, 100, 25);
   pushButton2->setText("Close");
 
   textEdit1 = new QTextEdit(myobjectDialog);
-  textEdit1->setGeometry(QRect(20, 20, 560, 380));
+  textEdit1->setGeometry(20, 20, 560, 380);
   textEdit1->setFrameStyle(QFrame::Panel | QFrame::Sunken);
   textEdit1->setReadOnly(true);
   textEdit1->setLineWrapMode(QTextEdit::NoWrap);
@@ -68,10 +71,6 @@ UI_EMSA2EDFwindow::UI_EMSA2EDFwindow(char *recent_dir, char *save_dir)
 
   myobjectDialog->exec();
 }
-
-
-
-
 
 
 void UI_EMSA2EDFwindow::SelectFileButton()

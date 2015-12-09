@@ -31,7 +31,10 @@
 
 
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> refs/remotes/Teuniz/master
 UI_FINO2EDFwindow::UI_FINO2EDFwindow(char *recent_dir, char *save_dir)
 {
   recent_opendir = recent_dir;
@@ -39,44 +42,44 @@ UI_FINO2EDFwindow::UI_FINO2EDFwindow(char *recent_dir, char *save_dir)
 
   myobjectDialog = new QDialog;
 
-  myobjectDialog->setMinimumSize(QSize(600, 240));
-  myobjectDialog->setMaximumSize(QSize(600, 240));
+  myobjectDialog->setMinimumSize(600, 240);
+  myobjectDialog->setMaximumSize(600, 240);
   myobjectDialog->setWindowTitle("Finometer to EDF converter");
   myobjectDialog->setModal(true);
   myobjectDialog->setAttribute(Qt::WA_DeleteOnClose, true);
 
   PatientnameLabel = new QLabel(myobjectDialog);
-  PatientnameLabel->setGeometry(QRect(20, 20, 140, 16));
+  PatientnameLabel->setGeometry(20, 20, 140, 25);
   PatientnameLabel->setText("Subject name");
 
   RecordingLabel = new QLabel(myobjectDialog);
-  RecordingLabel->setGeometry(QRect(20, 50, 140, 16));
+  RecordingLabel->setGeometry(20, 55, 140, 25);
   RecordingLabel->setText("Recording");
 
   DatetimeLabel = new QLabel(myobjectDialog);
-  DatetimeLabel->setGeometry(QRect(20, 80, 140, 16));
+  DatetimeLabel->setGeometry(20, 90, 140, 25);
   DatetimeLabel->setText("Startdate and time");
 
   PatientnameLineEdit = new QLineEdit(myobjectDialog);
-  PatientnameLineEdit->setGeometry(QRect(160, 20, 420, 21));
+  PatientnameLineEdit->setGeometry(160, 20, 420, 25);
   PatientnameLineEdit->setMaxLength(80);
 
   RecordingLineEdit = new QLineEdit(myobjectDialog);
-  RecordingLineEdit->setGeometry(QRect(160, 50, 420, 21));
+  RecordingLineEdit->setGeometry(160, 55, 420, 25);
   RecordingLineEdit->setMaxLength(80);
   RecordingLineEdit->setText("Finometer");
 
   StartDatetimeedit = new QDateTimeEdit(myobjectDialog);
-  StartDatetimeedit->setGeometry(QRect(160, 80, 140, 22));
+  StartDatetimeedit->setGeometry(160, 90, 140, 25);
   StartDatetimeedit->setDisplayFormat("dd/MM/yyyy hh:mm:ss");
   StartDatetimeedit->setDateTime(QDateTime::currentDateTime());
 
   pushButton1 = new QPushButton(myobjectDialog);
-  pushButton1->setGeometry(QRect(20, 190, 100, 26));
+  pushButton1->setGeometry(20, 190, 100, 25);
   pushButton1->setText("Select File");
 
   pushButton2 = new QPushButton(myobjectDialog);
-  pushButton2->setGeometry(QRect(480, 190, 100, 26));
+  pushButton2->setGeometry(480, 190, 100, 25);
   pushButton2->setText("Close");
 
   QObject::connect(pushButton1, SIGNAL(clicked()), this,           SLOT(SelectFileButton()));
@@ -84,7 +87,6 @@ UI_FINO2EDFwindow::UI_FINO2EDFwindow(char *recent_dir, char *save_dir)
 
   myobjectDialog->exec();
 }
-
 
 
 void UI_FINO2EDFwindow::SelectFileButton()

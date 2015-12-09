@@ -30,8 +30,11 @@
 #include "mainwindow.h"
 
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> refs/remotes/Teuniz/master
 // #define DEBUG_VIDEOPLAYER
 
 #ifdef DEBUG_VIDEOPLAYER
@@ -44,7 +47,7 @@ UI_Mainwindow::UI_Mainwindow()
   int i, j, k;
 
 
-  setMinimumSize(QSize(640, 480));
+  setMinimumSize(640, 480);
   setWindowTitle(PROGRAM_NAME);
   setWindowIcon(QIcon(":/images/edf.png"));
 
@@ -6988,15 +6991,14 @@ void UI_Mainwindow::show_help()
 #endif
 
 #ifdef Q_OS_WIN32
-  char path[MAX_PATH_LENGTH];
+  char p_path[MAX_PATH_LENGTH];
 
-  strcpy(path, "file:///");
-  strcat(path, specialFolder(CSIDL_PROGRAM_FILES).toLocal8Bit().data());
-  strcat(path, "\\EDFbrowser\\manual.html");
+  strcpy(p_path, "file:///");
+  strcat(p_path, specialFolder(CSIDL_PROGRAM_FILES).toLocal8Bit().data());
+  strcat(p_path, "\\EDFbrowser\\manual.html");
   QDesktopServices::openUrl(QUrl(path));
 #endif
 }
-
 
 
 void UI_Mainwindow::show_kb_shortcuts()

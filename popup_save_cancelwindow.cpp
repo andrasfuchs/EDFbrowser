@@ -40,7 +40,7 @@ UI_CancelSavewindow::UI_CancelSavewindow(const char *title, const char *str,
       len,
       max=0,
       labelwidth = 0,
-      labelheight = 20;
+      labelheight = 25;
 
   buttonnr = button_nr;
 
@@ -50,7 +50,7 @@ UI_CancelSavewindow::UI_CancelSavewindow(const char *title, const char *str,
   {
     if(str[i]=='\n')
     {
-      labelheight += 18;
+      labelheight += 20;
       if(max>labelwidth) labelwidth = max;
       max = 0;
     }
@@ -68,8 +68,8 @@ UI_CancelSavewindow::UI_CancelSavewindow(const char *title, const char *str,
 
   MessageDialog = new QDialog;
 
-  MessageDialog->setMinimumSize(QSize(labelwidth + 40, labelheight + 85));
-  MessageDialog->setMaximumSize(QSize(labelwidth + 40, labelheight + 85));
+  MessageDialog->setMinimumSize(labelwidth + 40, labelheight + 85);
+  MessageDialog->setMaximumSize(labelwidth + 40, labelheight + 85);
   MessageDialog->setWindowTitle(title);
   MessageDialog->setModal(true);
   MessageDialog->setAttribute(Qt::WA_DeleteOnClose, true);

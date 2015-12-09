@@ -31,7 +31,10 @@
 
 
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> refs/remotes/Teuniz/master
 UI_WAV2EDFwindow::UI_WAV2EDFwindow(char *recent_dir, char *save_dir)
 {
   recent_opendir = recent_dir;
@@ -39,62 +42,62 @@ UI_WAV2EDFwindow::UI_WAV2EDFwindow(char *recent_dir, char *save_dir)
 
   myobjectDialog = new QDialog;
 
-  myobjectDialog->setMinimumSize(QSize(600, 300));
-  myobjectDialog->setMaximumSize(QSize(600, 300));
+  myobjectDialog->setMinimumSize(600, 300);
+  myobjectDialog->setMaximumSize(600, 300);
   myobjectDialog->setWindowTitle("Wave to EDF converter");
   myobjectDialog->setModal(true);
   myobjectDialog->setAttribute(Qt::WA_DeleteOnClose, true);
 
   PatientnameLabel = new QLabel(myobjectDialog);
-  PatientnameLabel->setGeometry(QRect(20, 20, 140, 16));
+  PatientnameLabel->setGeometry(20, 20, 140, 25);
   PatientnameLabel->setText("Subject");
 
   RecordingLabel = new QLabel(myobjectDialog);
-  RecordingLabel->setGeometry(QRect(20, 50, 140, 16));
+  RecordingLabel->setGeometry(20, 55, 140, 25);
   RecordingLabel->setText("Recording");
 
   DatetimeLabel = new QLabel(myobjectDialog);
-  DatetimeLabel->setGeometry(QRect(20, 80, 140, 16));
+  DatetimeLabel->setGeometry(20, 90, 140, 25);
   DatetimeLabel->setText("Startdate and time");
 
   PhysDimLabel = new QLabel(myobjectDialog);
-  PhysDimLabel->setGeometry(QRect(20, 110, 140, 16));
+  PhysDimLabel->setGeometry(20, 125, 140, 25);
   PhysDimLabel->setText("Physical dimension");
 
   PhysMaxLabel = new QLabel(myobjectDialog);
-  PhysMaxLabel->setGeometry(QRect(20, 140, 140, 16));
+  PhysMaxLabel->setGeometry(20, 160, 140, 25);
   PhysMaxLabel->setText("Physical maximum");
 
   PatientnameLineEdit = new QLineEdit(myobjectDialog);
-  PatientnameLineEdit->setGeometry(QRect(160, 20, 420, 21));
+  PatientnameLineEdit->setGeometry(160, 20, 420, 25);
   PatientnameLineEdit->setMaxLength(80);
 
   RecordingLineEdit = new QLineEdit(myobjectDialog);
-  RecordingLineEdit->setGeometry(QRect(160, 50, 420, 21));
+  RecordingLineEdit->setGeometry(160, 55, 420, 25);
   RecordingLineEdit->setMaxLength(80);
 
   StartDatetimeedit = new QDateTimeEdit(myobjectDialog);
-  StartDatetimeedit->setGeometry(QRect(160, 80, 140, 22));
+  StartDatetimeedit->setGeometry(160, 90, 140, 25);
   StartDatetimeedit->setDisplayFormat("dd/MM/yyyy hh:mm:ss");
   StartDatetimeedit->setDateTime(QDateTime::currentDateTime());
 
   PhysDimLineEdit = new QLineEdit(myobjectDialog);
-  PhysDimLineEdit->setGeometry(QRect(160, 110, 140, 21));
+  PhysDimLineEdit->setGeometry(160, 125, 140, 25);
   PhysDimLineEdit->setMaxLength(8);
   PhysDimLineEdit->setText("mV");
 
   PhysMaxSpinBox = new QDoubleSpinBox(myobjectDialog);
-  PhysMaxSpinBox->setGeometry(QRect(160, 140, 140, 21));
+  PhysMaxSpinBox->setGeometry(160, 160, 140, 25);
   PhysMaxSpinBox->setDecimals(5);
   PhysMaxSpinBox->setRange(1.0, 1000000.0);
   PhysMaxSpinBox->setValue(2000.0);
 
   pushButton1 = new QPushButton(myobjectDialog);
-  pushButton1->setGeometry(QRect(20, 250, 100, 26));
+  pushButton1->setGeometry(20, 250, 100, 25);
   pushButton1->setText("Select File");
 
   pushButton2 = new QPushButton(myobjectDialog);
-  pushButton2->setGeometry(QRect(480, 250, 100, 26));
+  pushButton2->setGeometry(480, 250, 100, 25);
   pushButton2->setText("Close");
 
   QObject::connect(pushButton1, SIGNAL(clicked()), this,           SLOT(SelectFileButton()));

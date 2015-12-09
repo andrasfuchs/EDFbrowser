@@ -31,8 +31,11 @@
 
 
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> refs/remotes/Teuniz/master
 UI_NEXFIN2EDFwindow::UI_NEXFIN2EDFwindow(char *recent_dir, char *save_dir)
 {
   recent_opendir = recent_dir;
@@ -40,61 +43,61 @@ UI_NEXFIN2EDFwindow::UI_NEXFIN2EDFwindow(char *recent_dir, char *save_dir)
 
   myobjectDialog = new QDialog;
 
-  myobjectDialog->setMinimumSize(QSize(600, 280));
-  myobjectDialog->setMaximumSize(QSize(600, 280));
+  myobjectDialog->setMinimumSize(600, 280);
+  myobjectDialog->setMaximumSize(600, 280);
   myobjectDialog->setWindowTitle("Nexfin to EDF converter");
   myobjectDialog->setModal(true);
   myobjectDialog->setAttribute(Qt::WA_DeleteOnClose, true);
 
   PatientnameLabel = new QLabel(myobjectDialog);
-  PatientnameLabel->setGeometry(QRect(20, 20, 140, 16));
+  PatientnameLabel->setGeometry(20, 20, 140, 25);
   PatientnameLabel->setText("Subject name");
 
   RecordingLabel = new QLabel(myobjectDialog);
-  RecordingLabel->setGeometry(QRect(20, 50, 140, 16));
+  RecordingLabel->setGeometry(20, 55, 140, 25);
   RecordingLabel->setText("Recording");
 
   DatetimeLabel = new QLabel(myobjectDialog);
-  DatetimeLabel->setGeometry(QRect(20, 80, 140, 16));
+  DatetimeLabel->setGeometry(20, 90, 140, 25);
   DatetimeLabel->setText("Startdate and time");
 
   PatientnameLineEdit = new QLineEdit(myobjectDialog);
-  PatientnameLineEdit->setGeometry(QRect(160, 20, 420, 21));
+  PatientnameLineEdit->setGeometry(160, 20, 420, 25);
   PatientnameLineEdit->setMaxLength(80);
 
   RecordingLineEdit = new QLineEdit(myobjectDialog);
-  RecordingLineEdit->setGeometry(QRect(160, 50, 420, 21));
+  RecordingLineEdit->setGeometry(160, 55, 420, 25);
   RecordingLineEdit->setMaxLength(80);
   RecordingLineEdit->setText("Nexfin");
 
   StartDatetimeedit = new QDateTimeEdit(myobjectDialog);
-  StartDatetimeedit->setGeometry(QRect(160, 80, 140, 22));
+  StartDatetimeedit->setGeometry(160, 90, 140, 25);
   StartDatetimeedit->setDisplayFormat("dd/MM/yyyy hh:mm:ss");
   StartDatetimeedit->setDateTime(QDateTime::currentDateTime());
 
   pushButton1 = new QPushButton(myobjectDialog);
-  pushButton1->setGeometry(QRect(20, 230, 100, 26));
+  pushButton1->setGeometry(20, 230, 100, 25);
   pushButton1->setText("Select File");
 
   pushButton2 = new QPushButton(myobjectDialog);
-  pushButton2->setGeometry(QRect(480, 230, 100, 26));
+  pushButton2->setGeometry(480, 230, 100, 25);
   pushButton2->setText("Close");
 
   radio100button = new QRadioButton(myobjectDialog);
-  radio100button->setGeometry(QRect(160, 130, 200, 20));
+  radio100button->setGeometry(160, 130, 200, 20);
   radio100button->setText("Beat-to-beat data");
   radio100button->setChecked(true);
 
   radio103button = new QRadioButton(myobjectDialog);
-  radio103button->setGeometry(QRect(160, 160, 200, 20));
+  radio103button->setGeometry(160, 160, 200, 20);
   radio103button->setText("Blood pressure waveform");
 
   radio032button = new QRadioButton(myobjectDialog);
-  radio032button->setGeometry(QRect(160, 190, 200, 20));
+  radio032button->setGeometry(160, 190, 200, 20);
   radio032button->setText("Analog inputs");
 
   analoginputscombobox = new QComboBox(myobjectDialog);
-  analoginputscombobox->setGeometry(QRect(280, 190, 80, 20));
+  analoginputscombobox->setGeometry(280, 190, 80, 25);
   analoginputscombobox->addItem("1 input");
   analoginputscombobox->addItem("4 inputs");
   analoginputscombobox->setCurrentIndex(1);

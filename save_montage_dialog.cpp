@@ -30,8 +30,11 @@
 #include "save_montage_dialog.h"
 
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> refs/remotes/Teuniz/master
 UI_SaveMontagewindow::UI_SaveMontagewindow(QWidget *w_parent)
 {
   int i;
@@ -47,18 +50,18 @@ UI_SaveMontagewindow::UI_SaveMontagewindow(QWidget *w_parent)
 
   SaveMontageDialog = new QDialog;
 
-  SaveMontageDialog->setMinimumSize(QSize(800, 180));
-  SaveMontageDialog->setMaximumSize(QSize(800, 180));
+  SaveMontageDialog->setMinimumSize(800, 180);
+  SaveMontageDialog->setMaximumSize(800, 180);
   SaveMontageDialog->setWindowTitle("Save montage");
   SaveMontageDialog->setModal(true);
   SaveMontageDialog->setAttribute(Qt::WA_DeleteOnClose, true);
 
   label1 = new QLabel(SaveMontageDialog);
-  label1->setGeometry(QRect(10, 10, 780, 25));
+  label1->setGeometry(10, 10, 780, 25);
   label1->setText("Choose from which file you want to save the montage:");
 
   filelist = new QListWidget(SaveMontageDialog);
-  filelist->setGeometry(QRect(10, 35, 780, 75));
+  filelist->setGeometry(10, 35, 780, 75);
   filelist->setSelectionBehavior(QAbstractItemView::SelectRows);
   filelist->setSelectionMode(QAbstractItemView::SingleSelection);
   for(i=0; i<mainwindow->files_open; i++)
@@ -67,11 +70,11 @@ UI_SaveMontagewindow::UI_SaveMontagewindow(QWidget *w_parent)
   }
 
   SaveButton = new QPushButton(SaveMontageDialog);
-  SaveButton->setGeometry(QRect(10, 140, 100, 25));
+  SaveButton->setGeometry(10, 140, 100, 25);
   SaveButton->setText("Save");
 
   CloseButton = new QPushButton(SaveMontageDialog);
-  CloseButton->setGeometry(QRect(690, 140, 100, 25));
+  CloseButton->setGeometry(690, 140, 100, 25);
   CloseButton->setText("Close");
 
   QObject::connect(CloseButton,  SIGNAL(clicked()), SaveMontageDialog, SLOT(close()));

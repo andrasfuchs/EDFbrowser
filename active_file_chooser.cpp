@@ -44,14 +44,14 @@ UI_activeFileChooserWindow::UI_activeFileChooserWindow(int *file_nr, QWidget *ma
 
   chooserDialog = new QDialog;
 
-  chooserDialog->setMinimumSize(QSize(800, 200));
-  chooserDialog->setMaximumSize(QSize(800, 200));
+  chooserDialog->setMinimumSize(800, 200);
+  chooserDialog->setMaximumSize(800, 200);
   chooserDialog->setWindowTitle("Choose file");
   chooserDialog->setModal(true);
   chooserDialog->setAttribute(Qt::WA_DeleteOnClose, true);
 
   filelist = new QListWidget(chooserDialog);
-  filelist->setGeometry(QRect(10, 10, 780, 110));
+  filelist->setGeometry(10, 10, 780, 110);
   filelist->setSelectionBehavior(QAbstractItemView::SelectRows);
   filelist->setSelectionMode(QAbstractItemView::SingleSelection);
   for(i=0; i<mainwindow->files_open; i++)

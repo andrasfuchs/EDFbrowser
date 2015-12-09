@@ -574,13 +574,13 @@ void SignalCurve::exec_sidemenu()
 
   if(extra_button)
   {
-    sidemenu->setMinimumSize(QSize(120, 190));
-    sidemenu->setMaximumSize(QSize(120, 190));
+    sidemenu->setMinimumSize(120, 190);
+    sidemenu->setMaximumSize(120, 190);
   }
   else
   {
-    sidemenu->setMinimumSize(QSize(120, 160));
-    sidemenu->setMaximumSize(QSize(120, 160));
+    sidemenu->setMinimumSize(120, 160);
+    sidemenu->setMaximumSize(120, 160);
   }
   sidemenu->setWindowTitle("Print");
   sidemenu->setModal(true);

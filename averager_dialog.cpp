@@ -44,8 +44,8 @@ UI_AveragerWindow::UI_AveragerWindow(QWidget *w_parent, int annot_nr)
 
   averager_dialog = new QDialog(w_parent);
 
-  averager_dialog->setMinimumSize(QSize(600, 400));
-  averager_dialog->setMaximumSize(QSize(600, 400));
+  averager_dialog->setMinimumSize(600, 400);
+  averager_dialog->setMaximumSize(600, 400);
   averager_dialog->setWindowTitle("Average waveforms");
   averager_dialog->setModal(true);
   averager_dialog->setAttribute(Qt::WA_DeleteOnClose, true);

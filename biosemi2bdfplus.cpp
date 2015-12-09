@@ -55,26 +55,26 @@ UI_BIOSEMI2BDFPLUSwindow::UI_BIOSEMI2BDFPLUSwindow(QWidget *w_parent)
   myobjectDialog->setAttribute(Qt::WA_DeleteOnClose, true);
 
   label2 = new QLabel(myobjectDialog);
-  label2->setGeometry(20, 20, 200, 26);
+  label2->setGeometry(20, 20, 200, 25);
   label2->setText("Trigger Input descriptions:");
 
   label3 = new QLabel(myobjectDialog);
-  label3->setGeometry(290, 350, 200, 26);
+  label3->setGeometry(290, 350, 200, 25);
   label3->setText("Annotations will be generated at");
 
   label4 = new QLabel(myobjectDialog);
-  label4->setGeometry(290, 440, 200, 26);
+  label4->setGeometry(290, 440, 200, 25);
   label4->setText("of trigger input.");
 
   for(i=0; i<16; i++)
   {
     label1[i] = new QLabel(myobjectDialog);
-    label1[i]->setGeometry(20, 50 + (i * 30), 20, 26);
+    label1[i]->setGeometry(20, 50 + (i * 30), 20, 25);
     sprintf(str, "%i", i + 1);
     label1[i]->setText(str);
 
     lineEdit1[i] = new QLineEdit(myobjectDialog);
-    lineEdit1[i]->setGeometry(70, 50 + (i * 30), 120, 26);
+    lineEdit1[i]->setGeometry(70, 50 + (i * 30), 120, 25);
     sprintf(str, "Trigger Input %i", i + 1);
     lineEdit1[i]->setText(str);
     lineEdit1[i]->setMaxLength(16);
@@ -96,11 +96,11 @@ UI_BIOSEMI2BDFPLUSwindow::UI_BIOSEMI2BDFPLUSwindow(QWidget *w_parent)
   checkBox1->setChecked(false);
 
   selectButton = new QPushButton(myobjectDialog);
-  selectButton->setGeometry(20, 584, 100, 26);
+  selectButton->setGeometry(20, 584, 100, 25);
   selectButton->setText("Select File");
 
   closeButton = new QPushButton(myobjectDialog);
-  closeButton->setGeometry(480, 584, 100, 26);
+  closeButton->setGeometry(480, 584, 100, 25);
   closeButton->setText("Close");
 
   QObject::connect(selectButton,   SIGNAL(clicked()),   this,           SLOT(SelectFileButton()));

@@ -53,27 +53,27 @@ UI_Signalswindow::UI_Signalswindow(QWidget *w_parent)
   }
 
   label1 = new QLabel(SignalsDialog);
-  label1->setGeometry(10, 95, 760, 20);
+  label1->setGeometry(10, 95, 760, 25);
 
   label2 = new QLabel(SignalsDialog);
-  label2->setGeometry(10, 120, 760, 20);
+  label2->setGeometry(10, 120, 760, 25);
 
   label3 = new QLabel(SignalsDialog);
-  label3->setGeometry(10, 145, 250, 20);
+  label3->setGeometry(10, 145, 250, 25);
 
   label4 = new QLabel(SignalsDialog);
-  label4->setGeometry(270, 145, 250, 20);
+  label4->setGeometry(270, 145, 250, 25);
 
   label5 = new QLabel(SignalsDialog);
-  label5->setGeometry(10, 190, 120, 20);
+  label5->setGeometry(10, 190, 120, 25);
   label5->setText("Signals in file");
 
   label6 = new QLabel(SignalsDialog);
-  label6->setGeometry(430, 190, 120, 20);
+  label6->setGeometry(430, 190, 120, 25);
   label6->setText("Signal Composition");
 
   colorlabel = new QLabel(SignalsDialog);
-  colorlabel->setGeometry(320, 380, 100, 20);
+  colorlabel->setGeometry(320, 380, 100, 25);
   colorlabel->setText("   Color");
 
   signallist = new QListWidget(SignalsDialog);

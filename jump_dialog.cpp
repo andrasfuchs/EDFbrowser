@@ -38,51 +38,51 @@ UI_JumpMenuDialog::UI_JumpMenuDialog(QWidget *w_parent)
 
   jump_dialog = new QDialog(w_parent);
 
-  jump_dialog->setMinimumSize(QSize(435, 200));
-  jump_dialog->setMaximumSize(QSize(435, 200));
+  jump_dialog->setMinimumSize(435, 200);
+  jump_dialog->setMaximumSize(435, 200);
   jump_dialog->setWindowTitle("Jump to");
   jump_dialog->setModal(true);
   jump_dialog->setAttribute(Qt::WA_DeleteOnClose, true);
 
   label1 = new QLabel(jump_dialog);
-  label1->setGeometry(QRect(10, 10, 155, 25));
+  label1->setGeometry(10, 10, 155, 25);
   label1->setText(" dd      hh:mm:ss.ms ");
 
   daybox1 = new QSpinBox(jump_dialog);
-  daybox1->setGeometry(QRect(10, 45, 45, 25));
+  daybox1->setGeometry(10, 45, 45, 25);
   daybox1->setRange(0, 30);
   daybox1->setEnabled(false);
 
   daybox2 = new QSpinBox(jump_dialog);
-  daybox2->setGeometry(QRect(10, 80, 45, 25));
+  daybox2->setGeometry(10, 80, 45, 25);
   daybox2->setRange(0, 30);
   daybox2->setEnabled(false);
 
   timeEdit1 = new QTimeEdit(jump_dialog);
-  timeEdit1->setGeometry(QRect(65, 45, 110, 25));
+  timeEdit1->setGeometry(65, 45, 110, 25);
   timeEdit1->setDisplayFormat("hh:mm:ss.zzz");
   timeEdit1->setMinimumTime(QTime(0, 0, 0, 0));
   timeEdit1->setEnabled(false);
 
   timeEdit2 = new QTimeEdit(jump_dialog);
-  timeEdit2->setGeometry(QRect(65, 80, 110, 25));
+  timeEdit2->setGeometry(65, 80, 110, 25);
   timeEdit2->setDisplayFormat("hh:mm:ss.zzz");
   timeEdit2->setMinimumTime(QTime(0, 0, 0, 0));
   timeEdit2->setEnabled(false);
 
   label2 = new QLabel("Offset from start of recording", jump_dialog);
-  label2->setGeometry(QRect(185, 45, 250, 25));
+  label2->setGeometry(185, 45, 250, 25);
 
   label3 = new QLabel("Absolute time", jump_dialog);
-  label3->setGeometry(QRect(185, 80, 250, 25));
+  label3->setGeometry(185, 80, 250, 25);
 
   jumpButton = new QPushButton(jump_dialog);
-  jumpButton->setGeometry(QRect(10, 165, 100, 25));
+  jumpButton->setGeometry(10, 165, 100, 25);
   jumpButton->setText("Jump");
   jumpButton->setEnabled(false);
 
   CloseButton = new QPushButton(jump_dialog);
-  CloseButton->setGeometry(QRect(325, 165, 100, 25));
+  CloseButton->setGeometry(325, 165, 100, 25);
   CloseButton->setText("Cancel");
 
   if(mainwindow->files_open)

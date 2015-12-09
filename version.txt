@@ -11,6 +11,8 @@
 
  - Increase the maximum DFT blocksize to 16777216 samples.
 
+ - Don't use the native menubar.
+
 
 
  version 1.56      June 25, 2015

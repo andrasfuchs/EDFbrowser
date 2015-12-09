@@ -31,7 +31,10 @@
 
 
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> refs/remotes/Teuniz/master
 struct edfhdrblock * EDFfileCheck::check_edf_file(FILE *inputfile, char *txt_string, int live_stream)
 {
   int i, j, p, r=0, n,

@@ -31,15 +31,18 @@
 
 
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> refs/remotes/Teuniz/master
 UI_ECGExport::UI_ECGExport(QWidget *w_parent)
 {
   mainwindow = (UI_Mainwindow *)w_parent;
 
   myobjectDialog = new QDialog(w_parent);
 
-  myobjectDialog->setMinimumSize(QSize(400, 445));
-  myobjectDialog->setMaximumSize(QSize(400, 445));
+  myobjectDialog->setMinimumSize(400, 445);
+  myobjectDialog->setMaximumSize(400, 445);
   myobjectDialog->setWindowTitle("Export RR-intervals");
   myobjectDialog->setModal(true);
   myobjectDialog->setAttribute(Qt::WA_DeleteOnClose, true);

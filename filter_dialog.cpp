@@ -86,43 +86,43 @@ UI_FilterDialog::UI_FilterDialog(QWidget *w_parent)
 
   filterdialog = new QDialog;
 
-  filterdialog->setMinimumSize(QSize(620, 365));
-  filterdialog->setMaximumSize(QSize(620, 365));
+  filterdialog->setMinimumSize(620, 365);
+  filterdialog->setMaximumSize(620, 365);
   filterdialog->setWindowTitle("Add a filter");
   filterdialog->setModal(true);
   filterdialog->setAttribute(Qt::WA_DeleteOnClose, true);
 
   typeboxlabel = new QLabel(filterdialog);
-  typeboxlabel->setGeometry(QRect(20, 20, 120, 20));
+  typeboxlabel->setGeometry(20, 20, 120, 25);
   typeboxlabel->setText("Type");
 
   freqboxlabel = new QLabel(filterdialog);
-  freqboxlabel->setGeometry(QRect(160, 20, 120, 20));
+  freqboxlabel->setGeometry(160, 20, 120, 25);
   freqboxlabel->setText("Frequency");
 
   freqbox2label = new QLabel(filterdialog);
-  freqbox2label->setGeometry(QRect(300, 20, 120, 20));
+  freqbox2label->setGeometry(300, 20, 120, 25);
   freqbox2label->setText("Frequency 2");
   freqbox2label->setVisible(false);
 
   orderboxlabel = new QLabel(filterdialog);
-  orderboxlabel->setGeometry(QRect(160, 80, 120, 20));
+  orderboxlabel->setGeometry(160, 80, 120, 25);
   orderboxlabel->setText("Order");
 
   modelboxlabel = new QLabel(filterdialog);
-  modelboxlabel->setGeometry(QRect(20, 80, 120, 20));
+  modelboxlabel->setGeometry(20, 80, 120, 25);
   modelboxlabel->setText("Model");
 
   orderlabel = new QLabel(filterdialog);
-  orderlabel->setGeometry(QRect(300, 80, 120, 20));
+  orderlabel->setGeometry(300, 80, 120, 25);
   orderlabel->setText("Slope roll-off:");
 
   ordervaluelabel = new QLabel(filterdialog);
-  ordervaluelabel->setGeometry(QRect(300, 105, 120, 20));
+  ordervaluelabel->setGeometry(300, 105, 120, 25);
   ordervaluelabel->setText("6 dB / octave");
 
   typebox = new QComboBox(filterdialog);
-  typebox->setGeometry(QRect(20, 45, 120, 20));
+  typebox->setGeometry(20, 45, 120, 25);
   typebox->addItem("Highpass");
   typebox->addItem("Lowpass");
   typebox->addItem("Notch");
@@ -130,7 +130,7 @@ UI_FilterDialog::UI_FilterDialog(QWidget *w_parent)
   typebox->addItem("Bandstop");
 
   freqbox = new QDoubleSpinBox(filterdialog);
-  freqbox->setGeometry(QRect(160, 45, 120, 20));
+  freqbox->setGeometry(160, 45, 120, 25);
   freqbox->setDecimals(6);
   freqbox->setSuffix(" Hz");
   freqbox->setMinimum(0.0001);
@@ -138,7 +138,7 @@ UI_FilterDialog::UI_FilterDialog(QWidget *w_parent)
   freqbox->setValue(1.0);
 
   freq2box = new QDoubleSpinBox(filterdialog);
-  freq2box->setGeometry(QRect(300, 45, 120, 20));
+  freq2box->setGeometry(300, 45, 120, 25);
   freq2box->setDecimals(6);
   freq2box->setSuffix(" Hz");
   freq2box->setMinimum(0.0001);
@@ -147,21 +147,21 @@ UI_FilterDialog::UI_FilterDialog(QWidget *w_parent)
   freq2box->setVisible(false);
 
   orderbox = new QSpinBox(filterdialog);
-  orderbox->setGeometry(QRect(160, 105, 120, 20));
+  orderbox->setGeometry(160, 105, 120, 25);
   orderbox->setMinimum(1);
   orderbox->setMaximum(8);
   orderbox->setSingleStep(1);
   orderbox->setValue(1);
 
   modelbox = new QComboBox(filterdialog);
-  modelbox->setGeometry(QRect(20, 105, 120, 20));
+  modelbox->setGeometry(20, 105, 120, 25);
   modelbox->addItem("Butterworth");
   modelbox->addItem("Chebyshev");
   modelbox->addItem("Bessel");
   modelbox->addItem("Moving Average");
 
   ripplebox = new QDoubleSpinBox(filterdialog);
-  ripplebox->setGeometry(QRect(300, 105, 120, 20));
+  ripplebox->setGeometry(300, 105, 120, 25);
   ripplebox->setDecimals(6);
   ripplebox->setSuffix(" dB");
   ripplebox->setMinimum(0.1);
@@ -170,24 +170,24 @@ UI_FilterDialog::UI_FilterDialog(QWidget *w_parent)
   ripplebox->setVisible(false);
 
   listlabel = new QLabel(filterdialog);
-  listlabel->setGeometry(QRect(440, 20, 100, 20));
+  listlabel->setGeometry(440, 20, 100, 25);
   listlabel->setText("Select signals:");
 
   list = new QListWidget(filterdialog);
-  list->setGeometry(QRect(440, 45, 160, 300));
+  list->setGeometry(440, 45, 160, 300);
   list->setSelectionBehavior(QAbstractItemView::SelectRows);
   list->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
   CancelButton = new QPushButton(filterdialog);
-  CancelButton->setGeometry(QRect(300, 320, 100, 25));
+  CancelButton->setGeometry(300, 320, 100, 25);
   CancelButton->setText("&Cancel");
 
   ApplyButton = new QPushButton(filterdialog);
-  ApplyButton->setGeometry(QRect(20, 320, 100, 25));
+  ApplyButton->setGeometry(20, 320, 100, 25);
   ApplyButton->setText("&Apply");
 
   curve1 = new FilterCurve(filterdialog);
-  curve1->setGeometry(QRect(20, 145, 400, 150));
+  curve1->setGeometry(20, 145, 400, 150);
   curve1->setH_RasterSize(10);
   curve1->setV_RasterSize(14);
 

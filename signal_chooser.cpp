@@ -44,21 +44,21 @@ UI_SignalChooser::UI_SignalChooser(QWidget *w_parent, int job, int *sgnl_nr)
 
   if(task == 3)
   {
-    signalchooser_dialog->setMinimumSize(QSize(265, 400));
-    signalchooser_dialog->setMaximumSize(QSize(265, 400));
+    signalchooser_dialog->setMinimumSize(265, 420);
+    signalchooser_dialog->setMaximumSize(265, 420);
     signalchooser_dialog->setWindowTitle("Organize signals");
   }
   else
   {
-    signalchooser_dialog->setMinimumSize(QSize(200, 400));
-    signalchooser_dialog->setMaximumSize(QSize(200, 400));
+    signalchooser_dialog->setMinimumSize(200, 420);
+    signalchooser_dialog->setMaximumSize(200, 420);
     signalchooser_dialog->setWindowTitle("Signals");
   }
   signalchooser_dialog->setModal(true);
   signalchooser_dialog->setAttribute(Qt::WA_DeleteOnClose, true);
 
   list = new QListWidget(signalchooser_dialog);
-  list->setGeometry(5, 5, 130, 365);
+  list->setGeometry(10, 10, 130, 365);
   list->setSelectionBehavior(QAbstractItemView::SelectRows);
   if(task == 3)
   {
@@ -70,25 +70,25 @@ UI_SignalChooser::UI_SignalChooser(QWidget *w_parent, int job, int *sgnl_nr)
   }
 
   CloseButton = new QPushButton(signalchooser_dialog);
-  CloseButton->setGeometry(5, 375, 130, 20);
+  CloseButton->setGeometry(10, 385, 130, 25);
   CloseButton->setText("Close");
 
   if(task == 3)
   {
     UpButton = new QPushButton(signalchooser_dialog);
-    UpButton->setGeometry(150, 180, 100, 20);
+    UpButton->setGeometry(155, 180, 100, 25);
     UpButton->setText("Up");
 
     DownButton = new QPushButton(signalchooser_dialog);
-    DownButton->setGeometry(150, 220, 100, 20);
+    DownButton->setGeometry(155, 220, 100, 25);
     DownButton->setText("Down");
 
     InvertButton = new QPushButton(signalchooser_dialog);
-    InvertButton->setGeometry(150, 260, 100, 20);
+    InvertButton->setGeometry(155, 260, 100, 25);
     InvertButton->setText("Invert");
 
     DeleteButton = new QPushButton(signalchooser_dialog);
-    DeleteButton->setGeometry(150, 300, 100, 20);
+    DeleteButton->setGeometry(155, 300, 100, 25);
     DeleteButton->setText("Remove");
   }
 

@@ -44,18 +44,18 @@ UI_SpikeFilterDialog::UI_SpikeFilterDialog(QWidget *w_parent)
 
   spikefilterdialog = new QDialog;
 
-  spikefilterdialog->setMinimumSize(QSize(620, 365));
-  spikefilterdialog->setMaximumSize(QSize(620, 365));
+  spikefilterdialog->setMinimumSize(620, 365);
+  spikefilterdialog->setMaximumSize(620, 365);
   spikefilterdialog->setWindowTitle("Add a spike filter");
   spikefilterdialog->setModal(true);
   spikefilterdialog->setAttribute(Qt::WA_DeleteOnClose, true);
 
   velocityLabel = new QLabel(spikefilterdialog);
-  velocityLabel->setGeometry(20, 45, 60, 20);
+  velocityLabel->setGeometry(20, 45, 60, 25);
   velocityLabel->setText("Velocity");
 
   velocitySpinBox = new QDoubleSpinBox(spikefilterdialog);
-  velocitySpinBox->setGeometry(90, 45, 230, 20);
+  velocitySpinBox->setGeometry(90, 45, 230, 25);
   velocitySpinBox->setDecimals(6);
   velocitySpinBox->setSuffix(" units/(0.5 mSec)");
   velocitySpinBox->setMinimum(0.000001);
@@ -63,18 +63,18 @@ UI_SpikeFilterDialog::UI_SpikeFilterDialog(QWidget *w_parent)
   velocitySpinBox->setValue(1000.0);
 
   holdOffLabel = new QLabel(spikefilterdialog);
-  holdOffLabel->setGeometry(20, 90, 60, 20);
+  holdOffLabel->setGeometry(20, 90, 60, 25);
   holdOffLabel->setText("Hold-off");
 
   holdOffSpinBox = new QSpinBox(spikefilterdialog);
-  holdOffSpinBox->setGeometry(90, 90, 230, 20);
+  holdOffSpinBox->setGeometry(90, 90, 230, 25);
   holdOffSpinBox->setSuffix(" milliSec");
   holdOffSpinBox->setMinimum(10);
   holdOffSpinBox->setMaximum(1000);
   holdOffSpinBox->setValue(100);
 
   listlabel = new QLabel(spikefilterdialog);
-  listlabel->setGeometry(440, 20, 100, 20);
+  listlabel->setGeometry(440, 20, 100, 25);
   listlabel->setText("Select signals:");
 
   list = new QListWidget(spikefilterdialog);

@@ -42,50 +42,50 @@ UI_ASCII2EDFapp::UI_ASCII2EDFapp(char *recent_dir, char *save_dir)
 
   ascii2edfDialog = new QDialog;
 
-  ascii2edfDialog->setMinimumSize(QSize(600, 440));
-  ascii2edfDialog->setMaximumSize(QSize(600, 440));
+  ascii2edfDialog->setMinimumSize(600, 520);
+  ascii2edfDialog->setMaximumSize(600, 520);
   ascii2edfDialog->setWindowTitle("ASCII to EDF/BDF converter");
   ascii2edfDialog->setModal(true);
   ascii2edfDialog->setAttribute(Qt::WA_DeleteOnClose, true);
 
   SeparatorLabel = new QLabel(ascii2edfDialog);
-  SeparatorLabel->setGeometry(QRect(20, 20, 140, 16));
+  SeparatorLabel->setGeometry(20, 20, 140, 25);
   SeparatorLabel->setText("Column separator");
 
   NumsignalsLabel = new QLabel(ascii2edfDialog);
-  NumsignalsLabel->setGeometry(QRect(20, 50, 140, 16));
+  NumsignalsLabel->setGeometry(20, 55, 140, 25);
   NumsignalsLabel->setText("Number of columns");
 
   DatastartLabel = new QLabel(ascii2edfDialog);
-  DatastartLabel->setGeometry(QRect(20, 80, 140, 16));
+  DatastartLabel->setGeometry(20, 90, 140, 25);
   DatastartLabel->setText("Data starts at line");
 
   SamplefreqLabel = new QLabel(ascii2edfDialog);
-  SamplefreqLabel->setGeometry(QRect(20, 110, 140, 16));
+  SamplefreqLabel->setGeometry(20, 125, 140, 25);
   SamplefreqLabel->setText("Samplefrequency");
 
   PatientnameLabel = new QLabel(ascii2edfDialog);
-  PatientnameLabel->setGeometry(QRect(20, 140, 140, 16));
+  PatientnameLabel->setGeometry(20, 160, 140, 25);
   PatientnameLabel->setText("Subject name");
 
   RecordingLabel = new QLabel(ascii2edfDialog);
-  RecordingLabel->setGeometry(QRect(20, 170, 140, 16));
+  RecordingLabel->setGeometry(20, 195, 140, 25);
   RecordingLabel->setText("Recording");
 
   DatetimeLabel = new QLabel(ascii2edfDialog);
-  DatetimeLabel->setGeometry(QRect(20, 200, 140, 16));
+  DatetimeLabel->setGeometry(20, 230, 140, 25);
   DatetimeLabel->setText("Startdate and time");
 
   autoPhysicalMaximumLabel = new QLabel(ascii2edfDialog);
-  autoPhysicalMaximumLabel->setGeometry(QRect(360, 200, 180, 16));
+  autoPhysicalMaximumLabel->setGeometry(360, 265, 180, 25);
   autoPhysicalMaximumLabel->setText("Auto detect physical maximum");
 
   SignalsLabel = new QLabel(ascii2edfDialog);
-  SignalsLabel->setGeometry(QRect(20, 240, 140, 16));
+  SignalsLabel->setGeometry(20, 300, 140, 25);
   SignalsLabel->setText("Signals");
 
   groupbox1 = new QGroupBox(ascii2edfDialog);
-  groupbox1->setGeometry(QRect(330, 20, 160, 90));
+  groupbox1->setGeometry(330, 20, 160, 90);
   groupbox1->setTitle("Output format");
 
   edfButton = new QRadioButton("EDF (16-bit)");
@@ -94,53 +94,54 @@ UI_ASCII2EDFapp::UI_ASCII2EDFapp(char *recent_dir, char *save_dir)
 
   vbox1 = new QVBoxLayout;
   vbox1->addWidget(edfButton);
+  vbox1->addStretch(1);
   vbox1->addWidget(bdfButton);
   vbox1->addStretch(1);
 
   groupbox1->setLayout(vbox1);
 
   SeparatorLineEdit = new QLineEdit(ascii2edfDialog);
-  SeparatorLineEdit->setGeometry(QRect(160, 20, 30, 21));
+  SeparatorLineEdit->setGeometry(160, 20, 30, 25);
   SeparatorLineEdit->setMaxLength(3);
   SeparatorLineEdit->setText("tab");
 
   NumcolumnsSpinbox = new QSpinBox(ascii2edfDialog);
-  NumcolumnsSpinbox->setGeometry(QRect(160, 50, 70, 22));
+  NumcolumnsSpinbox->setGeometry(160, 55, 70, 25);
   NumcolumnsSpinbox->setRange(1,256);
   NumcolumnsSpinbox->setValue(1);
 
   DatastartSpinbox = new QSpinBox(ascii2edfDialog);
-  DatastartSpinbox->setGeometry(QRect(160, 80, 70, 22));
+  DatastartSpinbox->setGeometry(160, 90, 70, 25);
   DatastartSpinbox->setRange(1,100);
   DatastartSpinbox->setValue(1);
 
   SamplefreqSpinbox = new QDoubleSpinBox(ascii2edfDialog);
-  SamplefreqSpinbox->setGeometry(QRect(160, 110, 140, 22));
+  SamplefreqSpinbox->setGeometry(160, 125, 140, 25);
   SamplefreqSpinbox->setDecimals(7);
   SamplefreqSpinbox->setRange(0.0000001,1000000.0);
   SamplefreqSpinbox->setSuffix(" Hz");
   SamplefreqSpinbox->setValue(1.0);
 
   PatientnameLineEdit = new QLineEdit(ascii2edfDialog);
-  PatientnameLineEdit->setGeometry(QRect(160, 140, 420, 21));
+  PatientnameLineEdit->setGeometry(160, 160, 420, 25);
   PatientnameLineEdit->setMaxLength(80);
 
   RecordingLineEdit = new QLineEdit(ascii2edfDialog);
-  RecordingLineEdit->setGeometry(QRect(160, 170, 420, 21));
+  RecordingLineEdit->setGeometry(160, 195, 420, 25);
   RecordingLineEdit->setMaxLength(80);
 
   StartDatetimeedit = new QDateTimeEdit(ascii2edfDialog);
-  StartDatetimeedit->setGeometry(QRect(160, 200, 140, 22));
+  StartDatetimeedit->setGeometry(160, 230, 140, 25);
   StartDatetimeedit->setDisplayFormat("dd/MM/yyyy hh:mm:ss");
   StartDatetimeedit->setDateTime(QDateTime::currentDateTime());
 
   autoPhysicalMaximumCheckbox = new QCheckBox(ascii2edfDialog);
-  autoPhysicalMaximumCheckbox->setGeometry(QRect(560, 200, 20, 20));
+  autoPhysicalMaximumCheckbox->setGeometry(560, 265, 20, 25);
   autoPhysicalMaximumCheckbox->setTristate(false);
   autoPhysicalMaximumCheckbox->setCheckState(Qt::Checked);
 
   SignalsTablewidget = new QTableWidget(ascii2edfDialog);
-  SignalsTablewidget->setGeometry(QRect(160, 230, 420, 140));
+  SignalsTablewidget->setGeometry(160, 300, 420, 140);
   SignalsTablewidget->setSelectionMode(QAbstractItemView::NoSelection);
   SignalsTablewidget->setColumnCount(5);
   SignalsTablewidget->setColumnWidth(0, 20);
@@ -149,7 +150,7 @@ UI_ASCII2EDFapp::UI_ASCII2EDFapp(char *recent_dir, char *save_dir)
   SignalsTablewidget->setColumnWidth(3, 120);
   SignalsTablewidget->setColumnWidth(4, 120);
   SignalsTablewidget->setRowCount(1);
-  SignalsTablewidget->setRowHeight(0, 20);
+  SignalsTablewidget->setRowHeight(0, 25);
   SignalsTablewidget->setCellWidget(0, 0, new QCheckBox);
   ((QCheckBox *)SignalsTablewidget->cellWidget(0, 0))->setCheckState(Qt::Checked);
   SignalsTablewidget->setCellWidget(0, 1, new QLineEdit);
@@ -173,19 +174,19 @@ UI_ASCII2EDFapp::UI_ASCII2EDFapp(char *recent_dir, char *save_dir)
   SignalsTablewidget->setHorizontalHeaderLabels(horizontallabels);
 
   GoButton = new QPushButton(ascii2edfDialog);
-  GoButton->setGeometry(QRect(20, 400, 75, 25));
+  GoButton->setGeometry(20, 480, 75, 25);
   GoButton->setText("Start");
 
   CloseButton = new QPushButton(ascii2edfDialog);
-  CloseButton->setGeometry(QRect(160, 400, 75, 25));
+  CloseButton->setGeometry(160, 480, 75, 25);
   CloseButton->setText("Cancel");
 
   SaveButton = new QPushButton(ascii2edfDialog);
-  SaveButton->setGeometry(QRect(400, 400, 75, 25));
+  SaveButton->setGeometry(400, 480, 75, 25);
   SaveButton->setText("Save");
 
   LoadButton = new QPushButton(ascii2edfDialog);
-  LoadButton->setGeometry(QRect(510, 400, 75, 25));
+  LoadButton->setGeometry(510, 480, 75, 25);
   LoadButton->setText("Load");
 
   columns = 1;

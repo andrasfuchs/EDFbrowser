@@ -31,7 +31,10 @@
 
 
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> refs/remotes/Teuniz/master
 UI_BDF2EDFwindow::UI_BDF2EDFwindow(QWidget *w_parent)
 {
   mainwindow = (UI_Mainwindow *)w_parent;
@@ -41,21 +44,21 @@ UI_BDF2EDFwindow::UI_BDF2EDFwindow(QWidget *w_parent)
 
   myobjectDialog = new QDialog;
 
-  myobjectDialog->setMinimumSize(QSize(600, 526));
-  myobjectDialog->setMaximumSize(QSize(600, 526));
+  myobjectDialog->setMinimumSize(600, 526);
+  myobjectDialog->setMaximumSize(600, 526);
   myobjectDialog->setWindowTitle("BDF+ to EDF+ converter");
   myobjectDialog->setModal(true);
   myobjectDialog->setAttribute(Qt::WA_DeleteOnClose, true);
 
   label1 = new QLabel(myobjectDialog);
-  label1->setGeometry(20, 20, 560, 26);
+  label1->setGeometry(20, 20, 560, 25);
 
   label2 = new QLabel(myobjectDialog);
-  label2->setGeometry(440, 196, 100, 26);
+  label2->setGeometry(440, 196, 100, 25);
   label2->setText("High-pass filter");
 
   label3 = new QLabel(myobjectDialog);
-  label3->setGeometry(440, 300, 100, 26);
+  label3->setGeometry(440, 300, 100, 25);
   label3->setText("Divider");
 
   SignalsTablewidget = new QTableWidget(myobjectDialog);
@@ -73,38 +76,38 @@ UI_BDF2EDFwindow::UI_BDF2EDFwindow(QWidget *w_parent)
   SignalsTablewidget->setHorizontalHeaderLabels(horizontallabels);
 
   spinBox1 = new QDoubleSpinBox(myobjectDialog);
-  spinBox1->setGeometry(440, 232, 100, 26);
+  spinBox1->setGeometry(440, 232, 100, 25);
   spinBox1->setDecimals(3);
   spinBox1->setSuffix(" Hz");
   spinBox1->setRange(0.001, 100.0);
   spinBox1->setValue(0.1);
 
   spinBox2 = new QDoubleSpinBox(myobjectDialog);
-  spinBox2->setGeometry(440, 336, 100, 26);
+  spinBox2->setGeometry(440, 336, 100, 25);
   spinBox2->setDecimals(3);
   spinBox2->setRange(1.0, 256.0);
   spinBox2->setValue(1.0);
 
   pushButton1 = new QPushButton(myobjectDialog);
-  pushButton1->setGeometry(QRect(20, 476, 100, 26));
+  pushButton1->setGeometry(20, 476, 100, 25);
   pushButton1->setText("Select File");
 
   pushButton2 = new QPushButton(myobjectDialog);
-  pushButton2->setGeometry(QRect(480, 476, 100, 26));
+  pushButton2->setGeometry(480, 476, 100, 25);
   pushButton2->setText("Close");
 
   pushButton3 = new QPushButton(myobjectDialog);
-  pushButton3->setGeometry(QRect(200, 476, 100, 26));
+  pushButton3->setGeometry(200, 476, 100, 25);
   pushButton3->setText("Convert");
   pushButton3->setEnabled(false);
 
   pushButton4 = new QPushButton(myobjectDialog);
-  pushButton4->setGeometry(QRect(440, 66, 140, 26));
+  pushButton4->setGeometry(440, 66, 140, 25);
   pushButton4->setText("Select all signals");
   pushButton4->setEnabled(false);
 
   pushButton5 = new QPushButton(myobjectDialog);
-  pushButton5->setGeometry(QRect(440, 118, 140, 26));
+  pushButton5->setGeometry(440, 118, 140, 25);
   pushButton5->setText("Deselect all signals");
   pushButton5->setEnabled(false);
 
@@ -290,7 +293,7 @@ void UI_BDF2EDFwindow::SelectFileButton()
 
   for(i=0; i<edfhdr->edfsignals; i++)
   {
-    SignalsTablewidget->setRowHeight(i, 20);
+    SignalsTablewidget->setRowHeight(i, 25);
 
     SignalsTablewidget->setCellWidget(i, 0, new QCheckBox(edfhdr->edfparam[i].label));
     ((QCheckBox *)(SignalsTablewidget->cellWidget(i, 0)))->setTristate(false);

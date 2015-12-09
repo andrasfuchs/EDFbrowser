@@ -30,9 +30,12 @@
 #include "print_to_bdf.h"
 
 
+<<<<<<< HEAD
 
 
 
+=======
+>>>>>>> refs/remotes/Teuniz/master
 void print_screen_to_bdf(UI_Mainwindow *mainwindow)
 {
   int i, j, k, p,

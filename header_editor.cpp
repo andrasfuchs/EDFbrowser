@@ -31,8 +31,11 @@
 
 
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> refs/remotes/Teuniz/master
 UI_headerEditorWindow::UI_headerEditorWindow(QWidget *w_parent)
 {
   mainwindow = (UI_Mainwindow *)w_parent;

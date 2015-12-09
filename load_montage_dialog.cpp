@@ -53,18 +53,18 @@ UI_LoadMontagewindow::UI_LoadMontagewindow(QWidget *w_parent, char *path)
 
   LoadMontageDialog = new QDialog;
 
-  LoadMontageDialog->setMinimumSize(QSize(800, 180));
-  LoadMontageDialog->setMaximumSize(QSize(800, 180));
+  LoadMontageDialog->setMinimumSize(800, 180);
+  LoadMontageDialog->setMaximumSize(800, 180);
   LoadMontageDialog->setWindowTitle("Load montage");
   LoadMontageDialog->setModal(true);
   LoadMontageDialog->setAttribute(Qt::WA_DeleteOnClose, true);
 
   label1 = new QLabel(LoadMontageDialog);
-  label1->setGeometry(QRect(10, 10, 780, 25));
+  label1->setGeometry(10, 10, 780, 25);
   label1->setText("Choose to which file you want to apply the montage:");
 
   filelist = new QListWidget(LoadMontageDialog);
-  filelist->setGeometry(QRect(10, 35, 780, 75));
+  filelist->setGeometry(10, 35, 780, 75);
   filelist->setSelectionBehavior(QAbstractItemView::SelectRows);
   filelist->setSelectionMode(QAbstractItemView::SingleSelection);
   for(i=0; i<mainwindow->files_open; i++)
@@ -73,11 +73,11 @@ UI_LoadMontagewindow::UI_LoadMontagewindow(QWidget *w_parent, char *path)
   }
 
   LoadButton = new QPushButton(LoadMontageDialog);
-  LoadButton->setGeometry(QRect(10, 140, 100, 25));
+  LoadButton->setGeometry(10, 140, 100, 25);
   LoadButton->setText("Load");
 
   CloseButton = new QPushButton(LoadMontageDialog);
-  CloseButton->setGeometry(QRect(690, 140, 100, 25));
+  CloseButton->setGeometry(690, 140, 100, 25);
   CloseButton->setText("Close");
 
   QObject::connect(CloseButton,  SIGNAL(clicked()), LoadMontageDialog, SLOT(close()));

@@ -26,9 +26,22 @@
 */
 
 
-#ifndef VIEWER_GLOBAL_H
-#define VIEWER_GLOBAL_H
+#ifndef EDFBROWSER_GLOBAL_H
+#define EDFBROWSER_GLOBAL_H
 
+#include <stdio.h>
+
+#if defined(__APPLE__) || defined(__MACH__) || defined(__APPLE_CC__)
+
+#define fopeno fopen
+
+#else
+
+#define fseeko fseeko64
+#define ftello ftello64
+#define fopeno fopen64
+
+#endif
 
 #define PROGRAM_NAME "EDFbrowser"
 #define PROGRAM_VERSION "1.56"
@@ -64,9 +77,12 @@
 #define VIDEO_STATUS_PAUSED      17
 #define VIDEO_STATUS_ENDED       18
 
+<<<<<<< HEAD
 #include <stdio.h>
 
 #include "multitargetsupport.h"
+=======
+>>>>>>> refs/remotes/Teuniz/master
 #include "filter.h"
 #include "third_party/fidlib/fidlib.h"
 #include "ravg_filter.h"

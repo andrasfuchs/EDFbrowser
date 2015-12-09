@@ -39,14 +39,14 @@ UI_AsciiExportwindow::UI_AsciiExportwindow(QWidget *w_parent)
 
   AsciiExportDialog = new QDialog;
 
-  AsciiExportDialog->setMinimumSize(QSize(800, 180));
-  AsciiExportDialog->setMaximumSize(QSize(800, 180));
+  AsciiExportDialog->setMinimumSize(800, 180);
+  AsciiExportDialog->setMaximumSize(800, 180);
   AsciiExportDialog->setWindowTitle("Export to ASCII");
   AsciiExportDialog->setModal(true);
   AsciiExportDialog->setAttribute(Qt::WA_DeleteOnClose, true);
 
   filelist = new QListWidget(AsciiExportDialog);
-  filelist->setGeometry(QRect(10, 10, 780, 75));
+  filelist->setGeometry(10, 10, 780, 75);
   filelist->setSelectionBehavior(QAbstractItemView::SelectRows);
   filelist->setSelectionMode(QAbstractItemView::SingleSelection);
   for(i=0; i<mainwindow->files_open; i++)
@@ -58,11 +58,11 @@ UI_AsciiExportwindow::UI_AsciiExportwindow(QWidget *w_parent)
   }
 
   ExportButton = new QPushButton(AsciiExportDialog);
-  ExportButton->setGeometry(QRect(10, 140, 100, 25));
+  ExportButton->setGeometry(10, 140, 100, 25);
   ExportButton->setText("Export");
 
   CloseButton = new QPushButton(AsciiExportDialog);
-  CloseButton->setGeometry(QRect(690, 140, 100, 25));
+  CloseButton->setGeometry(690, 140, 100, 25);
   CloseButton->setText("Close");
 
   QObject::connect(CloseButton,  SIGNAL(clicked()), AsciiExportDialog, SLOT(close()));

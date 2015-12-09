@@ -65,7 +65,7 @@ UI_edit_predefined_mtg_window::UI_edit_predefined_mtg_window(QWidget *w_parent)
   }
 
   CloseButton = new QPushButton(edit_predefined_mtg_Dialog);
-  CloseButton->setGeometry(QRect(690, 230, 100, 25));
+  CloseButton->setGeometry(690, 230, 100, 25);
   CloseButton->setText("Close");
 
   QObject::connect(CloseButton,   SIGNAL(clicked()),                      edit_predefined_mtg_Dialog,    SLOT(close()));
@@ -82,8 +82,8 @@ void UI_edit_predefined_mtg_window::rowClicked(QListWidgetItem *item)
   listItem = item;
 
   dialog = new QDialog(edit_predefined_mtg_Dialog);
-  dialog->setMinimumSize(QSize(140, 135));
-  dialog->setMaximumSize(QSize(140, 135));
+  dialog->setMinimumSize(140, 135);
+  dialog->setMaximumSize(140, 135);
   dialog->setWindowTitle("Entry");
   dialog->setModal(true);
   dialog->setAttribute(Qt::WA_DeleteOnClose, true);

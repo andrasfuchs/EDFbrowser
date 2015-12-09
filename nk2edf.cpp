@@ -31,7 +31,10 @@
 
 
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> refs/remotes/Teuniz/master
 #define ELECTRODE_TAG "[ELECTRODE]"
 #define ELECTRODE_UNTAG "["
 #define ELECTRODE_NAME_MAXLEN 256
@@ -50,27 +53,27 @@ UI_NK2EDFwindow::UI_NK2EDFwindow(char *recent_dir)
 
   myobjectDialog = new QDialog;
 
-  myobjectDialog->setMinimumSize(QSize(600, 480));
-  myobjectDialog->setMaximumSize(QSize(600, 480));
+  myobjectDialog->setMinimumSize(600, 480);
+  myobjectDialog->setMaximumSize(600, 480);
   myobjectDialog->setWindowTitle("Nihon Kohden to EDF(+) converter");
   myobjectDialog->setModal(true);
   myobjectDialog->setAttribute(Qt::WA_DeleteOnClose, true);
 
   pushButton1 = new QPushButton(myobjectDialog);
-  pushButton1->setGeometry(QRect(20, 430, 100, 26));
+  pushButton1->setGeometry(20, 430, 100, 25);
   pushButton1->setText("Select File");
 
   pushButton2 = new QPushButton(myobjectDialog);
-  pushButton2->setGeometry(QRect(480, 430, 100, 26));
+  pushButton2->setGeometry(480, 430, 100, 25);
   pushButton2->setText("Close");
 
   checkBox1 = new QCheckBox(myobjectDialog);
-  checkBox1->setGeometry(QRect(200, 430, 120, 26));
+  checkBox1->setGeometry(200, 430, 120, 25);
   checkBox1->setText("Create EDF+");
   checkBox1->setCheckState(Qt::Checked);
 
   textEdit1 = new QTextEdit(myobjectDialog);
-  textEdit1->setGeometry(QRect(20, 20, 560, 380));
+  textEdit1->setGeometry(20, 20, 560, 380);
   textEdit1->setFrameStyle(QFrame::Panel | QFrame::Sunken);
   textEdit1->setReadOnly(true);
   textEdit1->setLineWrapMode(QTextEdit::NoWrap);

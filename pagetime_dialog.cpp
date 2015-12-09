@@ -38,27 +38,27 @@ UI_Userdefined_timepage_Dialog::UI_Userdefined_timepage_Dialog(QWidget *w_parent
 
   set_diplaytime_dialog = new QDialog(w_parent);
 
-  set_diplaytime_dialog->setMinimumSize(QSize(335, 200));
-  set_diplaytime_dialog->setMaximumSize(QSize(335, 200));
+  set_diplaytime_dialog->setMinimumSize(335, 200);
+  set_diplaytime_dialog->setMaximumSize(335, 200);
   set_diplaytime_dialog->setWindowTitle("Set timescale");
   set_diplaytime_dialog->setModal(true);
   set_diplaytime_dialog->setAttribute(Qt::WA_DeleteOnClose, true);
 
   label1 = new QLabel(set_diplaytime_dialog);
-  label1->setGeometry(QRect(70, 25, 110, 25));
+  label1->setGeometry(70, 25, 110, 25);
   label1->setText("hh:mm:ss:mmm");
 
   timeEdit1 = new QTimeEdit(set_diplaytime_dialog);
-  timeEdit1->setGeometry(QRect(65, 50, 110, 25));
+  timeEdit1->setGeometry(65, 50, 110, 25);
   timeEdit1->setDisplayFormat("hh:mm:ss.zzz");
   timeEdit1->setMinimumTime(QTime(0, 0, 0, 0));
 
   OKButton = new QPushButton(set_diplaytime_dialog);
-  OKButton->setGeometry(QRect(10, 165, 100, 25));
+  OKButton->setGeometry(10, 165, 100, 25);
   OKButton->setText("OK");
 
   CloseButton = new QPushButton(set_diplaytime_dialog);
-  CloseButton->setGeometry(QRect(225, 165, 100, 25));
+  CloseButton->setGeometry(225, 165, 100, 25);
   CloseButton->setText("Cancel");
 
   QObject::connect(CloseButton, SIGNAL(clicked()), set_diplaytime_dialog, SLOT(close()));
