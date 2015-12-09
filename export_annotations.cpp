@@ -30,10 +30,6 @@
 #include "export_annotations.h"
 
 
-<<<<<<< HEAD
-
-=======
->>>>>>> refs/remotes/Teuniz/master
 UI_ExportAnnotationswindow::UI_ExportAnnotationswindow(QWidget *w_parent)
 {
   int i;

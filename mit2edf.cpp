@@ -31,10 +31,6 @@
 #include "mit2edf.h"
 
 
-<<<<<<< HEAD
-
-=======
->>>>>>> refs/remotes/Teuniz/master
 #define NOTQRS  0 /* not-QRS (not a getann/putann code) */
 #define NORMAL  1 /* normal beat */
 #define LBBB  2 /* left bundle branch block beat */

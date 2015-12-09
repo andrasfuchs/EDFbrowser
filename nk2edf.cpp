@@ -31,10 +31,6 @@
 
 
 
-<<<<<<< HEAD
-
-=======
->>>>>>> refs/remotes/Teuniz/master
 #define ELECTRODE_TAG "[ELECTRODE]"
 #define ELECTRODE_UNTAG "["
 #define ELECTRODE_NAME_MAXLEN 256

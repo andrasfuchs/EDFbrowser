@@ -31,10 +31,6 @@
 
 
 
-<<<<<<< HEAD
-
-=======
->>>>>>> refs/remotes/Teuniz/master
 int save_annotations(UI_Mainwindow *mainwindow, FILE *outputfile, struct edfhdrblock *hdr, struct annotationblock *annotlist)
 {
   int i, j, k, n, p=0,

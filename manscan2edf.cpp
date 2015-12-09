@@ -31,10 +31,6 @@
 #include "manscan2edf.h"
 
 
-<<<<<<< HEAD
-
-=======
->>>>>>> refs/remotes/Teuniz/master
 #define MBILINEBUFSZ 4096
 #define MBIMAXEVENTS 10000
 #define MBIMAXEVLEN 40

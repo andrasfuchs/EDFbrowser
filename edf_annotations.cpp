@@ -31,10 +31,6 @@
 
 
 
-<<<<<<< HEAD
-
-=======
->>>>>>> refs/remotes/Teuniz/master
 int EDF_annotations::get_annotations(int file_num, struct edfhdrblock *edf_hdr, struct annotationblock **annotslist, int read_nk_trigger_signal)
 {
   int i, j, k, p, r=0, n,

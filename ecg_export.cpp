@@ -31,10 +31,6 @@
 
 
 
-<<<<<<< HEAD
-
-=======
->>>>>>> refs/remotes/Teuniz/master
 UI_ECGExport::UI_ECGExport(QWidget *w_parent)
 {
   mainwindow = (UI_Mainwindow *)w_parent;

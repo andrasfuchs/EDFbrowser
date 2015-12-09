@@ -30,11 +30,6 @@
 #include "save_montage_dialog.h"
 
 
-<<<<<<< HEAD
-
-
-=======
->>>>>>> refs/remotes/Teuniz/master
 UI_SaveMontagewindow::UI_SaveMontagewindow(QWidget *w_parent)
 {
   int i;

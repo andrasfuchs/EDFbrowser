@@ -31,10 +31,6 @@
 
 
 
-<<<<<<< HEAD
-
-=======
->>>>>>> refs/remotes/Teuniz/master
 UI_BDF2EDFwindow::UI_BDF2EDFwindow(QWidget *w_parent)
 {
   mainwindow = (UI_Mainwindow *)w_parent;

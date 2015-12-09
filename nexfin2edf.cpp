@@ -31,11 +31,6 @@
 
 
 
-<<<<<<< HEAD
-
-
-=======
->>>>>>> refs/remotes/Teuniz/master
 UI_NEXFIN2EDFwindow::UI_NEXFIN2EDFwindow(char *recent_dir, char *save_dir)
 {
   recent_opendir = recent_dir;

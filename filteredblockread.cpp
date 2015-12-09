@@ -29,10 +29,6 @@
 #include "filteredblockread.h"
 
 
-<<<<<<< HEAD
-
-=======
->>>>>>> refs/remotes/Teuniz/master
 double * FilteredBlockReadClass::init_signalcomp(struct signalcompblock *i_signalcomp, int i_datarecord_cnt, int skip_f)
 {
   skip_filters = skip_f;

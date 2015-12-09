@@ -31,10 +31,6 @@
 
 
 
-<<<<<<< HEAD
-
-=======
->>>>>>> refs/remotes/Teuniz/master
 UI_FINO2EDFwindow::UI_FINO2EDFwindow(char *recent_dir, char *save_dir)
 {
   recent_opendir = recent_dir;

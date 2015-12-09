@@ -31,10 +31,6 @@
 #include "emsa2edf.h"
 
 
-<<<<<<< HEAD
-
-=======
->>>>>>> refs/remotes/Teuniz/master
 UI_EMSA2EDFwindow::UI_EMSA2EDFwindow(char *recent_dir, char *save_dir)
 {
   char txt_string[2048];

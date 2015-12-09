@@ -77,12 +77,10 @@
 #define VIDEO_STATUS_PAUSED      17
 #define VIDEO_STATUS_ENDED       18
 
-<<<<<<< HEAD
+
 #include <stdio.h>
 
 #include "multitargetsupport.h"
-=======
->>>>>>> refs/remotes/Teuniz/master
 #include "filter.h"
 #include "third_party/fidlib/fidlib.h"
 #include "ravg_filter.h"

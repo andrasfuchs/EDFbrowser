@@ -30,11 +30,6 @@
 #include "mainwindow.h"
 
 
-<<<<<<< HEAD
-
-
-=======
->>>>>>> refs/remotes/Teuniz/master
 // #define DEBUG_VIDEOPLAYER
 
 #ifdef DEBUG_VIDEOPLAYER

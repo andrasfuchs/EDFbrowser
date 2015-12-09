@@ -30,11 +30,6 @@
 #include "print_to_edf.h"
 
 
-<<<<<<< HEAD
-
-
-=======
->>>>>>> refs/remotes/Teuniz/master
 void print_screen_to_edf(UI_Mainwindow *mainwindow)
 {
   int i, j, k, p,

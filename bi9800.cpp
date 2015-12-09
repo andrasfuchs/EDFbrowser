@@ -30,10 +30,6 @@
 #include "bi9800.h"
 
 
-<<<<<<< HEAD
-=======
-
->>>>>>> refs/remotes/Teuniz/master
 UI_BI98002EDFwindow::UI_BI98002EDFwindow(char *recent_dir, char *save_dir)
 {
   recent_opendir = recent_dir;

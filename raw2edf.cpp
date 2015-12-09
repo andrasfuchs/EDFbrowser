@@ -31,11 +31,6 @@
 
 
 
-<<<<<<< HEAD
-
-
-=======
->>>>>>> refs/remotes/Teuniz/master
 UI_RAW2EDFapp::UI_RAW2EDFapp(struct raw2edf_var_struct *raw2edf_var_p, char *recent_dir, char *save_dir)
 {
   recent_opendir = recent_dir;

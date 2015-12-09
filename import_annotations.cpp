@@ -30,11 +30,6 @@
 #include "import_annotations.h"
 
 
-<<<<<<< HEAD
-
-
-=======
->>>>>>> refs/remotes/Teuniz/master
 #define XML_FORMAT      0
 #define ASCIICSV_FORMAT 1
 #define DCEVENT_FORMAT  2

@@ -31,10 +31,6 @@
 
 
 
-<<<<<<< HEAD
-
-=======
->>>>>>> refs/remotes/Teuniz/master
 UI_ReduceSignalsWindow::UI_ReduceSignalsWindow(QWidget *w_parent)
 {
   mainwindow = (UI_Mainwindow *)w_parent;
