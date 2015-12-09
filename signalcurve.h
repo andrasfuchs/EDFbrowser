@@ -147,8 +147,8 @@ private:
   void drawSignalCurve(QPainter *painter, int curve_w, int curve_h, Signal *signal);
   void drawTextOnRuler(QPainter *painter, QRect area, int position, double value, int precision, bool is_vertical, bool is_upsidedown = false);
   void calculateRulerParameters(int length, double start_value, double end_value, int *multiplier, int *normalized_start_value, int *normalized_end_value, int *range, double *pixels_per_unit, int *divisor, int *precision);
-  void resetRulers();
   void drawSignalCurveSegment(QPainter *painter, QPolygon curvePolygon, int curve_h, QPen linePen, QBrush fillBrush);
+  void resetRulers();
 
 private slots:
   void exec_sidemenu();
@@ -202,6 +202,7 @@ private:
 private:
   // VIEW RELATED
   bool update_pending = false;  // true if something was changed on the chart, so we need to update it
+  bool resetRulers_pending = false; // true if we need to rescale the chart
   int MAX_FPS = 30;             // this will be the maximum framerate of this control
   QTimer* update_timer;         // we use this timer to limit the refresh rate
 

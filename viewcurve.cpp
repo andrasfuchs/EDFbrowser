@@ -1345,6 +1345,7 @@ void ViewCurve::drawCurve_stage_2(QPainter *painter, int w_width, int w_height, 
     return;
   }
 
+
   signalcomps = mainwindow->signalcomps;
   signalcomp = mainwindow->signalcomp;
   viewbuf = mainwindow->viewbuf;
@@ -1414,6 +1415,9 @@ void ViewCurve::drawCurve_stage_2(QPainter *painter, int w_width, int w_height, 
     painter->drawLine(w-1, h-1, 0, h-1);
   }
 
+
+
+// SECTION_START: Draw the vertical lines behind the waveform
   if(m_pagetime<=20)
   {
     ruler_pen->setColor(small_ruler_color);
@@ -1678,6 +1682,10 @@ void ViewCurve::drawCurve_stage_2(QPainter *painter, int w_width, int w_height, 
     }
   }
 
+// SECTION_END: Draw the vertical lines behind the waveform
+
+
+
   if((viewbuf==NULL)||(graphicBuf==NULL)||(screensamples==NULL))
   {
     return;
@@ -1923,6 +1931,7 @@ void ViewCurve::drawCurve_stage_2(QPainter *painter, int w_width, int w_height, 
       painter->setPen((Qt::GlobalColor)signalcomp[i]->color);
     }
 
+    // draw the waveform
     for(j=0; j<screensamples[i]; j++)
     {
       painter->drawLine(graphicBuf[j].graphicLine[i].x1,
@@ -4380,21 +4389,3 @@ void ViewCurve::strip_types_from_label(char *label)
     }
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

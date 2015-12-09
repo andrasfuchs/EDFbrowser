@@ -139,7 +139,7 @@ private:
 
   SignalCurve *histogramView;
 
-  QTimer *t1;
+  QTimer *t1;       // this is used as a multi-thread solution for curve_update
 
   QCheckBox *colorBarCheckBox;
 

@@ -34,6 +34,13 @@ win32 {
 }
 }
 
+# MINGW
+QMAKE_CXXFLAGS += -Wextra -Wshadow -Wformat-nonliteral -Wformat-security -Wtype-limits -Wfatal-errors -std=c++11
+
+# MSVC2013
+#QMAKE_CXXFLAGS += /FS
+#QMAKE_LFLAGS_DEBUG += /INCREMENTAL:NO
+
 OBJECTS_DIR = ./objects
 MOC_DIR = ./moc
 
@@ -221,8 +228,6 @@ RESOURCES = images.qrc
 win32 {
  RC_FILE = edfbrowser.rc
 }
-
-QMAKE_CXXFLAGS += -Wextra -Wshadow -Wformat-nonliteral -Wformat-security -Wtype-limits -Wfatal-errors -std=c++11
 
 unix {
 target.path = /usr/bin

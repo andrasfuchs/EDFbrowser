@@ -95,6 +95,13 @@ void SignalCurve::updateWidget()
         update();
         update_pending = false;
     }
+
+    if (resetRulers_pending)
+    {
+        resetRulers();
+        resetRulers_pending = false;
+    }
+
 }
 
 void SignalCurve::clearSignal()
@@ -222,7 +229,7 @@ void SignalCurve::mouseReleaseEvent(QMouseEvent *)
 
 void SignalCurve::mouseDoubleClickEvent(QMouseEvent *)
 {
-    resetRulers();
+    resetRulers_pending = true;
 
     update_pending = true;
 }
@@ -1074,6 +1081,25 @@ void SignalCurve::drawWidget(QPainter *painter, int curve_w, int curve_h, bool i
     double barWidth = 0;
     int barTextYPosIndex = 0;
 
+    QList<QColor> bar_colors = QList<QColor>();
+    bar_colors.append(QColor(255,0,0));
+    bar_colors.append(QColor(255,85,0));
+    bar_colors.append(QColor(255,170,0));
+    bar_colors.append(QColor(255,255,0));
+    bar_colors.append(QColor(170,255,0));
+    bar_colors.append(QColor(85,255,0));
+    bar_colors.append(QColor(0,255,0));
+    bar_colors.append(QColor(0,255,85));
+    bar_colors.append(QColor(0,255,170));
+    bar_colors.append(QColor(0,255,255));
+    bar_colors.append(QColor(0,170,255));
+    bar_colors.append(QColor(0,0,255));
+    bar_colors.append(QColor(85,0,255));
+    bar_colors.append(QColor(170,0,255));
+    bar_colors.append(QColor(255,0,255));
+    bar_colors.append(QColor(255,0,170));
+    bar_colors.append(QColor(255,0,85));
+
     if((spectrum_color->freq[0] > h_ruler_min_value) && (spectrum_color->items > 1))
     {
       t = (spectrum_color->max_colorbar_value - spectrum_color->value[0]) * ((double)curve_h / spectrum_color->max_colorbar_value);
@@ -1082,7 +1108,8 @@ void SignalCurve::drawWidget(QPainter *painter, int curve_w, int curve_h, bool i
       if(t <= curve_h)
       {
         QColor color = (Qt::GlobalColor)spectrum_color->color[0];
-        color.setAlpha(127);
+        //QColor color = bar_colors[0];
+        color.setAlpha(63);
 
         barWidth = (spectrum_color->freq[0] - h_ruler_min_value) * pixelsPerUnit;
 
@@ -1117,7 +1144,8 @@ void SignalCurve::drawWidget(QPainter *painter, int curve_w, int curve_h, bool i
         if(t <= curve_h)
         {
           QColor color = (Qt::GlobalColor)spectrum_color->color[i];
-          color.setAlpha(127);
+          //QColor color = bar_colors[i*2];
+          color.setAlpha(63);
 
           barWidth = (spectrum_color->freq[i] - spectrum_color->freq[i-1]) * pixelsPerUnit;
 
@@ -1576,7 +1604,7 @@ void SignalCurve::drawCurve(double *sample_buffer, int start_index, int buffer_s
         Signal *newSignal = new Signal("ADC", "ADC-FFT", "Frontal lobe", values, "Frequency", "Hz", buffer_size / 256.0, "Intensity", "???", 1.0, SignalType::FFT);
 
         drawCurve(newSignal, 0.0, chartArea.width() / 20.0, h_min_value, h_max_value);
-        resetRulers();
+        resetRulers_pending = true;
     } else {
         // this is an old signal, so we don't need to calibrate the histogram
         signals_[0]->SetValues(values);
@@ -1602,7 +1630,7 @@ void SignalCurve::drawCurve(Signal *signal, double h_min_value, double h_max_val
   v_ruler_min_value = v_min_value;
   v_ruler_max_value = v_max_value;
 
-  resetRulers();
+  resetRulers_pending = true;
 
   signal_display_start = 0;
   signal_display_length = (h_ruler_max_value - h_ruler_min_value) * this->signals_[0]->GetHorizontalDensity();
@@ -1636,7 +1664,7 @@ void SignalCurve::addSignal(Signal *signal)
         signal_display_start = 0;
         signal_display_length = (h_ruler_max_value - h_ruler_min_value) * signal->GetHorizontalDensity();
 
-        resetRulers();
+        resetRulers_pending = true;
 
         update_pending = true;
     }
@@ -1658,8 +1686,8 @@ void SignalCurve::signalValueChanged(QVector<double>)
 {
     if ((v_ruler_min_value == DBL_MAX) || (v_ruler_max_value == DBL_MIN))
     {
-        // rulers were not initialized yer
-        resetRulers();
+        // rulers were not initialized yet
+        resetRulers_pending = true;
     }
 
     update_pending = true;

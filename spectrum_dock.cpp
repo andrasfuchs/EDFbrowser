@@ -116,6 +116,28 @@ UI_SpectrumDockWindow::UI_SpectrumDockWindow(QWidget *w_parent)
   vlayout2->addWidget(scaleGroupBox);
 
 
+
+  QHBoxLayout *signalListHeaderLayout = new QHBoxLayout();
+
+  QLabel *lbl = new QLabel();
+  lbl->setObjectName("lblSingalNames");
+  lbl->setMinimumWidth(150);
+  lbl->setMaximumWidth(150);
+  lbl->setText("Signal name");
+  signalListHeaderLayout->addWidget(lbl);
+
+  for (int i=64; i>2; i/=4) {
+    QLabel* lb = new QLabel();
+    lb->setObjectName("lblTimeFrame" + QString::number(i));
+    lb->setMinimumWidth(50);
+    lb->setMaximumWidth(50);
+    lb->setText(QString::number(i) + " sec");
+    signalListHeaderLayout->addWidget(lb);
+  }
+  vlayout2->addLayout(signalListHeaderLayout);
+
+
+
   hlayout1 = new QHBoxLayout();
   hlayout1->setSpacing(20);
   hlayout1->addLayout(vlayout2);
@@ -237,6 +259,14 @@ void UI_SpectrumDockWindow::scaleButtonClicked(bool checked)
           return;
         }
       }
+  }
+
+  if (((newMode & SignalType::LogScale) == SignalType::LogScale))
+  {
+    colorBarCheckBox->setChecked(false);
+    colorBarCheckBox->setEnabled(false);
+  } else {
+    colorBarCheckBox->setEnabled(true);
   }
 
   changeSignals(base_samples, newMode);
@@ -394,7 +424,7 @@ void UI_SpectrumDockWindow::changeSignals(Signal* signal, SignalType newMode)
   histogramView->removeSignal();
   histogramView->addSignal(signalMatrix[0]->fft[0]);
   histogramView->addSignal(signalMatrix[0]->fft[1]);
-  histogramView->addSignal(signalMatrix[0]->fft[2]);
+  histogramView->addSignal(signalMatrix[0]->fft[2]); 
 
   this->rescan();
 }
