@@ -1691,6 +1691,7 @@ void ViewCurve::drawCurve_stage_2(QPainter *painter, int w_width, int w_height, 
     return;
   }
 
+  // these are the horizontal lines at certain (voltage) values
   if(mainwindow->show_baselines)
   {
     vertical_distance = h / (signalcomps + 1);
@@ -1796,6 +1797,7 @@ void ViewCurve::drawCurve_stage_2(QPainter *painter, int w_width, int w_height, 
     }
   }
 
+  // the annotation on the bottom
   if(mainwindow->show_annot_markers)
   {
     annot_marker_pen->setColor(annot_marker_color);
@@ -1906,6 +1908,7 @@ void ViewCurve::drawCurve_stage_2(QPainter *painter, int w_width, int w_height, 
     }
   }
 
+
   if(mainwindow->clip_to_pane)
   {
     painter->setClipping(true);
@@ -1943,6 +1946,7 @@ void ViewCurve::drawCurve_stage_2(QPainter *painter, int w_width, int w_height, 
 
   painter->setClipping(false);
 
+  // cursors, offset and gain tracking
   for(i=0; i<signalcomps; i++)
   {
     baseline = h / (signalcomps + 1);
@@ -2150,6 +2154,7 @@ void ViewCurve::drawCurve_stage_2(QPainter *painter, int w_width, int w_height, 
   {
     baseline = vertical_distance * (i + 1);
 
+    // background behind the name of the signal
     if(signalcomp[i]->alias[0] != 0)
     {
       painter->fillRect(2, baseline - 20, strlen(signalcomp[i]->alias) * 7 + 6, 12, backgroundcolor);
@@ -2161,6 +2166,7 @@ void ViewCurve::drawCurve_stage_2(QPainter *painter, int w_width, int w_height, 
 
     painter->setPen((Qt::GlobalColor)signalcomp[i]->color);
 
+    // name of the signal
     if(signalcomp[i]->alias[0] != 0)
     {
       painter->drawText(5, baseline - 10, signalcomp[i]->alias);
@@ -2170,6 +2176,7 @@ void ViewCurve::drawCurve_stage_2(QPainter *painter, int w_width, int w_height, 
       painter->drawText(5, baseline - 10, signalcomp[i]->signallabel);
     }
 
+    // ruler
     if(signalcomp[i]->hasruler)
     {
       floating_ruler(painter, ruler_x_position, ruler_y_position, signalcomp[i], print_linewidth);
@@ -2194,8 +2201,11 @@ void ViewCurve::drawCurve_stage_2(QPainter *painter, int w_width, int w_height, 
   }
   else
   {
+    // view time in the bottom left corner of the waveform
     painter->fillRect(5, h - 14, 180, 12, backgroundcolor);
     painter->drawText(8, h - 4, mainwindow->viewtime_string);
+
+    // page time in the bottom right corner of the waveform
     painter->fillRect(w - 63, h - 14, 60, 12, backgroundcolor);
     painter->drawText(w - 60, h - 4, mainwindow->pagetime_string);
   }
@@ -2248,14 +2258,18 @@ void ViewCurve::drawCurve_stage_1(QPainter *painter, int w_width, int w_height, 
     screensamples[i] = 0;
   }
 
+  // number of signals to display
   signalcomps = mainwindow->signalcomps;
+  // the struct of the signal to display
   signalcomp = mainwindow->signalcomp;
+  // the actual data to display
   viewbuf = mainwindow->viewbuf;
 
   painter_pixelsizefactor = 1.0 / mainwindow->pixelsizefactor;
 
   if(!w_width||!w_height)
   {
+    // if these values are not set that means that we display the waveform on the screen (not on the printer)
     w = width();
     h = height();
 
@@ -2266,6 +2280,7 @@ void ViewCurve::drawCurve_stage_1(QPainter *painter, int w_width, int w_height, 
   }
   else
   {
+    // we must print the waveform to the printer with predefined dimensions
     w = w_width;
     h = w_height;
 
@@ -2736,6 +2751,7 @@ void ViewCurve::drawCurve_stage_1(QPainter *painter, int w_width, int w_height, 
   }
   else
   {
+    // this calls the paintEvent which calls the drawCurve_stage_2
     update();
   }
 }
@@ -2768,7 +2784,7 @@ void drawCurve_stage_1_thread::init_vars(UI_Mainwindow *mainwindow_a, struct sig
 
 }
 
-
+// this is the method which prepares the waveform(s) to draw if multi-threading is enabled
 void drawCurve_stage_1_thread::run()
 {
   int j, k, n, x1, y1, x2, y2,
