@@ -837,7 +837,7 @@ UI_Mainwindow::UI_Mainwindow()
   signalcomps = 0;
   sel_viewtime = 0;
   viewtime_sync = VIEWTIME_SYNCED_ABSOLUT;
-  pagetime = 10 * TIME_DIMENSION;
+  pagetime = 64 * TIME_DIMENSION;
   viewtime_string[0] = 0;
   pagetime_string[0] = 0;
   totalviewbufsize = 0;
@@ -4619,8 +4619,10 @@ void UI_Mainwindow::setup_viewbuf()
     signalcomp[i]->sample_stop += signalcomp[i]->sample_start;
   }
 
+  // build the view-time and page-time strings (they are displayed at the left and right bottom corners of the waveform view)
   if(signalcomps && (!signal_averaging_active))
   {
+    // view-time (the time (HH:mm:ss) of starting point of the current view)
     viewtime_string[0] = 0;
 
     if(viewtime_indicator_type == 2)
@@ -4685,35 +4687,14 @@ void UI_Mainwindow::setup_viewbuf()
       }
     }
 
-    if(pagetime >= (3600LL * TIME_DIMENSION))
-    {
-      snprintf(pagetime_string, 32, "%i:%02i:%02i.%04i",
-              ((int)(pagetime / TIME_DIMENSION)) / 3600,
-              (((int)(pagetime / TIME_DIMENSION)) % 3600) / 60,
-              ((int)(pagetime / TIME_DIMENSION)) % 60,
-              (int)((pagetime % TIME_DIMENSION) / 1000LL));
-    }
-    else if(pagetime >= (60LL * TIME_DIMENSION))
-      {
-        snprintf(pagetime_string, 32, "%i:%02i.%04i",
-                ((int)(pagetime / TIME_DIMENSION)) / 60,
-                ((int)(pagetime / TIME_DIMENSION)) % 60,
-                (int)((pagetime % TIME_DIMENSION) / 1000LL));
-      }
-      else if(pagetime >= TIME_DIMENSION)
-      {
-        snprintf(pagetime_string, 32, "%i.%04i sec",
-                (int)(pagetime / TIME_DIMENSION),
-                (int)((pagetime % TIME_DIMENSION) / 1000LL));
-      }
-      else
-      {
-        convert_to_metric_suffix(pagetime_string, (double)pagetime / TIME_DIMENSION, 3);
-
-        strcat(pagetime_string, "S");
-      }
-
     remove_trailing_zeros(viewtime_string);
+
+
+    // page-time (the length of the displayed waveform)
+    snprintf(pagetime_string, 32, "%i.%04i seconds",
+            (int)(pagetime / TIME_DIMENSION),
+            (int)((pagetime % TIME_DIMENSION) / 1000LL));
+
     remove_trailing_zeros(pagetime_string);
   }
 

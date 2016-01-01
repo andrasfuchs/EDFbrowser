@@ -1390,6 +1390,7 @@ void ViewCurve::drawCurve_stage_2(QPainter *painter, int w_width, int w_height, 
 
   painter->fillRect(0, 0, w, h, backgroundcolor);
 
+  // time visible at the moment (in seconds)
   m_pagetime = (int)(mainwindow->pagetime / TIME_DIMENSION);
 
   time_ppixel = mainwindow->pagetime / w;
@@ -1691,7 +1692,7 @@ void ViewCurve::drawCurve_stage_2(QPainter *painter, int w_width, int w_height, 
     return;
   }
 
-  // these are the horizontal lines at certain (voltage) values
+  // horizontal lines at certain (voltage) values and their values' label on the left
   if(mainwindow->show_baselines)
   {
     vertical_distance = h / (signalcomps + 1);
@@ -2176,6 +2177,16 @@ void ViewCurve::drawCurve_stage_2(QPainter *painter, int w_width, int w_height, 
       painter->drawText(5, baseline - 10, signalcomp[i]->signallabel);
     }
 
+    // power / sec
+    QString unit = QString(signalcomp[i]->physdimension);
+    if (unit.endsWith("V"))
+    {
+      double time = (double)mainwindow->pagetime / TIME_DIMENSION;
+      double sumRectifiedPerSecond = (signalcomp[i]->stat_sum_rectified / time);
+
+      painter->drawText(w - 100, vertical_distance * i + (vertical_distance / 2) + 10, QString("%L1").arg(sumRectifiedPerSecond, 0, 'f', 0)+" "+unit+"s");
+    }
+
     // ruler
     if(signalcomp[i]->hasruler)
     {
@@ -2206,8 +2217,8 @@ void ViewCurve::drawCurve_stage_2(QPainter *painter, int w_width, int w_height, 
     painter->drawText(8, h - 4, mainwindow->viewtime_string);
 
     // page time in the bottom right corner of the waveform
-    painter->fillRect(w - 63, h - 14, 60, 12, backgroundcolor);
-    painter->drawText(w - 60, h - 4, mainwindow->pagetime_string);
+    painter->fillRect(w - 73, h - 14, 70, 12, backgroundcolor);
+    painter->drawText(w - 70, h - 4, mainwindow->pagetime_string);
   }
 }
 
