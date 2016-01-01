@@ -576,7 +576,7 @@ void UI_SpectrumDockWindow::update_curve()
           QVector<double> fft_values;
           if (signalMatrix[j]->enabled && signalMatrix[j]->fft_enabled[i])
             {
-              fft_values = calculateFFT(buffer_of_samples, fft_outputbufsize, dftblocksize, samplefreq, signalMatrix[j]->fft[i]->SIGNAL_NA_VALUE);
+              fft_values = calculateFFT(buffer_of_samples, fft_outputbufsize, dftblocksize, samplefreq, signalMatrix[j]->fft[i]->SIGNAL_NA_VALUE)->FFTData;
 
               // we need to transform the values if they are logarithmic and/or power values
               fft_values = transformFFTValues(fft_values, signalMatrix[j]->fft[i]->SIGNAL_NA_VALUE, freqstep);
@@ -840,11 +840,12 @@ QVector<double> UI_SpectrumDockWindow::compileSignalFromRawData(signalcompblock 
     return result;
 }
 
-QVector<double> UI_SpectrumDockWindow::calculateFFT(QVector<double> buf_samples, int fft_outputbufsize, int dftblocksize, double samplefreq, double SIGNAL_NA_VALUE)
+FFTCalculationResult* UI_SpectrumDockWindow::calculateFFT(QVector<double> buf_samples, int fft_outputbufsize, int dftblocksize, double samplefreq, double SIGNAL_NA_VALUE)
 {
-    kiss_fftr_cfg cfg;
-    QVector<double> result = QVector<double>(fft_outputbufsize);
+    FFTCalculationResult* result = new FFTCalculationResult();
 
+    kiss_fftr_cfg cfg;
+    QVector<double> fftdata = QVector<double>(fft_outputbufsize);
 
     cfg = kiss_fftr_alloc(dftblocksize, 0, NULL, NULL);
 
@@ -855,24 +856,35 @@ QVector<double> UI_SpectrumDockWindow::calculateFFT(QVector<double> buf_samples,
         start_offset -= dftblocksize;
         dftblocks++;
 
-        kiss_fftr_thread_func(cfg, buf_samples.data() + start_offset, &result);
+        kiss_fftr_thread_func(cfg, buf_samples.data() + start_offset, &fftdata);
 
         // TODO: multithread support
         // std::thread t(&UI_SpectrumDockWindow::kiss_fftr_thread_func, this, cfg, buf_samples.data() + start_offset, &result);
         // t.join();
     }
 
+    if (start_offset > 0)
+    {
+        // there are some samples left, we need to FFT the rest
+        // NOTE: there will be some overlap on the samples, so I'm not sure this is a good idea
 
-    for(int i=0; i<result.count(); i++)
+        start_offset = 0;
+        //dftblocks++;
+
+        //kiss_fftr_thread_func(cfg, buf_samples.data() + start_offset, &result);
+    }
+
+
+    for(int i=0; i<fftdata.count(); i++)
     {
         if (dftblocks > 0)
         {
-          result[i] /= (dftblocks);
-          result[i] /= samplefreq;
+          fftdata[i] /= (dftblocks);
+          fftdata[i] /= samplefreq;
         }
         else
         {
-          result[i] = SIGNAL_NA_VALUE;
+          fftdata[i] = SIGNAL_NA_VALUE;
         }
     }
 
@@ -880,20 +892,41 @@ QVector<double> UI_SpectrumDockWindow::calculateFFT(QVector<double> buf_samples,
     free(cfg);
 
 
-    double samples_length_in_seconds = (double)buf_samples.count() / samplefreq;
+    //double samples_length_in_seconds = (double)buf_samples.count() / samplefreq;
+    double samples_length_in_seconds = (double)dftblocksize / samplefreq;
+    double freqstep = samplefreq / (double)dftblocksize;
+    double freq_band = 0.0;
 
     // there are two limitations to the FFT algorithm
     // A, we can't meassure the intensity of a signal with a higher frequency then the half of the sample rate
-    // TODO: invalidate values above that frequency
+    freq_band = freqstep * fftdata.count();
+    for (int i=fftdata.count()-1; (freq_band<(samplefreq/2)) && (i>=0); i--)
+    {
+        fftdata[i] = SIGNAL_NA_VALUE;
+        freq_band -= freqstep;
+    }
 
     // B, the meassurement of the signals with wavelength less than the sample will be inaccurate
-    double freqstep = samplefreq / (double)dftblocksize;
-    double freq_band = 0.0;
-    for (int i=0; (freq_band<(1/samples_length_in_seconds)) && (i<result.count()); i++)
+    freq_band = 0.0;
+    for (int i=0; (freq_band<(1/samples_length_in_seconds)) && (i<fftdata.count()); i++)
     {
-        result[i] = SIGNAL_NA_VALUE;
+        fftdata[i] = SIGNAL_NA_VALUE;
         freq_band += freqstep;
     }
+
+
+    result->Samples = buf_samples;
+    result->FFTData = fftdata;
+
+    result->DFTBlockSize = dftblocksize;
+    result->DFTBlockCount = dftblocks;
+
+    result->StartIndex = start_offset;
+    result->EndIndex = buf_samples.count();
+
+    result->SampleFrequency = samplefreq;
+    result->FrequencyStep = freqstep;
+    result->SampleLengthInSeconds = samples_length_in_seconds;
 
     return result;
 }

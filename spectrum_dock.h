@@ -68,6 +68,7 @@
 #include "models/signalcompblock.h"
 #include "models/signaltype.h"
 #include "models/histogramsignalgroup.h"
+#include "models/fftcalculationresult.h"
 
 #include "third_party/fidlib/fidlib.h"
 #include "third_party/kiss_fft/kiss_fftr.h"
@@ -122,7 +123,7 @@ void getsettings(struct spectrumdocksettings *);
 void setsettings(struct spectrumdocksettings);
 
 private:
-QVector<double> calculateFFT(QVector<double> buf_samples, int fft_outputbufsize, int dftblocksize, double samplefreq, double SIGNAL_NA_VALUE);
+FFTCalculationResult* calculateFFT(QVector<double> buf_samples, int fft_outputbufsize, int dftblocksize, double samplefreq, double SIGNAL_NA_VALUE);
 QVector<double> compileSignalFromRawData(signalcompblock *signalcomp, char *viewbuf);
 Signal* changeMode(SignalType historgramMode, QString signalName, QString signalAlias, QString baseUnit);
 double transformFFTValue(double value, double SIGNAL_NA_VALUE, double freqstep);
