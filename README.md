@@ -99,11 +99,11 @@ sudo make install
 Installing on Windows
 ==========
 
-1, Download the current version from the releases tab.
-2, Run and install
+1. Download the current version from the releases tab.
+2. Run and install
 
 
 Version History
 ===============
 * 1.70
-  * = Initial release of the Pro version
+  * Initial release of the Pro version
