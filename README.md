@@ -3,7 +3,7 @@ EDFBrowser Pro
 
 The original EDFBrowser was created by Teunis van Beelen.
 
-This Pro version in an extended version of the original and maintained by [Andras Fuchs](linkedin.com/in/andrasfuchs).
+This Pro version is an extended version of the original and maintained by [Andras Fuchs](linkedin.com/in/andrasfuchs).
 
 New features in the Pro version
 -----------
