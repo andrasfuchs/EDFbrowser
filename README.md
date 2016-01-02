@@ -1,11 +1,12 @@
 EDFBrowser Pro
 ==============
 
+The original EDFBrowser was created by Teunis van Beelen.
 
-Changes to the Original EDFBrowser
+This Pro version in an extended version of the original and maintained by [Andras Fuchs](linkedin.com/in/andrasfuchs).
+
+New features in the Pro version
 -----------
-
-There are many changes in this pull request in the following areas:
 
 * Software architecture
   * Added .gitattributes to standardize line endings in files, and .gitignore to avoid personalized config file/temp file/generated file conflicts.
@@ -14,11 +15,13 @@ There are many changes in this pull request in the following areas:
   * All the target-specific definition are now in the multitargersupport.h file.
   * Moving towards to OOP design
   * Moving towards the Model-View-Controller design pattern's source code separation
+  * C++ v11
 
-* new Power Spectrum
+* Power Spectrum
   * new looks
   * support for different mouse gestures (dragging (click+move), zoom (mousewheel), reset zoom (double-click))
   * multi-signal support on one histogram (but it's still backward compatible)
+  * signals are displayed in three different time ranges for comparison
   * color bar text positioning
   * support for "blind spots" for unavailable data
   * values are formatted with a thousand separator char
@@ -86,14 +89,21 @@ Now you can run the program.
 
 
 
-Installing
+Installing on Linux
 ==========
 
 ```
 sudo make install
 ```
 
+Installing on Windows
+==========
+
+1, Download the current version from the releases tab.
+2, Run and install
+
+
 Version History
 ===============
-* 1.70 (2016-01-01)	
-  = Initial release
+* 1.70
+  * = Initial release of the Pro version
