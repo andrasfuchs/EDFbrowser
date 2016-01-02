@@ -96,11 +96,6 @@ Installing on Linux
 sudo make install
 ```
 
-Installing on Windows
-==========
-
-1. Download the current version from the releases tab.
-2. Run and install
 
 
 Version History
