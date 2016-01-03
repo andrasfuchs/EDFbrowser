@@ -147,6 +147,7 @@ private:
   QButtonGroup *scaleButtonGroup;
 
   QList<HistogramSignalGroup*> signalMatrix = QList<HistogramSignalGroup*>();
+  QList<QLabel*> timeFrameLabels = QList<QLabel*>();
 
 
   int spectrumdock_sqrt,
@@ -168,14 +169,17 @@ private:
 
 private slots:
 
-void update_curve();
-void changeSignals(Signal* signal, SignalType newMode);
-void colorBarButtonClicked(bool);
-void print_to_txt();
-void setdashboard();
-void scaleButtonClicked(bool checked);
-void signalGroupEnabledCheckBoxStateChanged(int state);
-void signalGroupFFTEnabledCheckBoxStateChanged(int state);
+  void update_curve();
+  void changeSignals(Signal* signal, SignalType newMode);
+  void colorBarButtonClicked(bool);
+  void print_to_txt();
+  void setdashboard();
+  void scaleButtonClicked(bool checked);
+  void signalGroupEnabledCheckBoxStateChanged(int state);
+  void signalGroupFFTEnabledCheckBoxStateChanged(int state);
+
+signals:
+  void fftCalculated(HistogramSignalGroup* histogramSignalGroup, Signal* signal, FFTCalculationResult* fffCalculationResult);
 
 };
 

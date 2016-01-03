@@ -126,13 +126,15 @@ UI_SpectrumDockWindow::UI_SpectrumDockWindow(QWidget *w_parent)
   lbl->setText("Signal name");
   signalListHeaderLayout->addWidget(lbl);
 
-  for (int i=64; i>2; i/=4) {
+  timeFrameLabels.clear();
+  for (int i=1; i<4; i++) {
     QLabel* lb = new QLabel();
     lb->setObjectName("lblTimeFrame" + QString::number(i));
     lb->setMinimumWidth(50);
     lb->setMaximumWidth(50);
     lb->setText(QString::number(i) + " sec");
     signalListHeaderLayout->addWidget(lb);
+    timeFrameLabels.append(lb);
   }
   vlayout2->addLayout(signalListHeaderLayout);
 
@@ -406,6 +408,10 @@ void UI_SpectrumDockWindow::changeSignals(Signal* signal, SignalType newMode)
   Signal *fft_ts64 = new Signal(fft_ts1->GetId() + "/64", fft_ts1->GetName() + "/64", fft_ts1->GetAlias() + "/64", QVector<double>(), fft_ts1->GetHorizontalName(), fft_ts1->GetHorizontalUnit(), fft_ts1->GetHorizontalDensity(), fft_ts1->GetVerticalName(), fft_ts1->GetVerticalUnit(), fft_ts1->GetVerticalDensity(), fft_ts1->GetType());
   fft_ts64->SetPen(QPen(QColor(signalColor.red(), signalColor.green(), signalColor.blue(), signalColor.alpha() * 1.0), 1.0, Qt::SolidLine));
 
+  signalMatrix[0]->length_in_seconds.clear();
+  signalMatrix[0]->fft_enabled.clear();
+  signalMatrix[0]->fft.clear();
+
   signalMatrix[0]->length_in_seconds.append(1.0);
   signalMatrix[0]->fft_enabled.append(true);
   signalMatrix[0]->fft.append(fft_ts1);
@@ -569,26 +575,66 @@ void UI_SpectrumDockWindow::update_curve()
 
 
   // ---------- FFT CALCULATION
+  QVector<double> comparisonFFTData = QVector<double>();
+
   for (int j=0; j<signalMatrix.count(); j++)
+  {
+    comparisonFFTData.clear();
+
+    for (int i=0; i<signalMatrix[j]->fft.count(); i++)
     {
-      for (int i=0; i<signalMatrix[j]->fft.count(); i++)
-      {
-          QVector<double> fft_values;
-          if (signalMatrix[j]->enabled && signalMatrix[j]->fft_enabled[i])
+        QVector<double> fft_values = QVector<double>();
+        if (signalMatrix[j]->enabled && signalMatrix[j]->fft_enabled[i])
+          {
+            FFTCalculationResult* fftCalculationResult = calculateFFT(buffer_of_samples, fft_outputbufsize, dftblocksize, samplefreq, signalMatrix[j]->fft[i]->SIGNAL_NA_VALUE);
+            emit fftCalculated(signalMatrix[j], signalMatrix[j]->fft[i], fftCalculationResult);
+            signalMatrix[j]->length_in_seconds[i] = fftCalculationResult->DFTBlockCount * fftCalculationResult->SampleLengthInSeconds;
+
+            if (fftCalculationResult->DFTBlockCount == 0)
             {
-              fft_values = calculateFFT(buffer_of_samples, fft_outputbufsize, dftblocksize, samplefreq, signalMatrix[j]->fft[i]->SIGNAL_NA_VALUE)->FFTData;
-
-              // we need to transform the values if they are logarithmic and/or power values
-              fft_values = transformFFTValues(fft_values, signalMatrix[j]->fft[i]->SIGNAL_NA_VALUE, freqstep);
+              timeFrameLabels[i]->setText("---");
             } else {
-              fft_values = QVector<double>(fft_outputbufsize, signalMatrix[j]->fft[i]->SIGNAL_NA_VALUE);
+              timeFrameLabels[i]->setText(QString("%L1").arg(signalMatrix[j]->length_in_seconds[i], 0, 'f', 1) + " sec");
             }
-          signalMatrix[j]->fft[i]->SetHorizontalDensity(1.0/freqstep);
-          signalMatrix[j]->fft[i]->SetValues(fft_values);
 
-          buffer_of_samples.remove(0, 3 * (buffer_of_samples.count() / 4));
-      }
+            bool comparisonMode = false;
+            if (!comparisonMode)
+            {
+                fft_values = fftCalculationResult->FFTData;
+            }
+            else
+            {
+              if (comparisonFFTData.count() == 0)
+              {
+                // that's the first FFT, so we are going to compare everything to this
+                comparisonFFTData = fftCalculationResult->FFTData;
+              }
+
+              for (int k=0; k<comparisonFFTData.count(); k++)
+              {
+                if ((comparisonFFTData[k] != signalMatrix[j]->fft[i]->SIGNAL_NA_VALUE)
+                    && (fftCalculationResult->FFTData[k] != signalMatrix[j]->fft[i]->SIGNAL_NA_VALUE))
+                {
+                  fft_values.append(fftCalculationResult->FFTData[k] - comparisonFFTData[k]);
+                }
+                else
+                {
+                  fft_values.append(signalMatrix[j]->fft[i]->SIGNAL_NA_VALUE);
+                }
+              }
+            }
+
+            // we need to transform the values if they are logarithmic and/or power values
+            fft_values = transformFFTValues(fft_values, signalMatrix[j]->fft[i]->SIGNAL_NA_VALUE, freqstep);
+          } else {
+            fft_values = QVector<double>(fft_outputbufsize, signalMatrix[j]->fft[i]->SIGNAL_NA_VALUE);
+          }
+        signalMatrix[j]->fft[i]->SetHorizontalDensity(1.0/freqstep);
+        signalMatrix[j]->fft[i]->SetValues(fft_values);
+
+        buffer_of_samples.remove(0, 3 * (buffer_of_samples.count() / 4));
     }
+  }
 
 // TODO: I couldn't figure out why is this here
 //  if(signalcomp->ecg_filter == NULL)
