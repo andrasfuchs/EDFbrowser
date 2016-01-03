@@ -38,6 +38,13 @@ ViewCurve::ViewCurve(QWidget *w_parent) : QWidget(w_parent)
 
   mainwindow = (UI_Mainwindow *)w_parent;
 
+  BackgroundColor = QColor(0,0,0);
+  RasterColor = QColor(127,127,127,191);
+  SecondaryRasterColor = QColor(127,127,127,63);
+  BorderColor = QColor(30,44,54);
+  RulerColor = QColor(255,255,255);
+  TextColor = QColor(145,145,145);
+
   special_pen = new QPen(Qt::SolidPattern, 0, Qt::DotLine, Qt::SquareCap, Qt::BevelJoin);
 
   annot_marker_pen = new QPen(Qt::SolidPattern, 0, Qt::DashLine, Qt::SquareCap, Qt::BevelJoin);
@@ -1419,270 +1426,58 @@ void ViewCurve::drawCurve_stage_2(QPainter *painter, int w_width, int w_height, 
 
 
 // SECTION_START: Draw the vertical lines behind the waveform
-  if(m_pagetime<=20)
+  long long primaryDuration = TIME_DIMENSION / 5;
+  long long secondaryDuration = primaryDuration * 5;
+
+  long long temp = m_pagetime;
+
+  while (temp > 4)
   {
-    ruler_pen->setColor(small_ruler_color);
-    painter->setPen(*ruler_pen);
-
-    for(x_pix=0; x_pix<w; x_pix++)
-    {
-      if((ll_elapsed_time / (TIME_DIMENSION / 10))!=((ll_elapsed_time + time_ppixel) / (TIME_DIMENSION / 10)))
-      {
-        if(printing)
-        {
-          painter->drawLine(x_pix, 0, x_pix, 4 * printsize_y_factor);
-        }
-        else
-        {
-          painter->drawLine(x_pix, 0, x_pix, 4);
-        }
-      }
-
-      if(((ll_elapsed_time / TIME_DIMENSION)!=((ll_elapsed_time + time_ppixel) / TIME_DIMENSION)) ||
-        ((ll_elapsed_time < time_ppixel) && (ll_elapsed_time > -time_ppixel)))
-      {
-        if(x_pix)
-        {
-          ruler_pen->setColor(big_ruler_color);
-          painter->setPen(*ruler_pen);
-          painter->drawLine(x_pix, 0, x_pix, h);
-          ruler_pen->setColor(small_ruler_color);
-          painter->setPen(*ruler_pen);
-        }
-        if(printing)
-        {
-          painter->drawLine(x_pix, 0, x_pix, 7 * printsize_y_factor);
-        }
-        else
-        {
-          painter->drawLine(x_pix, 0, x_pix, 7);
-        }
-      }
-
-      ll_elapsed_time += time_ppixel;
-    }
+    primaryDuration = primaryDuration * 5;
+    temp = temp / 5;
   }
+  secondaryDuration = primaryDuration / 5;
 
-  if((m_pagetime>20)&&(m_pagetime<100))
+  for(x_pix=0; x_pix<w; x_pix++)
   {
-    ruler_pen->setColor(small_ruler_color);
-    painter->setPen(*ruler_pen);
-
-    for(x_pix=0; x_pix<w; x_pix++)
+    if((ll_elapsed_time / secondaryDuration)!=((ll_elapsed_time + time_ppixel) / secondaryDuration))
     {
-      if((ll_elapsed_time / (TIME_DIMENSION / 5))!=((ll_elapsed_time + time_ppixel) / (TIME_DIMENSION / 5)))
-      {
-        if(printing)
-        {
-          painter->drawLine(x_pix, 0, x_pix, 4 * printsize_y_factor);
-        }
-        else
-        {
-          painter->drawLine(x_pix, 0, x_pix, 4);
-        }
-      }
+      painter->setPen(SecondaryRasterColor);
+      painter->drawLine(x_pix, 0, x_pix, h);
 
-      if(((ll_elapsed_time / TIME_DIMENSION)!=((ll_elapsed_time + time_ppixel) / TIME_DIMENSION)) ||
-        ((ll_elapsed_time < time_ppixel) && (ll_elapsed_time > -time_ppixel)))
+      painter->setPen(RulerColor);
+      if(printing)
       {
-        if(x_pix)
-        {
-          ruler_pen->setColor(big_ruler_color);
-          painter->setPen(*ruler_pen);
-          painter->drawLine(x_pix, 0, x_pix, h);
-          ruler_pen->setColor(small_ruler_color);
-          painter->setPen(*ruler_pen);
-        }
-        if(printing)
-        {
-          painter->drawLine(x_pix, 0, x_pix, 7 * printsize_y_factor);
-        }
-        else
-        {
-          painter->drawLine(x_pix, 0, x_pix, 7);
-        }
+        painter->drawLine(x_pix, 0, x_pix, 4 * printsize_y_factor);
       }
-
-      ll_elapsed_time += time_ppixel;
+      else
+      {
+        painter->drawLine(x_pix, 0, x_pix, 4);
+      }
     }
-  }
 
-  if((m_pagetime>=100)&&(m_pagetime<1000))
-  {
-    ruler_pen->setColor(small_ruler_color);
-    painter->setPen(*ruler_pen);
-
-    for(x_pix=0; x_pix<w; x_pix++)
+    if(((ll_elapsed_time / primaryDuration)!=((ll_elapsed_time + time_ppixel) / primaryDuration)) ||
+      ((ll_elapsed_time < time_ppixel) && (ll_elapsed_time > -time_ppixel)))
     {
-      if((ll_elapsed_time / 33333333LL)!=((ll_elapsed_time + time_ppixel) / 33333333LL))
+      if(x_pix)
       {
-        if(printing)
-        {
-          painter->drawLine(x_pix, 0, x_pix, 4 * printsize_y_factor);
-        }
-        else
-        {
-          painter->drawLine(x_pix, 0, x_pix, 4);
-        }
+        painter->setPen(RasterColor);
+        painter->drawLine(x_pix, 0, x_pix, h);
       }
 
-      if(((ll_elapsed_time / (TIME_DIMENSION * 10))!=((ll_elapsed_time + time_ppixel) / (TIME_DIMENSION * 10))) ||
-        ((ll_elapsed_time < time_ppixel) && (ll_elapsed_time > -time_ppixel)))
+      painter->setPen(RulerColor);
+      if(printing)
       {
-        if(x_pix)
-        {
-          ruler_pen->setColor(big_ruler_color);
-          painter->setPen(*ruler_pen);
-          painter->drawLine(x_pix, 0, x_pix, h);
-          ruler_pen->setColor(small_ruler_color);
-          painter->setPen(*ruler_pen);
-        }
-        if(printing)
-        {
-          painter->drawLine(x_pix, 0, x_pix, 7 * printsize_y_factor);
-        }
-        else
-        {
-          painter->drawLine(x_pix, 0, x_pix, 7);
-        }
+        painter->drawLine(x_pix, 0, x_pix, 7 * printsize_y_factor);
       }
-
-      ll_elapsed_time += time_ppixel;
+      else
+      {
+        painter->drawLine(x_pix, 0, x_pix, 7);
+      }
     }
+
+    ll_elapsed_time += time_ppixel;
   }
-
-  if((m_pagetime>=1000)&&(m_pagetime<5000))
-  {
-    ruler_pen->setColor(small_ruler_color);
-    painter->setPen(*ruler_pen);
-
-    for(x_pix=0; x_pix<w; x_pix++)
-    {
-      if((ll_elapsed_time / (TIME_DIMENSION * 10))!=((ll_elapsed_time + time_ppixel) / (TIME_DIMENSION * 10)))
-      {
-        if(printing)
-        {
-          painter->drawLine(x_pix, 0, x_pix, 4 * printsize_y_factor);
-        }
-        else
-        {
-          painter->drawLine(x_pix, 0, x_pix, 4);
-        }
-      }
-
-      if(((ll_elapsed_time / (TIME_DIMENSION * 60))!=((ll_elapsed_time + time_ppixel) / (TIME_DIMENSION * 60)))  ||
-        ((ll_elapsed_time < time_ppixel) && (ll_elapsed_time > -time_ppixel)))
-      {
-        if(x_pix)
-        {
-          ruler_pen->setColor(big_ruler_color);
-          painter->setPen(*ruler_pen);
-          painter->drawLine(x_pix, 0, x_pix, h);
-          ruler_pen->setColor(small_ruler_color);
-          painter->setPen(*ruler_pen);
-        }
-        if(printing)
-        {
-          painter->drawLine(x_pix, 0, x_pix, 7 * printsize_y_factor);
-        }
-        else
-        {
-          painter->drawLine(x_pix, 0, x_pix, 7);
-        }
-      }
-
-      ll_elapsed_time += time_ppixel;
-    }
-  }
-
-  if((m_pagetime>=5000)&&(m_pagetime<173000))
-  {
-    ruler_pen->setColor(small_ruler_color);
-    painter->setPen(*ruler_pen);
-
-    for(x_pix=0; x_pix<w; x_pix++)
-    {
-      if((ll_elapsed_time / (TIME_DIMENSION * 600))!=((ll_elapsed_time + time_ppixel) / (TIME_DIMENSION * 600)))
-      {
-        if(printing)
-        {
-          painter->drawLine(x_pix, 0, x_pix, 4 * printsize_y_factor);
-        }
-        else
-        {
-          painter->drawLine(x_pix, 0, x_pix, 4);
-        }
-      }
-
-      if(((ll_elapsed_time / (TIME_DIMENSION * 3600))!=((ll_elapsed_time + time_ppixel) / (TIME_DIMENSION * 3600))) ||
-        ((ll_elapsed_time < time_ppixel) && (ll_elapsed_time > -time_ppixel)))
-      {
-        if(x_pix)
-        {
-          ruler_pen->setColor(big_ruler_color);
-          painter->setPen(*ruler_pen);
-          painter->drawLine(x_pix, 0, x_pix, h);
-          ruler_pen->setColor(small_ruler_color);
-          painter->setPen(*ruler_pen);
-        }
-        if(printing)
-        {
-          painter->drawLine(x_pix, 0, x_pix, 7 * printsize_y_factor);
-        }
-        else
-        {
-          painter->drawLine(x_pix, 0, x_pix, 7);
-        }
-      }
-
-      ll_elapsed_time += time_ppixel;
-    }
-  }
-
-  if((m_pagetime>=173000)&&(m_pagetime<3000000))
-  {
-    ruler_pen->setColor(small_ruler_color);
-    painter->setPen(*ruler_pen);
-
-    for(x_pix=0; x_pix<w; x_pix++)
-    {
-      if((ll_elapsed_time / (TIME_DIMENSION * 3600))!=((ll_elapsed_time + time_ppixel) / (TIME_DIMENSION * 3600)))
-      {
-        if(printing)
-        {
-          painter->drawLine(x_pix, 0, x_pix, 4 * printsize_y_factor);
-        }
-        else
-        {
-          painter->drawLine(x_pix, 0, x_pix, 4);
-        }
-      }
-
-      if(((ll_elapsed_time / (TIME_DIMENSION * 86400))!=((ll_elapsed_time + time_ppixel) / (TIME_DIMENSION * 86400))) ||
-         ((ll_elapsed_time < time_ppixel) && (ll_elapsed_time > -time_ppixel)))
-     {
-        if(x_pix)
-        {
-          ruler_pen->setColor(big_ruler_color);
-          painter->setPen(*ruler_pen);
-          painter->drawLine(x_pix, 0, x_pix, h);
-          ruler_pen->setColor(small_ruler_color);
-          painter->setPen(*ruler_pen);
-        }
-        if(printing)
-        {
-          painter->drawLine(x_pix, 0, x_pix, 7 * printsize_y_factor);
-        }
-        else
-        {
-          painter->drawLine(x_pix, 0, x_pix, 7);
-        }
-      }
-
-      ll_elapsed_time += time_ppixel;
-    }
-  }
-
 // SECTION_END: Draw the vertical lines behind the waveform
 
 
@@ -1697,12 +1492,14 @@ void ViewCurve::drawCurve_stage_2(QPainter *painter, int w_width, int w_height, 
   {
     vertical_distance = h / (signalcomps + 1);
 
-    painter->setPen(baseline_color);
+    // TODO: this is just a workaround for now, I set the colors separately for the different parts of the "ruler"
+    // painter->setPen(baseline_color);
 
     for(i=0; i<signalcomps; i++)
     {
       baseline = vertical_distance * (i + 1);
 
+      painter->setPen(RasterColor);
       painter->drawLine(0, baseline, w, baseline);
 
       if(signalcomp[i]->voltpercm < 0.1)
@@ -1724,6 +1521,7 @@ void ViewCurve::drawCurve_stage_2(QPainter *painter, int w_width, int w_height, 
 
       strcat(str2, signalcomp[i]->physdimension);
 
+      // we display at most 18 values above and below the baseline
       for(j=1; j<18; j++)
       {
         vert_ruler_offset = j * painter_pixelsizefactor;
@@ -1761,6 +1559,7 @@ void ViewCurve::drawCurve_stage_2(QPainter *painter, int w_width, int w_height, 
           }
         }
 
+        painter->setPen(SecondaryRasterColor);
         painter->drawLine(0, baseline - vert_ruler_offset, w, baseline - vert_ruler_offset);
 
 #pragma GCC diagnostic ignored "-Wformat-nonliteral"
@@ -1776,8 +1575,11 @@ void ViewCurve::drawCurve_stage_2(QPainter *painter, int w_width, int w_height, 
             ((signalcomp[i]->voltpercm * j) + ((signalcomp[i]->screen_offset * signalcomp[i]->voltpercm) / painter_pixelsizefactor)) * (double)signalcomp[i]->polarity);
         }
 
+        // values above the baseline (eg. +300 uV)
+        painter->setPen(RulerColor);
         painter->drawText(5 * printsize_x_factor, baseline - vert_ruler_offset - (4 * printsize_y_factor), string);
 
+        painter->setPen(SecondaryRasterColor);
         painter->drawLine(0, baseline + vert_ruler_offset, w, baseline + vert_ruler_offset);
 
         if(printing)
@@ -1793,6 +1595,8 @@ void ViewCurve::drawCurve_stage_2(QPainter *painter, int w_width, int w_height, 
 
 #pragma GCC diagnostic warning "-Wformat-nonliteral"
 
+        // values below the baseline (eg. -300 uV)
+        painter->setPen(RulerColor);
         painter->drawText(5 * printsize_x_factor, baseline + vert_ruler_offset - (4 * printsize_y_factor), string);
       }
     }

@@ -186,6 +186,13 @@ public:
          backup_color_13,
          backup_color_15;
 
+  QColor BackgroundColor,
+         RasterColor,
+         SecondaryRasterColor,
+         BorderColor,
+         RulerColor,
+         TextColor;
+
   QFont *printfont;
 
   void drawCurve_stage_1(QPainter *painter=NULL, int w_width=0, int w_height=0, int print_linewidth=0);
