@@ -129,6 +129,8 @@ public:
   void setUpdatesEnabled(bool);
   void enableSpectrumColors(struct spectrum_markersblock *);
   void disableSpectrumColors();
+  void enableComparisonMode();
+  void disableComparisonMode();
   void setFillSurfaceEnabled(bool);
   void setV_rulerEnabled(bool);
   void setUpsidedownEnabled(bool);
@@ -223,6 +225,8 @@ private:
          v_ruler_max_value = DBL_MIN,   // the maximum value on the vertical ruler
          h_ruler_min_value = DBL_MAX,   // the minimum value on the horizontal ruler
          h_ruler_max_value = DBL_MIN;   // the maximum value on the horizontal ruler
+
+  bool comparison_mode = false;
 
   //
   double printsize_x_factor,

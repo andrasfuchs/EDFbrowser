@@ -99,11 +99,16 @@ UI_SpectrumDockWindow::UI_SpectrumDockWindow(QWidget *w_parent)
   colorBarCheckBox->setText("Show colorbars");
   colorBarCheckBox->setTristate(false);
 
+  comparisonModeCheckBox = new QCheckBox;
+  comparisonModeCheckBox->setMinimumSize(50, 20);
+  comparisonModeCheckBox->setText("Compare mode");
+  comparisonModeCheckBox->setTristate(false);
 
   vlayout2 = new QVBoxLayout();
   vlayout2->setSpacing(10);
   vlayout2->addStretch(100);
   vlayout2->addWidget(colorBarCheckBox);
+  vlayout2->addWidget(comparisonModeCheckBox);
 
   QVBoxLayout *scaleButtonGroupLayout = new QVBoxLayout();
   for (int i=0; i<scaleButtonGroup->buttons().count(); i++)
@@ -156,6 +161,7 @@ UI_SpectrumDockWindow::UI_SpectrumDockWindow(QWidget *w_parent)
 
   QObject::connect(t1,              SIGNAL(timeout()),              this, SLOT(update_curve()));
   QObject::connect(colorBarCheckBox,  SIGNAL(toggled(bool)),          this, SLOT(colorBarButtonClicked(bool)));
+  QObject::connect(comparisonModeCheckBox,  SIGNAL(toggled(bool)),          this, SLOT(comparisonModeClicked(bool)));
   QObject::connect(histogramView,          SIGNAL(extra_button_clicked()), this, SLOT(print_to_txt()));
   QObject::connect(histogramView,          SIGNAL(dashBoardClicked()),     this, SLOT(setdashboard()));
 }
@@ -389,6 +395,20 @@ void UI_SpectrumDockWindow::colorBarButtonClicked(bool value)
   }
 }
 
+void UI_SpectrumDockWindow::comparisonModeClicked(bool value)
+{
+  if(value == true)
+  {
+    comparisonMode = true;
+    histogramView->enableComparisonMode();
+  }
+  else
+  {
+    comparisonMode = false;
+    histogramView->disableComparisonMode();
+  }
+}
+
 void UI_SpectrumDockWindow::changeSignals(Signal* signal, SignalType newMode)
 {
   // backward compatibility
@@ -597,7 +617,6 @@ void UI_SpectrumDockWindow::update_curve()
               timeFrameLabels[i]->setText(QString("%L1").arg(signalMatrix[j]->length_in_seconds[i], 0, 'f', 1) + " sec");
             }
 
-            bool comparisonMode = false;
             if (!comparisonMode)
             {
                 fft_values = fftCalculationResult->FFTData;

@@ -1544,7 +1544,13 @@ void SignalCurve::drawSignalCurveSegment(QPainter *painter, QPolygon curvePolygo
 
     QPainterPath path;
     path.addPolygon(curvePolygon);
-    painter->fillPath(path, fillBrush);
+
+    if (!comparison_mode)
+    {
+      painter->fillPath(path, fillBrush);
+    } else {
+      painter->drawPath(path);
+    }
 }
 
 
@@ -1952,6 +1958,24 @@ void SignalCurve::disableSpectrumColors()
   update_pending = true;
 }
 
+void SignalCurve::enableComparisonMode()
+{
+  comparison_mode = true;
+
+  resetRulers();
+
+  update_pending = true;
+}
+
+
+void SignalCurve::disableComparisonMode()
+{
+  comparison_mode = false;
+
+  resetRulers();
+
+  update_pending = true;
+}
 
 void SignalCurve::setV_rulerEnabled(bool value)
 {

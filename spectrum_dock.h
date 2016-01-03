@@ -143,6 +143,7 @@ private:
   QTimer *t1;       // this is used as a multi-thread solution for curve_update
 
   QCheckBox *colorBarCheckBox;
+  QCheckBox *comparisonModeCheckBox;
 
   QButtonGroup *scaleButtonGroup;
 
@@ -155,6 +156,8 @@ private:
       dashboard,
       signal_nr,
       set_settings;
+
+  bool comparisonMode = false;
 
   volatile int busy;
 
@@ -172,6 +175,7 @@ private slots:
   void update_curve();
   void changeSignals(Signal* signal, SignalType newMode);
   void colorBarButtonClicked(bool);
+  void comparisonModeClicked(bool);
   void print_to_txt();
   void setdashboard();
   void scaleButtonClicked(bool checked);
