@@ -1171,16 +1171,6 @@ void SignalCurve::drawWidget(QPainter *painter, int curve_w, int curve_h, bool i
         }
       }
     }
-
-    if(spectrum_color->method == 0)
-    {
-      char sum_colorbar_value_str[64];
-      thousandsep(sum_colorbar_value, sum_colorbar_value_str, sizeof sum_colorbar_value_str, 2);
-
-      sprintf(str, "Total Power: %s", sum_colorbar_value_str);
-      painter->setPen(Qt::white);
-      painter->drawText(curve_w - 200, 20, str);
-    }
   }
 
 

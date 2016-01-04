@@ -269,14 +269,6 @@ void UI_SpectrumDockWindow::scaleButtonClicked(bool checked)
       }
   }
 
-  if (((newMode & SignalType::LogScale) == SignalType::LogScale))
-  {
-    colorBarCheckBox->setChecked(false);
-    colorBarCheckBox->setEnabled(false);
-  } else {
-    colorBarCheckBox->setEnabled(true);
-  }
-
   changeSignals(base_samples, newMode);
 }
 
