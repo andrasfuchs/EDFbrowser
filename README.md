@@ -7,4 +7,4 @@ The original EDFBrowser was created by Teunis van Beelen.
 
 This Pro version is an extended version of the original and maintained by [Andras Fuchs](linkedin.com/in/andrasfuchs).
 
-For more information, check out our [Wiki](https://github.com/andrasfuchs/EDFbrowser/Wiki)!
+For more information, check out our [Wiki](https://github.com/andrasfuchs/EDFbrowser/wiki)!
