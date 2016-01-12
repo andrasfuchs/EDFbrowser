@@ -43,16 +43,15 @@
 #include <QVBoxLayout>
 
 #include "global.h"
-#include "mainwindow.h"
 
 
 
-class UI_Aboutwindow : public QObject
+class UI_AboutWindow : public QObject
 {
   Q_OBJECT
 
 public:
-  UI_Aboutwindow(UI_Mainwindow *);
+  UI_AboutWindow(int cpu_count, bool use_threads);
 
 private:
 

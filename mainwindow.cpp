@@ -3214,7 +3214,7 @@ void UI_Mainwindow::close_all_files()
 
 void UI_Mainwindow::show_about_dialog()
 {
-  UI_Aboutwindow aboutwindow(this);
+  UI_AboutWindow aboutwindow(this->maincurve->cpu_cnt, this->use_threads == 1);
 }
 
 

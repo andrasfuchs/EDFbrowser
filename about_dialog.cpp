@@ -32,7 +32,7 @@
 
 
 
-UI_Aboutwindow::UI_Aboutwindow(UI_Mainwindow *mainwindow)
+UI_AboutWindow::UI_AboutWindow(int cpu_count, bool use_threads)
 {
   char str[512];
 
@@ -41,8 +41,8 @@ UI_Aboutwindow::UI_Aboutwindow(UI_Mainwindow *mainwindow)
   strcat(str, "\n QT version at compiletime is ");
   strncat(str, QT_VERSION_STR, 32);
   strncat(str, "\n Compiled on " __DATE__ " " __TIME__, 40);
-  sprintf(str + strlen(str), "\n CPU-cores detected on this system: %i", mainwindow->maincurve->cpu_cnt);
-  if(mainwindow->use_threads == 1)
+  sprintf(str + strlen(str), "\n CPU-cores detected on this system: %i", cpu_count);
+  if(use_threads)
   {
     strcat(str, "\n Multi-Threading is enabled.");
   }
