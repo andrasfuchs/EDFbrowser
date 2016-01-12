@@ -32,6 +32,7 @@ CONFIG += warn_on
 CONFIG += debug_and_release
 CONFIG += static
 CONFIG += largefile
+CONFIG += suppress_vcproj_warnings
 QT += network
 
 contains(QT_MAJOR_VERSION, 5) {

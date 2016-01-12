@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Generated Files">
@@ -121,6 +121,9 @@
     <ClCompile Include="export_annotations.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="models\fftcalculationresult.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="third_party\fidlib\fidlib.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -148,6 +151,9 @@
     <ClCompile Include="header_editor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="models\histogramsignalgroup.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="import_annotations.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -155,6 +161,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="third_party\kiss_fft\kiss_fft.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\kiss_fft\kiss_fftr.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="load_montage_dialog.cpp">
@@ -170,6 +179,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="mit2edf.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="multitargetsupport.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="nexfin2edf.cpp">
@@ -218,6 +230,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="show_edf_hdr.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="models\signal.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="signal_chooser.cpp">
@@ -272,12 +287,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="z_score_dialog.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="third_party\kiss_fft\kiss_fftr.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="multitargetsupport.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -369,6 +378,9 @@
     <CustomBuild Include="export_annotations.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
+    <CustomBuild Include="models\fftcalculationresult.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
     <ClInclude Include="third_party\fidlib\fidlib.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -405,6 +417,9 @@
     <CustomBuild Include="header_editor.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
+    <CustomBuild Include="models\histogramsignalgroup.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
     <CustomBuild Include="import_annotations.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
@@ -412,6 +427,9 @@
       <Filter>Header Files</Filter>
     </CustomBuild>
     <ClInclude Include="third_party\kiss_fft\kiss_fft.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\kiss_fft\kiss_fftr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <CustomBuild Include="load_montage_dialog.h">
@@ -426,6 +444,9 @@
     <CustomBuild Include="mit2edf.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
+    <ClInclude Include="multitargetsupport.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <CustomBuild Include="nexfin2edf.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
@@ -474,15 +495,24 @@
     <CustomBuild Include="show_edf_hdr.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
+    <CustomBuild Include="models\signal.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
     <CustomBuild Include="signal_chooser.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
+    <ClInclude Include="models\signalcompblock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <CustomBuild Include="signalcurve.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="signals_dialog.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
+    <ClInclude Include="models\signaltype.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <CustomBuild Include="special_button.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
@@ -528,12 +558,6 @@
     <CustomBuild Include="z_score_dialog.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
-    <ClInclude Include="multitargetsupport.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="third_party\kiss_fft\kiss_fftr.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="moc\moc_about_dialog.cpp">
@@ -599,6 +623,9 @@
     <ClCompile Include="moc\moc_export_annotations.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
+    <ClCompile Include="moc\moc_fftcalculationresult.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
     <ClCompile Include="moc\moc_filter_dialog.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
@@ -615,6 +642,9 @@
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="moc\moc_header_editor.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="moc\moc_histogramsignalgroup.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="moc\moc_import_annotations.cpp">
@@ -669,6 +699,9 @@
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="moc\moc_show_edf_hdr.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="moc\moc_signal.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="moc\moc_signal_chooser.cpp">
